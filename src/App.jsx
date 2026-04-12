@@ -155,6 +155,30 @@ function App() {
     await supabase.from('camiones').update({ estado: nuevoEstado }).eq('id', parseInt(idStr));
   };
 
+  const toggleAprobacion = async (camionId, grupo, valorActual) => {
+    const key = `aprobado_${grupo}`;
+    const nuevoValor = !valorActual;
+
+    // UI Optimista
+    setCamionesRegistrados(prev => 
+      prev.map(c => c.id === camionId ? { ...c, [key]: nuevoValor } : c)
+    );
+
+    // DB update
+    await supabase.from('camiones').update({ [key]: nuevoValor }).eq('id', camionId);
+  };
+
+  const liberarCamion = async (camionId) => {
+    // UI Optimista
+    setCamionesRegistrados(prev => 
+      prev.map(c => c.id === camionId ? { ...c, estado: 'liberado' } : c)
+    );
+
+    // DB update
+    await supabase.from('camiones').update({ estado: 'liberado' }).eq('id', camionId);
+    alert("🚀 Camión liberado con éxito. Ahora reside en el Historial.");
+  };
+
   const handleDragOver = (e) => {
     e.preventDefault();
   };
@@ -338,10 +362,13 @@ function App() {
   }
 
   const registrosFiltrados = camionesRegistrados.filter(r => {
-    return r.flota.includes(filtroFlota) && 
+    return r.estado === 'liberado' &&
+           r.flota.includes(filtroFlota) && 
            (filtroMina === '' || r.mina === filtroMina) && 
            r.time.toLowerCase().includes(filtroMes.toLowerCase());
   });
+
+  const conteoLiberados = camionesRegistrados.filter(c => c.estado === 'liberado').length;
 
   return (
     <div className="app-container">
@@ -435,7 +462,7 @@ function App() {
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '1rem' }}>
               <h2 style={{ fontSize: '1.4rem', color: 'var(--primary-black)', margin: 0 }}><LayoutDashboard strokeWidth={1.5} size={24} style={{ marginBottom: '-0.3rem', color: '#2563eb' }} />  Resumen de Control</h2>
               <span className="badge badge-liberado" style={{ fontSize: '0.9rem', padding: '0.6rem 1.2rem', display: 'flex', alignItems: 'center', gap: '0.4rem', border: '1px solid #10b981', background: 'rgba(16, 185, 129, 0.15)', color: '#059669', boxShadow: '0 2px 4px rgba(16, 185, 129, 0.1)' }}>
-                <Award size={16} strokeWidth={2} /> Camiones Registrados: {camionesRegistrados.length}
+                <Award size={16} strokeWidth={2} /> Camiones Entregados Satisfactoriamente: {conteoLiberados}
               </span>
             </div>
             <div className="kpi-grid">
@@ -588,17 +615,45 @@ function App() {
                             {camion.atencion}
                           </span>
                         </div>
-                        
-                        {/* Renderización Exclusiva para estado Feedback (Aprobaciones Conjuntas) */}
+                        {/* Renderización Exclusiva para estado Feedback (Aprobaciones Conjuntas Reales) */}
                         {camion.estado === 'feedback' && (
                           <div style={{ marginTop: '0.8rem', paddingTop: '0.8rem', borderTop: '1px dashed #e5e7eb' }}>
-                            <span style={{ fontSize: '0.75rem', fontWeight: 'bold', color: 'var(--text-main)', display: 'block', marginBottom: '0.4rem' }}>Aprobaciones Operativas:</span>
-                            <div style={{ display: 'flex', gap: '0.5rem' }}>
-                              <span style={{ fontSize: '0.7rem', padding: '0.2rem 0.6rem', borderRadius: '50px', background: '#dcfce7', color: '#166534', border: '1px solid #bbf7d0' }}>✓ G1</span>
-                              <span style={{ fontSize: '0.7rem', padding: '0.2rem 0.6rem', borderRadius: '50px', background: '#f3f4f6', color: '#6b7280', border: '1px solid #e5e7eb' }}>? G2</span>
-                              <span style={{ fontSize: '0.7rem', padding: '0.2rem 0.6rem', borderRadius: '50px', background: '#f3f4f6', color: '#6b7280', border: '1px solid #e5e7eb' }}>? G3</span>
+                            <span style={{ fontSize: '0.75rem', fontWeight: 'bold', color: 'var(--text-main)', display: 'block', marginBottom: '0.4rem' }}>Vistos Buenos (V.B):</span>
+                            <div style={{ display: 'flex', gap: '0.4rem', flexWrap: 'wrap' }}>
+                              <button 
+                                onClick={() => toggleAprobacion(camion.id, 'g1', !!camion.aprobado_g1)}
+                                style={{ border: 'none', cursor: 'pointer', fontSize: '0.65rem', padding: '0.2rem 0.5rem', borderRadius: '50px', background: camion.aprobado_g1 ? '#dcfce7' : '#f3f4f6', color: camion.aprobado_g1 ? '#166534' : '#6b7280', border: '1px solid', borderColor: camion.aprobado_g1 ? '#bbf7d0' : '#e5e7eb' }}
+                              >
+                                {camion.aprobado_g1 ? '✓ G1' : '? G1'}
+                              </button>
+                              <button 
+                                onClick={() => toggleAprobacion(camion.id, 'g2', !!camion.aprobado_g2)}
+                                style={{ border: 'none', cursor: 'pointer', fontSize: '0.65rem', padding: '0.2rem 0.5rem', borderRadius: '50px', background: camion.aprobado_g2 ? '#dcfce7' : '#f3f4f6', color: camion.aprobado_g2 ? '#166534' : '#6b7280', border: '1px solid', borderColor: camion.aprobado_g2 ? '#bbf7d0' : '#e5e7eb' }}
+                              >
+                                {camion.aprobado_g2 ? '✓ G2' : '? G2'}
+                              </button>
+                              <button 
+                                onClick={() => toggleAprobacion(camion.id, 'g3', !!camion.aprobado_g3)}
+                                style={{ border: 'none', cursor: 'pointer', fontSize: '0.65rem', padding: '0.2rem 0.5rem', borderRadius: '50px', background: camion.aprobado_g3 ? '#dcfce7' : '#f3f4f6', color: camion.aprobado_g3 ? '#166534' : '#6b7280', border: '1px solid', borderColor: camion.aprobado_g3 ? '#bbf7d0' : '#e5e7eb' }}
+                              >
+                                {camion.aprobado_g3 ? '✓ G3' : '? G3'}
+                              </button>
                             </div>
-                            <span style={{ fontSize: '0.65rem', color: 'var(--text-muted)', display: 'block', marginTop: '0.4rem' }}>Falta 1 visto bueno para liberación.</span>
+                            
+                            {/* Lógica de Liberación si hay >=2 aprobados */}
+                            {([camion.aprobado_g1, camion.aprobado_g2, camion.aprobado_g3].filter(Boolean).length >= 2) ? (
+                              <button 
+                                className="btn btn-primary"
+                                onClick={() => liberarCamion(camion.id)}
+                                style={{ width: '100%', marginTop: '0.8rem', padding: '0.4rem', fontSize: '0.75rem', background: '#10b981', borderColor: '#10b981' }}
+                              >
+                                🚛 LIBERAR CAMIÓN
+                              </button>
+                            ) : (
+                              <span style={{ fontSize: '0.6rem', color: 'var(--text-muted)', display: 'block', marginTop: '0.5rem', fontStyle: 'italic' }}>
+                                Requiere 2 aprobaciones para liberar.
+                              </span>
+                            )}
                           </div>
                         )}
 
@@ -647,7 +702,7 @@ function App() {
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                 <span className="badge badge-liberado" style={{ fontSize: '0.9rem', padding: '0.6rem 1.2rem', display: 'flex', alignItems: 'center', gap: '0.4rem', border: '1px solid #10b981', background: 'rgba(16, 185, 129, 0.15)', color: '#059669', boxShadow: '0 2px 4px rgba(16, 185, 129, 0.1)' }}>
-                  <Award size={16} strokeWidth={2} /> Camiones Registrados: {camionesRegistrados.length}
+                  <Award size={16} strokeWidth={2} /> Camiones Registrados: {conteoLiberados}
                 </span>
                 <button 
                   className="btn btn-primary" 
