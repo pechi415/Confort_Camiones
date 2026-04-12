@@ -48,6 +48,8 @@ function App() {
   const [usuarioEditando, setUsuarioEditando] = useState(null);
   const [selectedReport, setSelectedReport] = useState(null); // Para el Modal de detalles técnicos
   const [camionEditando, setCamionEditando] = useState(null); // Para el Modal de edición rápida camión
+  const [selectedDanosEdit, setSelectedDanosEdit] = useState({});
+  const [observacionesEdit, setObservacionesEdit] = useState({});
 
   // Algoritmo de Inteligencia Básica para auto-completar el username corporativo (Sin colisiones)
   const generarAliasBase = (nombreCompleto, bdActual) => {
@@ -219,6 +221,86 @@ function App() {
     setCamionesRegistrados(prev => prev.map(c => c.id === camionEditando.id ? camionEditando : c));
     setCamionEditando(null);
     alert("✅ Cambios guardados en la nube.");
+  };
+
+  const prepararEdicion = (camion) => {
+    const danos = {};
+    const obs = {};
+    if (camion.fallas) {
+      const parts = camion.fallas.split(', ');
+      parts.forEach(p => {
+        const match = p.match(/^(.*?)(?:\s\((.*?)\))?$/);
+        if (match) {
+          const nombre = match[1];
+          const comentario = match[2];
+          const fallaObj = fallas.find(f => f.nombre === nombre);
+          if (fallaObj) {
+            danos[fallaObj.id] = true;
+            if (comentario) obs[fallaObj.id] = comentario;
+          }
+        }
+      });
+    }
+    setSelectedDanosEdit(danos);
+    setObservacionesEdit(obs);
+    setCamionEditando(camion);
+  };
+
+  const handleDanoToggleEdit = (id) => {
+    setSelectedDanosEdit(prev => ({ ...prev, [id]: !prev[id] }));
+  };
+
+  const handleObsChangeEdit = (id, text) => {
+    setObservacionesEdit(prev => ({ ...prev, [id]: text }));
+  };
+
+  const guardarEdicionAvanzada = async () => {
+    if (!camionEditando) return;
+
+    // Recalcular Prioridad e Impacto
+    let nuevoImpacto = 0;
+    const itemsFallas = [];
+    
+    Object.keys(selectedDanosEdit).forEach(id => {
+      if (selectedDanosEdit[id]) {
+        const fallaObj = fallas.find(f => f.id === id);
+        if (fallaObj) {
+          nuevoImpacto += fallaObj.impacto;
+          const obs = observacionesEdit[id] ? ` (${observacionesEdit[id]})` : '';
+          itemsFallas.push(`${fallaObj.nombre}${obs}`);
+        }
+      }
+    });
+
+    const nuevaAtencion = nuevoImpacto > 50 ? 'CRÍTICA' : nuevoImpacto > 20 ? 'ALTA' : 'NORMAL';
+    const nuevaFallasStr = itemsFallas.join(', ');
+
+    const { error } = await supabase.from('camiones').update({
+      flota: camionEditando.flota,
+      operador: camionEditando.operador,
+      mina: camionEditando.mina,
+      grupo: camionEditando.grupo,
+      atencion: nuevaAtencion,
+      fallas: nuevaFallasStr,
+      puntos: nuevoImpacto
+    }).eq('id', camionEditando.id);
+
+    if (error) return alert("Error al actualizar: " + error.message);
+
+    // Actualizar estado local
+    setCamionesRegistrados(prev => prev.map(c => c.id === camionEditando.id ? {
+      ...c,
+      flota: camionEditando.flota,
+      operador: camionEditando.operador,
+      mina: camionEditando.mina,
+      grupo: camionEditando.grupo,
+      atencion: nuevaAtencion,
+      fallas: nuevaFallasStr,
+      puntos: nuevoImpacto
+    } : c));
+
+    setCamionEditando(null);
+    alert("✅ Edición avanzada guardada y prioridad recalculada.");
   };
 
   const handleDragOver = (e) => {
@@ -570,7 +652,7 @@ function App() {
                           <div style={{ display: 'flex', justifyContent: 'center', gap: '0.6rem' }}>
                             {(session?.role?.toLowerCase() === 'admin' || session?.role?.toLowerCase() === 'supervisor' || session?.rol?.toLowerCase() === 'admin' || session?.rol?.toLowerCase() === 'supervisor') && (
                               <button 
-                                onClick={() => setCamionEditando(camion)} 
+                                onClick={() => prepararEdicion(camion)} 
                                 className="btn-action btn-action-edit"
                                 title="Editar Ficha"
                               >
@@ -1363,7 +1445,7 @@ function App() {
           </div>
         )}
 
-        {/* Modal de Edición Rápida de Camión (Admin/Supervisor) */}
+        {/* Modal de Edición Rápida Avanzada de Camión (Admin/Supervisor) */}
         {camionEditando && (
           <div 
             className="fade-in" 
@@ -1382,34 +1464,50 @@ function App() {
             <div 
               className="card" 
               style={{ 
-                maxWidth: '450px', 
+                maxWidth: '600px', 
                 width: '100%', 
                 padding: '2rem',
                 border: '1px solid rgba(255,255,255,0.4)',
-                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
+                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+                maxHeight: '90vh',
+                overflowY: 'auto'
               }}
             >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', borderBottom: '1px solid #f1f5f9', paddingBottom: '1rem' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
-                  <Edit3 size={20} color="var(--primary-red)" />
-                  <h3 style={{ margin: 0, color: 'var(--primary-black)' }}>Corregir Datos del Camión</h3>
+                  <Edit3 size={24} color="var(--primary-red)" />
+                  <h3 style={{ margin: 0, color: 'var(--primary-black)' }}>Edición Técnica del Camión</h3>
                 </div>
                 <button onClick={() => setCamionEditando(null)} style={{ background: 'transparent', border: 'none', color: '#9ca3af', cursor: 'pointer', fontSize: '1.5rem' }}>×</button>
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
-                <div className="input-group">
-                   <label className="input-label">Número de Flota (Debe iniciar con 2)</label>
-                   <input 
-                     type="text" 
-                     className="input-field" 
-                     value={camionEditando.flota} 
-                     onChange={e => setCamionEditando({...camionEditando, flota: e.target.value.replace(/\D/g, '').slice(0,4)})} 
-                   />
+                {/* Primera Fila: Flota y Operador */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                  <div className="input-group" style={{ marginBottom: 0 }}>
+                     <label className="input-label">Número de Flota</label>
+                     <input 
+                       type="text" 
+                       className="input-field" 
+                       value={camionEditando.flota} 
+                       onChange={e => setCamionEditando({...camionEditando, flota: e.target.value.replace(/\D/g, '').slice(0,4)})} 
+                     />
+                  </div>
+                  <div className="input-group" style={{ marginBottom: 0 }}>
+                     <label className="input-label">Nombre del Operador</label>
+                     <input 
+                       type="text" 
+                       className="input-field" 
+                       value={camionEditando.operador || ''} 
+                       onChange={e => setCamionEditando({...camionEditando, operador: e.target.value})} 
+                       placeholder="Nombre del conductor..."
+                     />
+                  </div>
                 </div>
 
+                {/* Segunda Fila: Mina y Grupo */}
                 <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                  <div className="input-group">
+                  <div className="input-group" style={{ marginBottom: 0 }}>
                     <label className="input-label">Mina</label>
                     <select 
                       className="input-field" 
@@ -1420,7 +1518,7 @@ function App() {
                       <option value="ED">ED</option>
                     </select>
                   </div>
-                  <div className="input-group">
+                  <div className="input-group" style={{ marginBottom: 0 }}>
                     <label className="input-label">Grupo</label>
                     <select 
                       className="input-field" 
@@ -1434,22 +1532,49 @@ function App() {
                   </div>
                 </div>
 
-                <div className="input-group">
-                  <label className="input-label">Prioridad de Atención</label>
-                  <select 
-                    className="input-field" 
-                    value={camionEditando.atencion} 
-                    onChange={e => setCamionEditando({...camionEditando, atencion: e.target.value})}
-                  >
-                    <option value="NORMAL">Normal</option>
-                    <option value="ALTA">Alta</option>
-                    <option value="CRÍTICA">Crítica</option>
-                  </select>
+                {/* Sección de Fallas Detalladas */}
+                <div style={{ marginTop: '0.5rem' }}>
+                  <label className="input-label">Checklist de Daños y Fallas (Actualizar Diagnóstico):</label>
+                  <div style={{ 
+                    maxHeight: '250px', 
+                    overflowY: 'auto', 
+                    background: '#f8fafc', 
+                    padding: '1rem', 
+                    borderRadius: '8px', 
+                    border: '1px solid #e2e8f0',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '0.6rem'
+                  }}>
+                    {fallas.map(falla => (
+                      <div key={falla.id} style={{ borderBottom: '1px solid #edf2f7', paddingBottom: '0.6rem' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
+                           <input 
+                             type="checkbox" 
+                             checked={!!selectedDanosEdit[falla.id]}
+                             onChange={() => handleDanoToggleEdit(falla.id)}
+                           />
+                           <span style={{ fontSize: '0.9rem', flex: 1 }}>{falla.nombre}</span>
+                           <span style={{ fontSize: '0.7rem', color: '#64748b' }}>{falla.impacto} pts</span>
+                        </div>
+                        {selectedDanosEdit[falla.id] && (
+                          <input 
+                            type="text"
+                            className="input-field"
+                            style={{ padding: '0.3rem 0.6rem', fontSize: '0.8rem', marginTop: '0.4rem', marginLeft: '1.8rem', width: '90%' }}
+                            placeholder="Añadir comentario técnico..."
+                            value={observacionesEdit[falla.id] || ''}
+                            onChange={(e) => handleObsChangeEdit(falla.id, e.target.value)}
+                          />
+                        )}
+                      </div>
+                    ))}
+                  </div>
                 </div>
 
-                <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
-                  <button className="btn btn-secondary" style={{ flex: 1 }} onClick={() => setCamionEditando(null)}>Descartar</button>
-                  <button className="btn btn-primary" style={{ flex: 2, background: 'var(--primary-red)', borderColor: 'var(--primary-red)' }} onClick={guardarEdicionCamion}>Guardar en la Nube</button>
+                <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem', position: 'sticky', bottom: 0, background: 'white', paddingTop: '1rem', borderTop: '1px solid #f1f5f9' }}>
+                  <button className="btn btn-secondary" style={{ flex: 1 }} onClick={() => setCamionEditando(null)}>Cancelar</button>
+                  <button className="btn btn-primary" style={{ flex: 2, background: 'var(--primary-red)', borderColor: 'var(--primary-red)' }} onClick={guardarEdicionAvanzada}>Actualizar y Recalcular Prioridad</button>
                 </div>
               </div>
             </div>
