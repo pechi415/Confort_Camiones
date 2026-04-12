@@ -38,6 +38,7 @@ function App() {
   const [isCreandoUsuario, setIsCreandoUsuario] = useState(false);
   const [nuevoUsuarioParams, setNuevoUsuarioParams] = useState({ nombre: '', username: '', password: 'con123', mina: 'PB', rol: 'supervisor', estado: 'Activo' });
   const [usuarioEditando, setUsuarioEditando] = useState(null);
+  const [selectedReport, setSelectedReport] = useState(null); // Para el Modal de detalles técnicos
 
   // Algoritmo de Inteligencia Básica para auto-completar el username corporativo (Sin colisiones)
   const generarAliasBase = (nombreCompleto, bdActual) => {
@@ -499,12 +500,20 @@ function App() {
                   <tbody>
                     {camionesRegistrados.filter(c => c.estado !== 'liberado').slice(0, 5).map(camion => (
                       <tr key={camion.id}>
-                        <td><strong style={{ fontSize: '1.1rem' }}>{camion.flota}</strong></td>
                         <td>
-                          {camion.mina}<br/>
-                          <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontStyle: 'italic' }}>
-                            {camion.fallas && camion.fallas.length > 30 ? camion.fallas.substring(0, 30) + '...' : camion.fallas}
-                          </span>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
+                            <strong style={{ fontSize: '1.1rem' }}>{camion.flota}</strong>
+                            <button 
+                              onClick={() => setSelectedReport(camion)}
+                              style={{ background: 'transparent', border: 'none', color: '#3b82f6', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
+                              title="Ver Reporte Técnico"
+                            >
+                              <FileText size={16} />
+                            </button>
+                          </div>
+                        </td>
+                        <td>
+                          {camion.mina}
                         </td>
                         <td>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
@@ -612,21 +621,25 @@ function App() {
                         <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>
                           Ingreso: {camion.time}
                         </div>
-                        
-                        {/* Detalle Técnico del Reporte */}
-                        <div style={{ 
-                          fontSize: '0.75rem', 
-                          background: 'rgba(255,255,255,0.4)', 
-                          padding: '0.6rem', 
-                          borderRadius: '6px', 
-                          border: '1px solid rgba(0,0,0,0.05)',
-                          marginBottom: '0.8rem',
-                          maxHeight: '80px',
-                          overflowY: 'auto'
-                        }}>
-                          <span style={{ fontWeight: 'bold', display: 'block', marginBottom: '0.2rem', color: 'var(--primary-black)' }}>📋 Reporte de Daños:</span>
-                          {camion.fallas || 'Sin descripción detallada.'}
-                        </div>
+                        {/* Botón de Diagnóstico para Móviles / Limpieza Visual */}
+                        <button 
+                          className="btn btn-secondary"
+                          onClick={() => setSelectedReport(camion)}
+                          style={{ 
+                            width: '100%', 
+                            padding: '0.5rem', 
+                            fontSize: '0.75rem', 
+                            marginBottom: '0.8rem',
+                            display: 'flex',
+                            alignItems: 'center',
+                            justifyContent: 'center',
+                            gap: '0.4rem',
+                            border: '1px solid #e5e7eb',
+                            background: '#f9fafb'
+                          }}
+                        >
+                          <MonitorCheck size={14} /> Ver Diagnóstico
+                        </button>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                           <span style={{ fontSize: '0.75rem', fontWeight: 'bold', color: '#6b7280' }}>Prioridad:</span>
                           <span className="badge" style={{ 
@@ -1201,6 +1214,78 @@ function App() {
           </div>
         )}
 
+
+        {/* Modal de Detalles Técnicos (Global) */}
+        {selectedReport && (
+          <div 
+            className="fade-in" 
+            style={{ 
+              position: 'fixed', 
+              top: 0, left: 0, right: 0, bottom: 0, 
+              backgroundColor: 'rgba(0,0,0,0.4)', 
+              backdropFilter: 'blur(10px)',
+              zIndex: 1000, 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center',
+              padding: '1rem' 
+            }}
+            onClick={() => setSelectedReport(null)}
+          >
+            <div 
+              className="card" 
+              style={{ 
+                maxWidth: '500px', 
+                width: '100%', 
+                margin: 0, 
+                position: 'relative', 
+                boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04)',
+                background: 'rgba(255, 255, 255, 0.95)',
+                border: '1px solid rgba(255, 255, 255, 0.3)'
+              }}
+              onClick={e => e.stopPropagation()}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', borderBottom: '1px solid #f1f5f9', paddingBottom: '1rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
+                  <div style={{ background: '#fef2f2', padding: '0.5rem', borderRadius: '10px', color: '#ef4444' }}>
+                    <Wrench size={24} />
+                  </div>
+                  <div>
+                    <h3 style={{ margin: 0, color: 'var(--primary-black)' }}>Ficha Técnica #{selectedReport.flota}</h3>
+                    <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-muted)' }}>Mina {selectedReport.mina} - Grupo {selectedReport.grupo || 'N/A'}</p>
+                  </div>
+                </div>
+                <button onClick={() => setSelectedReport(null)} style={{ background: 'transparent', border: 'none', color: '#9ca3af', cursor: 'pointer', fontSize: '1.5rem' }}>×</button>
+              </div>
+
+              <div style={{ marginBottom: '1.5rem' }}>
+                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 'bold', color: '#6b7280', marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Descripción de Fallas y Comentarios:</label>
+                <div style={{ background: '#f8fafc', padding: '1.2rem', borderRadius: '8px', border: '1px solid #e2e8f0', color: '#1e293b', lineHeight: '1.6', fontSize: '0.95rem' }}>
+                  {selectedReport.fallas || 'No se registraron fallas específicas durante el reporte inicial.'}
+                </div>
+              </div>
+
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
+                <div style={{ background: '#f0f9ff', padding: '1rem', borderRadius: '8px', border: '1px solid #bae6fd' }}>
+                   <span style={{ display: 'block', fontSize: '0.7rem', color: '#0369a1', fontWeight: 'bold' }}>RESPONSABLE:</span>
+                   <span style={{ fontSize: '0.85rem', color: '#0c4a6e' }}>{selectedReport.operador || 'No asignado'}</span>
+                </div>
+                <div style={{ background: '#fdf2f8', padding: '1rem', borderRadius: '8px', border: '1px solid #fbcfe8' }}>
+                   <span style={{ display: 'block', fontSize: '0.7rem', color: '#be185d', fontWeight: 'bold' }}>REGISTRO:</span>
+                   <span style={{ fontSize: '0.85rem', color: '#831843' }}>{selectedReport.time}</span>
+                </div>
+              </div>
+
+              <button 
+                className="btn btn-primary" 
+                style={{ width: '100%', justifyContent: 'center' }} 
+                onClick={() => setSelectedReport(null)}
+              >
+                Cerrar Ficha Técnica
+              </button>
+            </div>
+          </div>
+        )}
       </main>
     </div>
   );
