@@ -333,19 +333,10 @@ function App() {
     );
   }
 
-  // Historial Mock Data & Filters
-  const registrosHistoricos = [
-    { id: 101, flota: '2410', fallas: 'Golpe Tolva, Ruido', ingreso: '10 Feb 2026', salida: '12 Feb 2026', ciclo: '48 horas', operador: 'Juan Perez', mina: 'PB' },
-    { id: 102, flota: '2305', fallas: 'Transmisión modular', ingreso: '08 Feb 2026', salida: '11 Feb 2026', ciclo: '72 horas', operador: 'Carlos Díaz', mina: 'ED' },
-    { id: 103, flota: '2777', fallas: 'Nose Cone, Suspensión', ingreso: '05 Feb 2026', salida: '09 Feb 2026', ciclo: '96 horas', operador: 'Pedro Gómez', mina: 'PB' },
-    { id: 104, flota: '2100', fallas: 'Varillaje dirección', ingreso: '04 Feb 2026', salida: '05 Feb 2026', ciclo: '24 horas', operador: 'Andrés Gil', mina: 'ED' },
-    { id: 105, flota: '2190', fallas: 'Hueso de perro (Barra)', ingreso: '01 Feb 2026', salida: '08 Feb 2026', ciclo: '168 horas (Terceros)', operador: 'M. Martinez', mina: 'PB' }
-  ];
-  
-  const registrosFiltrados = registrosHistoricos.filter(r => {
+  const registrosFiltrados = camionesRegistrados.filter(r => {
     return r.flota.includes(filtroFlota) && 
            (filtroMina === '' || r.mina === filtroMina) && 
-           r.salida.toLowerCase().includes(filtroMes.toLowerCase());
+           r.time.toLowerCase().includes(filtroMes.toLowerCase());
   });
 
   return (
@@ -473,42 +464,26 @@ function App() {
                     </tr>
                   </thead>
                   <tbody>
-                    <tr>
-                      <td><strong style={{ fontSize: '1.1rem' }}>2554</strong></td>
-                      <td>PB - Grupo 2</td>
-                      <td>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
-                          <Siren size={20} color="#ef4444" strokeWidth={2} />
-                          <strong>CRÍTICA</strong>
-                        </div>
-                      </td>
-                      <td><span className="badge badge-garantia">Garantía</span></td>
-                      <td>Hoy, 08:30 AM</td>
-                    </tr>
-                    <tr>
-                      <td><strong style={{ fontSize: '1.1rem' }}>2198</strong></td>
-                      <td>ED - Grupo 1</td>
-                      <td>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
-                          <AlertTriangle size={20} color="var(--secondary-yellow)" strokeWidth={2} />
-                          <strong>ALTA</strong>
-                        </div>
-                      </td>
-                      <td><span className="badge badge-evaluado">Evaluado</span></td>
-                      <td>Ayer, 14:15 PM</td>
-                    </tr>
-                    <tr>
-                      <td><strong style={{ fontSize: '1.1rem' }}>2603</strong></td>
-                      <td>PB - Grupo 3</td>
-                      <td>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
-                          <AlertTriangle size={20} color="var(--secondary-yellow)" strokeWidth={2} />
-                          <strong>ALTA</strong>
-                        </div>
-                      </td>
-                      <td><span className="badge badge-propuesto">Propuesto</span></td>
-                      <td>Ayer, 16:40 PM</td>
-                    </tr>
+                    {camionesRegistrados.slice(0, 5).map(camion => (
+                      <tr key={camion.id}>
+                        <td><strong style={{ fontSize: '1.1rem' }}>{camion.flota}</strong></td>
+                        <td>{camion.mina}</td>
+                        <td>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
+                            {camion.atencion === 'CRÍTICA' && <><Siren size={20} color="#ef4444" strokeWidth={2} /><strong>CRÍTICA</strong></>}
+                            {camion.atencion === 'ALTA' && <><AlertTriangle size={20} color="var(--secondary-yellow)" strokeWidth={2} /><strong>ALTA</strong></>}
+                            {camion.atencion === 'NORMAL' && <><CheckCircle2 size={20} color="#10b981" strokeWidth={2} /><strong>NORMAL</strong></>}
+                          </div>
+                        </td>
+                        <td><span className={`badge badge-${camion.estado}`}>{camion.estado.toUpperCase()}</span></td>
+                        <td>{camion.time}</td>
+                      </tr>
+                    ))}
+                    {camionesRegistrados.length === 0 && (
+                      <tr>
+                        <td colSpan="5" style={{ textAlign: 'center', color: '#6b7280', padding: '2rem' }}>No hay camiones priorizados actualmente.</td>
+                      </tr>
+                    )}
                   </tbody>
                 </table>
               </div>
@@ -668,7 +643,7 @@ function App() {
               </div>
               <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                 <span className="badge badge-liberado" style={{ fontSize: '0.9rem', padding: '0.6rem 1.2rem', display: 'flex', alignItems: 'center', gap: '0.4rem', border: '1px solid #10b981', background: 'rgba(16, 185, 129, 0.15)', color: '#059669', boxShadow: '0 2px 4px rgba(16, 185, 129, 0.1)' }}>
-                  <Award size={16} strokeWidth={2} /> Camiones Reparados: 14
+                  <Award size={16} strokeWidth={2} /> Camiones Registrados: {camionesRegistrados.length}
                 </span>
                 <button 
                   className="btn btn-primary" 
@@ -735,16 +710,11 @@ function App() {
                   {registrosFiltrados.length > 0 ? registrosFiltrados.map(registro => (
                     <tr key={registro.id}>
                       <td><strong style={{ fontSize: '1.1rem', color: 'var(--primary-black)' }}>{registro.flota}</strong></td>
-                      <td style={{ fontSize: '0.9rem', color: 'var(--text-main)', maxWidth: '200px' }}>{registro.fallas}</td>
-                      <td style={{ fontSize: '0.85rem' }}>{registro.ingreso}</td>
-                      <td style={{ fontSize: '0.85rem', fontWeight: 'bold' }}>{registro.salida}</td>
-                      <td>
-                        <span className="badge" style={{ background: '#e5e7eb', color: '#4b5563', padding: '0.3rem 0.6rem' }}>{registro.ciclo}</span>
-                      </td>
-                      <td style={{ fontSize: '0.85rem', lineHeight: '1.4' }}>
-                        {registro.operador}<br/>
-                        <span style={{ color: 'var(--text-muted)' }}>Mina {registro.mina}</span>
-                      </td>
+                      <td style={{ fontSize: '0.9rem', color: 'var(--text-main)', maxWidth: '200px' }}>{registro.fallas || 'N/A'}</td>
+                      <td style={{ fontSize: '0.85rem' }}>{registro.time}</td>
+                      <td style={{ fontSize: '0.85rem', fontWeight: 'bold' }}>-</td>
+                      <td style={{ fontSize: '0.85rem' }}>Calculando...</td>
+                      <td style={{ fontSize: '0.85rem' }}>{registro.operador} / {registro.mina}</td>
                       <td>
                         <button 
                           className="btn btn-secondary" 
