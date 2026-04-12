@@ -500,7 +500,12 @@ function App() {
                     {camionesRegistrados.slice(0, 5).map(camion => (
                       <tr key={camion.id}>
                         <td><strong style={{ fontSize: '1.1rem' }}>{camion.flota}</strong></td>
-                        <td>{camion.mina}</td>
+                        <td>
+                          {camion.mina}<br/>
+                          <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', fontStyle: 'italic' }}>
+                            {camion.fallas && camion.fallas.length > 30 ? camion.fallas.substring(0, 30) + '...' : camion.fallas}
+                          </span>
+                        </td>
                         <td>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
                             {camion.atencion === 'CRÍTICA' && <><Siren size={20} color="#ef4444" strokeWidth={2} /><strong>CRÍTICA</strong></>}
@@ -606,6 +611,21 @@ function App() {
                         </div>
                         <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>
                           Ingreso: {camion.time}
+                        </div>
+                        
+                        {/* Detalle Técnico del Reporte */}
+                        <div style={{ 
+                          fontSize: '0.75rem', 
+                          background: 'rgba(255,255,255,0.4)', 
+                          padding: '0.6rem', 
+                          borderRadius: '6px', 
+                          border: '1px solid rgba(0,0,0,0.05)',
+                          marginBottom: '0.8rem',
+                          maxHeight: '80px',
+                          overflowY: 'auto'
+                        }}>
+                          <span style={{ fontWeight: 'bold', display: 'block', marginBottom: '0.2rem', color: 'var(--primary-black)' }}>📋 Reporte de Daños:</span>
+                          {camion.fallas || 'Sin descripción detallada.'}
                         </div>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                           <span style={{ fontSize: '0.75rem', fontWeight: 'bold', color: '#6b7280' }}>Prioridad:</span>
@@ -1147,13 +1167,19 @@ function App() {
                 onClick={async () => {
                     const atencionLabel = totalImpacto > 50 ? 'CRÍTICA' : totalImpacto > 20 ? 'ALTA' : 'NORMAL';
                     
+                    const fallasDetalladas = Object.keys(selectedDanos).map(id => {
+                      const nombreFalla = fallas.find(f => f.id === id)?.nombre;
+                      const comentario = observaciones[id] ? ` (${observaciones[id]})` : '';
+                      return `${nombreFalla}${comentario}`;
+                    }).join(', ');
+
                     const nuevoCamion = {
                       flota: flota,
                       operador: operador,
                       mina: mina,
                       estado: 'espera',
                       atencion: atencionLabel,
-                      fallas: Object.keys(selectedDanos).map(id => fallas.find(f => f.id === id)?.nombre).join(', '),
+                      fallas: fallasDetalladas,
                       time: new Date().toLocaleString(),
                       puntos: totalImpacto
                     };
