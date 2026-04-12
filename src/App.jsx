@@ -794,9 +794,9 @@ function App() {
                     <th>Flota</th>
                     <th>Fallas Reparadas</th>
                     <th>Ingreso a Fila</th>
-                    <th>Aprobado Por</th>
                     <th>Tiempo de Ciclo</th>
                     <th>Operador / Mina</th>
+                    <th>Aprobado Por</th>
                     <th>Reporte</th>
                   </tr>
                 </thead>
@@ -806,6 +806,8 @@ function App() {
                       <td><strong style={{ fontSize: '1.1rem', color: 'var(--primary-black)' }}>{registro.flota}</strong></td>
                       <td style={{ fontSize: '0.9rem', color: 'var(--text-main)', maxWidth: '200px' }}>{registro.fallas || 'N/A'}</td>
                       <td style={{ fontSize: '0.85rem' }}>{registro.time}</td>
+                      <td style={{ fontSize: '0.85rem' }}>Calculando...</td>
+                      <td style={{ fontSize: '0.85rem' }}>{registro.operador} / {registro.mina} - G{registro.grupo || '?'}</td>
                       <td>
                         <div style={{ display: 'flex', gap: '0.3rem' }}>
                           {registro.aprobado_g1 && <span className="badge" style={{ background: '#dcfce7', color: '#166534', fontSize: '0.7rem', padding: '0.2rem 0.5rem' }}>G1</span>}
@@ -814,8 +816,6 @@ function App() {
                           {(!registro.aprobado_g1 && !registro.aprobado_g2 && !registro.aprobado_g3) && <span style={{ color: '#9ca3af', fontSize: '0.75rem' }}>Sin V.B</span>}
                         </div>
                       </td>
-                      <td style={{ fontSize: '0.85rem' }}>Calculando...</td>
-                      <td style={{ fontSize: '0.85rem' }}>{registro.operador} / {registro.mina} - G{registro.grupo || '?'}</td>
                       <td>
                         <button 
                           className="btn btn-secondary" 
