@@ -513,7 +513,7 @@ function App() {
                           </div>
                         </td>
                         <td>
-                          {camion.mina}
+                          {camion.mina} / G{camion.grupo || '?'}
                         </td>
                         <td>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
@@ -808,7 +808,7 @@ function App() {
                       <td style={{ fontSize: '0.85rem' }}>{registro.time}</td>
                       <td style={{ fontSize: '0.85rem', fontWeight: 'bold' }}>-</td>
                       <td style={{ fontSize: '0.85rem' }}>Calculando...</td>
-                      <td style={{ fontSize: '0.85rem' }}>{registro.operador} / {registro.mina}</td>
+                      <td style={{ fontSize: '0.85rem' }}>{registro.operador} / {registro.mina} - G{registro.grupo || '?'}</td>
                       <td>
                         <button 
                           className="btn btn-secondary" 
@@ -1190,6 +1190,8 @@ function App() {
                       flota: flota,
                       operador: operador,
                       mina: mina,
+                      grupo: grupo, // Aseguramos el grupo
+                      supervisor: session.nombre, // Guardamos quién hace el reporte
                       estado: 'espera',
                       atencion: atencionLabel,
                       fallas: fallasDetalladas,
@@ -1267,13 +1269,18 @@ function App() {
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
                 <div style={{ background: '#f0f9ff', padding: '1rem', borderRadius: '8px', border: '1px solid #bae6fd' }}>
-                   <span style={{ display: 'block', fontSize: '0.7rem', color: '#0369a1', fontWeight: 'bold' }}>RESPONSABLE:</span>
-                   <span style={{ fontSize: '0.85rem', color: '#0c4a6e' }}>{selectedReport.operador || 'No asignado'}</span>
+                   <span style={{ display: 'block', fontSize: '0.7rem', color: '#0369a1', fontWeight: 'bold' }}>REPORTE POR (SUPERVISOR):</span>
+                   <span style={{ fontSize: '0.85rem', color: '#0c4a6e', fontWeight: 'bold' }}>{selectedReport.supervisor || 'N/A'}</span>
                 </div>
-                <div style={{ background: '#fdf2f8', padding: '1rem', borderRadius: '8px', border: '1px solid #fbcfe8' }}>
-                   <span style={{ display: 'block', fontSize: '0.7rem', color: '#be185d', fontWeight: 'bold' }}>REGISTRO:</span>
-                   <span style={{ fontSize: '0.85rem', color: '#831843' }}>{selectedReport.time}</span>
+                <div style={{ background: '#f8fafc', padding: '1rem', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
+                   <span style={{ display: 'block', fontSize: '0.7rem', color: '#64748b', fontWeight: 'bold' }}>OPERADOR / CONDUCTOR:</span>
+                   <span style={{ fontSize: '0.85rem', color: '#1e293b' }}>{selectedReport.operador || 'No asignado'}</span>
                 </div>
+              </div>
+
+              <div style={{ background: '#fdf2f8', padding: '0.8rem', borderRadius: '8px', border: '1px solid #fbcfe8', marginBottom: '1.5rem', textAlign: 'center' }}>
+                 <span style={{ fontSize: '0.7rem', color: '#be185d', fontWeight: 'bold', marginRight: '0.5rem' }}>FECHA DE REGISTRO:</span>
+                 <span style={{ fontSize: '0.85rem', color: '#831843' }}>{selectedReport.time}</span>
               </div>
 
               <button 
