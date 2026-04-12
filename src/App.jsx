@@ -228,7 +228,7 @@ function App() {
     }
   };
 
-  const handlePasswordUpdate = (e) => {
+  const handlePasswordUpdate = async (e) => {
     e.preventDefault();
     if (!newPassword || newPassword.length < 5) {
       return alert("La contraseña debe ser de al menos 5 caracteres de seguridad.");
@@ -237,13 +237,15 @@ function App() {
       return alert("⚠️ Las contraseñas no coinciden. Por favor, asegúrate de escribirlas idénticas.");
     }
 
-    // Actualizamos al usuario internamente
-    setDbUsuarios(prev => prev.map(u => 
-      u.id === pendingPasswordChangeUser.id ? { ...u, password: newPassword, firstTime: false } : u
-    ));
+    // Actualizamos al usuario en la Nube
+    const { error } = await supabase.from('usuarios')
+      .update({ password: newPassword, firstTime: false })
+      .eq('id', pendingPasswordChangeUser.id);
+    
+    if (error) return alert("Error al actualizar contraseña: " + error.message);
 
     // Se realiza el setSession para pasar adelante
-    const usuarioActivo = pendingPasswordChangeUser;
+    const usuarioActivo = { ...pendingPasswordChangeUser, password: newPassword, firstTime: false };
     const nuevaSesion = {
       user: { username: usuarioActivo.username },
       role: usuarioActivo.rol,
@@ -993,8 +995,10 @@ function App() {
                           }}>
                               <Edit3 size={15} />
                           </button>
-                          <button title="Resetear Clave" className="btn btn-secondary" style={{ padding: '0.4rem 0.6rem', fontSize: '1rem', border: '1px solid #10b981', color: '#10b981', display: 'flex', alignItems: 'center' }} onClick={() => {
+                          <button title="Resetear Clave" className="btn btn-secondary" style={{ padding: '0.4rem 0.6rem', fontSize: '1rem', border: '1px solid #10b981', color: '#10b981', display: 'flex', alignItems: 'center' }} onClick={async () => {
                             if(window.confirm(`¿Forzar a ${u.nombre} a actualizar su contraseña? Se le pedirá cambio obligatorio cuando intente loguearse nuevamente.`)) {
+                              const { error } = await supabase.from('usuarios').update({ password: 'con123', firstTime: true }).eq('id', u.id);
+                              if (error) return alert('Error al resetear clave: ' + error.message);
                               setDbUsuarios(dbUsuarios.map(x => x.id === u.id ? {...x, password: 'con123', firstTime: true} : x));
                               alert(`Se ha suspendido temporalmente por reseteo a ${u.nombre}. Usará clave estándar "con123".`);
                             }
