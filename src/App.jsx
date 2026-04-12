@@ -571,21 +571,19 @@ function App() {
                             {(session?.role?.toLowerCase() === 'admin' || session?.role?.toLowerCase() === 'supervisor' || session?.rol?.toLowerCase() === 'admin' || session?.rol?.toLowerCase() === 'supervisor') && (
                               <button 
                                 onClick={() => setCamionEditando(camion)} 
-                                className="btn-icon" 
-                                style={{ color: '#4f46e5', background: '#eef2ff' }}
+                                className="btn-action btn-action-edit"
                                 title="Editar Ficha"
                               >
-                                <Edit3 size={16} />
+                                <Edit3 size={18} />
                               </button>
                             )}
                             {(session?.role?.toLowerCase() === 'admin' || session?.rol?.toLowerCase() === 'admin') && (
                               <button 
                                 onClick={() => eliminarCamion(camion.id)} 
-                                className="btn-icon" 
-                                style={{ color: '#ef4444', background: '#fef2f2' }}
+                                className="btn-action btn-action-delete"
                                 title="Eliminar Registro"
                               >
-                                <Trash2 size={16} />
+                                <Trash2 size={18} />
                               </button>
                             )}
                           </div>
