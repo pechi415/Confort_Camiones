@@ -1,15 +1,17 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import './index.css';
 import { LayoutDashboard, FileText, Blocks, ClipboardList, ShieldAlert, MonitorCheck, PlusCircle, Trash2, Edit3, Settings, Shield, Unlock, LockKeyhole, Lock, RefreshCcw, Users, AlertTriangle, CheckCircle2, Wrench, Activity, Truck, Search, Hourglass, SearchCheck, Award, FileSpreadsheet, MapPin, Calendar, Siren } from 'lucide-react';
 
-// Importación simulada de Supabase (por conectar credenciales en supabaseClient.js)
-// import { supabase } from './supabaseClient';
+import { supabase } from './supabaseClient';
 
 function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
 
   // Supabase Auth Session State
-  const [session, setSession] = useState(null); // null = No Logueado
+  const [session, setSession] = useState(() => {
+    const saved = localStorage.getItem('drummond_session');
+    return saved ? JSON.parse(saved) : null;
+  }); // null = No Logueado
   const [pendingPasswordChangeUser, setPendingPasswordChangeUser] = useState(null);
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -32,11 +34,7 @@ function App() {
   const [filtroMes, setFiltroMes] = useState('');
 
   // ---------- MÓDULO CRUD DE USUARIOS ----------
-  const [dbUsuarios, setDbUsuarios] = useState([
-    { id: 1, nombre: 'Alexander Francisco Ramírez Córdoba', username: 'aramirez', password: 'con123', rol: 'admin', mina: 'Ambas', creado: '01 Abr 2026', firstTime: false, estado: 'Activo' },
-    { id: 2, nombre: 'Juan Perez', username: 'jperez', password: 'con123', rol: 'supervisor', mina: 'PB', creado: '05 Abr 2026', firstTime: true, estado: 'Activo' },
-    { id: 3, nombre: 'Carlos Diaz', username: 'cdiazed', password: 'con123', rol: 'supervisor', mina: 'ED', creado: '10 Abr 2026', firstTime: false, estado: 'Inactivo' }
-  ]);
+  const [dbUsuarios, setDbUsuarios] = useState([]);
   const [isCreandoUsuario, setIsCreandoUsuario] = useState(false);
   const [nuevoUsuarioParams, setNuevoUsuarioParams] = useState({ nombre: '', username: '', password: 'con123', mina: 'PB', rol: 'supervisor', estado: 'Activo' });
   const [usuarioEditando, setUsuarioEditando] = useState(null);
@@ -104,23 +102,30 @@ function App() {
 
   const isFlotaValid = flota.length === 4 && flota.startsWith('2');
 
-  // Kanban State (Mock Data)
-  const [camionesRegistrados, setCamionesRegistrados] = useState([
-    { id: 1, flota: '2554', estado: 'garantia', atencion: 'CRÍTICA', puntos: 130, time: 'Hace 1h' },
-    { id: 2, flota: '2198', estado: 'evaluados', atencion: 'ALTA', puntos: 55, time: 'Ayer' },
-    { id: 3, flota: '2603', estado: 'espera', atencion: 'ALTA', puntos: 40, time: 'Ayer' },
-    { id: 4, flota: '2001', estado: 'evaluar', atencion: 'NORMAL', puntos: 15, time: 'Hace 2d' },
-    { id: 5, flota: '2999', estado: 'taller', atencion: 'CRÍTICA', puntos: 80, time: 'Hace 3d' },
-    { id: 6, flota: '2800', estado: 'feedback', atencion: 'NORMAL', puntos: 10, time: 'Hoy' }
-  ]);
+  // Kanban State (Nube real Supabase)
+  const [camionesRegistrados, setCamionesRegistrados] = useState([]);
+
+  // FETCH INICIAL AL MONTAR LA APP
+  useEffect(() => {
+    const fetchDatabase = async () => {
+      // 1. Traer Usuarios en segundo plano para el Administrador
+      const { data: usersInfo } = await supabase.from('usuarios').select('*');
+      if (usersInfo) setDbUsuarios(usersInfo);
+
+      // 2. Traer la Pila de Kanban
+      const { data: flotaInfo } = await supabase.from('camiones').select('*');
+      if (flotaInfo) setCamionesRegistrados(flotaInfo);
+    };
+    fetchDatabase();
+  }, [session]); // Recarga si el estado auth cambia.
 
   const kpis = [
-    { id: 'espera', titulo: 'Lista de Espera', icon: <Hourglass strokeWidth={1.5} size={20} />, valor: '12', color: '#9ca3af', subtitulo: 'Pre-Programa' },
-    { id: 'evaluar', titulo: 'Por Evaluar', icon: <Search strokeWidth={1.5} size={20} />, valor: '4', color: 'var(--secondary-blue)', subtitulo: 'En Programa' },
-    { id: 'evaluados', titulo: 'Evaluados', icon: <SearchCheck strokeWidth={1.5} size={20} />, valor: '5', color: '#8b5cf6', subtitulo: 'En Programa' },
-    { id: 'taller', titulo: 'En Taller', icon: <Wrench strokeWidth={1.5} size={20} />, valor: '2', color: 'var(--secondary-yellow)', subtitulo: 'Ejecución' },
-    { id: 'feedback', titulo: 'Feedback', icon: <CheckCircle2 strokeWidth={1.5} size={20} />, valor: '3', color: '#10b981', subtitulo: 'Validación' },
-    { id: 'garantia', titulo: 'Garantía', icon: <ShieldAlert strokeWidth={1.5} size={20} />, valor: '1', color: 'var(--primary-red)', subtitulo: 'Retorno VIP' }
+    { id: 'espera', titulo: 'Lista de Espera', icon: <Hourglass strokeWidth={1.5} size={20} />, valor: camionesRegistrados.filter(c => c.estado === 'espera').length.toString(), color: '#9ca3af', subtitulo: 'Pre-Programa' },
+    { id: 'evaluar', titulo: 'Por Evaluar', icon: <Search strokeWidth={1.5} size={20} />, valor: camionesRegistrados.filter(c => c.estado === 'evaluar').length.toString(), color: 'var(--secondary-blue)', subtitulo: 'En Programa' },
+    { id: 'evaluados', titulo: 'Evaluados', icon: <SearchCheck strokeWidth={1.5} size={20} />, valor: camionesRegistrados.filter(c => c.estado === 'evaluados').length.toString(), color: '#8b5cf6', subtitulo: 'En Programa' },
+    { id: 'taller', titulo: 'En Taller', icon: <Wrench strokeWidth={1.5} size={20} />, valor: camionesRegistrados.filter(c => c.estado === 'taller').length.toString(), color: 'var(--secondary-yellow)', subtitulo: 'Ejecución' },
+    { id: 'feedback', titulo: 'Feedback', icon: <CheckCircle2 strokeWidth={1.5} size={20} />, valor: camionesRegistrados.filter(c => c.estado === 'feedback').length.toString(), color: '#10b981', subtitulo: 'Validación' },
+    { id: 'garantia', titulo: 'Garantía', icon: <ShieldAlert strokeWidth={1.5} size={20} />, valor: camionesRegistrados.filter(c => c.estado === 'garantia').length.toString(), color: 'var(--primary-red)', subtitulo: 'Retorno VIP' }
   ];
 
   const columnasKanban = [
@@ -151,40 +156,45 @@ function App() {
   };
 
   // Lógica Funcional del Módulo de Login
-  const handleLogin = (e) => {
+  const handleLogin = async (e) => {
     e.preventDefault();
     if (usuarioLogin && passwordLogin) {
-      const username = usuarioLogin.toLowerCase().trim();
+      const usernameReq = usuarioLogin.toLowerCase().trim();
       
-      // Mock Autenticación contra BD Local
-      // Se valida la contraseña en un entorno real. Aquí validamos que exista.
-      const usuarioActivo = dbUsuarios.find(u => u.username === username);
+      // Conexión Oficial con Servidor Supabase
+      const { data: usuarioSupabase, error } = await supabase
+        .from('usuarios')
+        .select('*')
+        .eq('username', usernameReq)
+        .eq('password', passwordLogin)
+        .single();
       
-      if (usuarioActivo) {
-        if (usuarioActivo.estado === 'Inactivo') {
-          return alert(`❌ ACCESO DENEGADO: La cuenta "${username}" figura como INACTIVA, consulte con el Administrador.`);
-        }
-
-        if (usuarioActivo.password && usuarioActivo.password !== passwordLogin) {
-          return alert(`❌ Contraseña incorrecta para el usuario "${username}".`);
-        }
-
-        if (usuarioActivo.firstTime) {
-          // Requiere forzar el cambio de clave por políticas operativas
-          setPendingPasswordChangeUser(usuarioActivo);
-          return;
-        }
-
-        setSession({
-          user: { username: username },
-          role: usuarioActivo.rol,
-          mina: usuarioActivo.mina === 'Ambas' || usuarioActivo.mina === 'Global' ? 'Global' : usuarioActivo.mina,
-          nombre: usuarioActivo.nombre
-        });
-        setActiveTab('dashboard'); // Forzar render
-      } else {
-        alert(`❌ Las credenciales del usuario "${username}" no existen o están suspendidas.`);
+      if (error || !usuarioSupabase) {
+        return alert(`❌ Credenciales incorrectas. Verifique el usuario "${usernameReq}" y su contraseña en el servidor de Drummond.`);
       }
+
+      const usuarioActivo = usuarioSupabase;
+
+      if (usuarioActivo.estado === 'Inactivo') {
+        return alert(`❌ ACCESO DENEGADO: La cuenta "${usernameReq}" figura como INACTIVA, consulte con el Administrador del Sistema.`);
+      }
+
+      if (usuarioActivo.firstTime) {
+        // Requiere forzar el cambio de clave por políticas operativas
+        setPendingPasswordChangeUser(usuarioActivo);
+        return;
+      }
+
+      const nuevaSesion = {
+        user: { username: usernameReq },
+        role: usuarioActivo.rol,
+        mina: usuarioActivo.mina === 'Ambas' || usuarioActivo.mina === 'Global' ? 'Global' : usuarioActivo.mina,
+        nombre: usuarioActivo.nombre,
+        id: usuarioActivo.id
+      };
+      setSession(nuevaSesion);
+      localStorage.setItem('drummond_session', JSON.stringify(nuevaSesion));
+      setActiveTab('dashboard'); // Forzar render
     } else {
       alert("Por favor ingrese usuario y contraseña.");
     }
@@ -206,12 +216,15 @@ function App() {
 
     // Se realiza el setSession para pasar adelante
     const usuarioActivo = pendingPasswordChangeUser;
-    setSession({
+    const nuevaSesion = {
       user: { username: usuarioActivo.username },
       role: usuarioActivo.rol,
       mina: usuarioActivo.mina === 'Ambas' || usuarioActivo.mina === 'Global' ? 'Global' : usuarioActivo.mina,
-      nombre: usuarioActivo.nombre
-    });
+      nombre: usuarioActivo.nombre,
+      id: usuarioActivo.id
+    };
+    setSession(nuevaSesion);
+    localStorage.setItem('drummond_session', JSON.stringify(nuevaSesion));
     setActiveTab('dashboard'); // Forzar ir al panel seguro
 
     setPendingPasswordChangeUser(null);
@@ -223,6 +236,7 @@ function App() {
 
   const handleLogout = () => {
     setSession(null);
+    localStorage.removeItem('drummond_session');
     setUsuarioLogin('');
     setPasswordLogin('');
     setPendingPasswordChangeUser(null);
