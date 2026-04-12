@@ -758,11 +758,14 @@ function App() {
                           borderLeft: `4px solid ${camion.atencion === 'CRÍTICA' ? '#ef4444' : camion.atencion === 'ALTA' ? 'var(--secondary-yellow)' : '#10b981'}`
                         }}
                       >
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-                          <strong style={{ fontSize: '1.2rem', color: 'var(--primary-black)' }}>#{camion.flota}</strong>
-                          {camion.atencion === 'CRÍTICA' && <span><Siren size={18} color="#ef4444" strokeWidth={2} /></span>}
-                          {camion.atencion === 'ALTA' && <span><AlertTriangle size={18} color="#eab308" strokeWidth={2} /></span>}
-                          {camion.atencion === 'NORMAL' && <span><CheckCircle2 size={18} color="#10b981" strokeWidth={2} /></span>}
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.4rem' }}>
+                          <Truck size={18} color="var(--primary-red)" />
+                          <strong style={{ fontSize: '1.25rem', color: 'var(--primary-black)', letterSpacing: '-0.5px' }}>{camion.flota}</strong>
+                          <div style={{ marginLeft: 'auto' }}>
+                            {camion.atencion === 'CRÍTICA' && <span><Siren size={18} color="#ef4444" strokeWidth={2} /></span>}
+                            {camion.atencion === 'ALTA' && <span><AlertTriangle size={18} color="#eab308" strokeWidth={2} /></span>}
+                            {camion.atencion === 'NORMAL' && <span><CheckCircle2 size={18} color="#10b981" strokeWidth={2} /></span>}
+                          </div>
                         </div>
                         <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>
                           Ingreso: {camion.time}
@@ -1401,10 +1404,10 @@ function App() {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', borderBottom: '1px solid #f1f5f9', paddingBottom: '1rem' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
                   <div style={{ background: '#fef2f2', padding: '0.5rem', borderRadius: '10px', color: '#ef4444' }}>
-                    <Wrench size={24} />
+                    <Truck size={24} />
                   </div>
                   <div>
-                    <h3 style={{ margin: 0, color: 'var(--primary-black)' }}>Ficha Técnica #{selectedReport.flota}</h3>
+                    <h3 style={{ margin: 0, color: 'var(--primary-black)' }}>Ficha Técnica - {selectedReport.flota}</h3>
                     <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-muted)' }}>Mina {selectedReport.mina} - Grupo {selectedReport.grupo || 'N/A'}</p>
                   </div>
                 </div>
@@ -1478,11 +1481,11 @@ function App() {
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', borderBottom: '1px solid rgba(0,0,0,0.05)', paddingBottom: '1rem' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                   <div style={{ background: 'rgba(227, 25, 55, 0.1)', padding: '0.6rem', borderRadius: '12px' }}>
-                    <Edit3 size={24} color="var(--primary-red)" />
+                    <Truck size={24} color="var(--primary-red)" />
                   </div>
                   <div>
                     <h3 style={{ margin: 0, color: 'var(--primary-black)', fontSize: '1.3rem' }}>Edición del Diagnóstico</h3>
-                    <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-muted)' }}>Corrija fallas y operador para el equipo <b>#{camionEditando.flota}</b></p>
+                    <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-muted)' }}>Corrija fallas y operador para el equipo <b>{camionEditando.flota}</b></p>
                   </div>
                 </div>
                 <button onClick={() => setCamionEditando(null)} style={{ background: 'transparent', border: 'none', color: '#9ca3af', cursor: 'pointer', fontSize: '1.8rem' }}>×</button>
