@@ -36,7 +36,7 @@ function App() {
   // ---------- MÓDULO CRUD DE USUARIOS ----------
   const [dbUsuarios, setDbUsuarios] = useState([]);
   const [isCreandoUsuario, setIsCreandoUsuario] = useState(false);
-  const [nuevoUsuarioParams, setNuevoUsuarioParams] = useState({ nombre: '', username: '', password: 'con123', mina: 'PB', rol: 'supervisor', estado: 'Activo' });
+  const [nuevoUsuarioParams, setNuevoUsuarioParams] = useState({ nombre: '', username: '', password: 'con123', mina: 'PB', role: 'supervisor', estado: 'Activo' });
   const [usuarioEditando, setUsuarioEditando] = useState(null);
   const [selectedReport, setSelectedReport] = useState(null); // Para el Modal de detalles técnicos
   const [camionEditando, setCamionEditando] = useState(null); // Para el Modal de edición rápida camión
@@ -249,7 +249,7 @@ function App() {
 
       const nuevaSesion = {
         user: { username: usernameReq },
-        role: usuarioActivo.rol,
+        role: usuarioActivo.role,
         mina: usuarioActivo.mina === 'Ambas' || usuarioActivo.mina === 'Global' ? 'Global' : usuarioActivo.mina,
         nombre: usuarioActivo.nombre,
         id: usuarioActivo.id
@@ -948,7 +948,7 @@ function App() {
                   </div>
                   <div style={{ flex: '1 1 200px' }}>
                     <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 'bold', marginBottom: '0.3rem' }}>Rol Operativo</label>
-                    <select className="input-field" value={nuevoUsuarioParams.rol} onChange={e => setNuevoUsuarioParams({...nuevoUsuarioParams, rol: e.target.value})}>
+                    <select className="input-field" value={nuevoUsuarioParams.role} onChange={e => setNuevoUsuarioParams({...nuevoUsuarioParams, role: e.target.value})}>
                       <option value="supervisor">Supervisor de Producción</option>
                       <option value="lector">Lector KPI (Auditoría)</option>
                       <option value="admin">Administrador TI</option>
@@ -956,7 +956,7 @@ function App() {
                   </div>
                   <div style={{ flex: '1 1 200px' }}>
                     <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 'bold', marginBottom: '0.3rem' }}>Fijar Mina a Cargo</label>
-                    <select className="input-field" value={nuevoUsuarioParams.mina} onChange={e => setNuevoUsuarioParams({...nuevoUsuarioParams, mina: e.target.value})} disabled={nuevoUsuarioParams.rol === 'admin'}>
+                    <select className="input-field" value={nuevoUsuarioParams.mina} onChange={e => setNuevoUsuarioParams({...nuevoUsuarioParams, mina: e.target.value})} disabled={nuevoUsuarioParams.role === 'admin'}>
                       <option value="PB">Pribbenow (PB)</option>
                       <option value="ED">El Descanso (ED)</option>
                       <option value="Ambas">Ambas Minas (PB/ED)</option>
@@ -967,24 +967,22 @@ function App() {
                   <button className="btn btn-primary" onClick={async () => {
                     if(!nuevoUsuarioParams.username || !nuevoUsuarioParams.nombre) return alert('Por favor, completa nombre y usuario.');
                     
-                    const nuevoUser = { 
-                      nombre: nuevoUsuarioParams.nombre, 
-                      username: nuevoUsuarioParams.username, 
-                      password: 'con123', 
-                      rol: nuevoUsuarioParams.rol, 
-                      mina: nuevoUsuarioParams.rol === 'admin' ? 'Ambas' : nuevoUsuarioParams.mina, 
-                      creado: new Date().toLocaleDateString(), 
-                      firstTime: true, 
-                      estado: nuevoUsuarioParams.estado 
-                    };
+                    const { data, error } = await supabase.from('usuarios').insert([{
+                      nombre: nuevoUsuarioParams.nombre,
+                      username: nuevoUsuarioParams.username,
+                      password: nuevoUsuarioParams.password,
+                      role: nuevoUsuarioParams.role,
+                      mina: nuevoUsuarioParams.mina,
+                      estado: nuevoUsuarioParams.estado,
+                      firstTime: true,
+                      creado: new Date().toLocaleDateString()
+                    }]).select();
 
-                    const { data, error } = await supabase.from('usuarios').insert([nuevoUser]).select();
+                    if (error) return alert("Error al crear usuario: " + error.message);
                     
-                    if (error) return alert('Error al crear usuario: ' + error.message);
-                    
-                    setDbUsuarios([data[0], ...dbUsuarios]);
+                    setDbUsuarios([...dbUsuarios, data[0]]);
                     setIsCreandoUsuario(false);
-                    setNuevoUsuarioParams({ nombre: '', username: '', password: 'con123', mina: 'PB', rol: 'supervisor', estado: 'Activo' });
+                    setNuevoUsuarioParams({ nombre: '', username: '', password: 'con123', mina: 'PB', role: 'supervisor', estado: 'Activo' });
                     alert('✅ Operador ' + nuevoUsuarioParams.nombre + ' admitido exitosamente.');
                   }}>Crear Acreditación</button>
                 </div>
@@ -1009,7 +1007,7 @@ function App() {
                   </div>
                   <div style={{ flex: '1 1 200px' }}>
                     <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 'bold', marginBottom: '0.3rem', color: '#701a75' }}>Ascender o Reasignar Rol</label>
-                    <select className="input-field" value={usuarioEditando.rol} onChange={e => setUsuarioEditando({...usuarioEditando, rol: e.target.value})} style={{ borderColor: '#fbcfe8' }}>
+                    <select className="input-field" value={usuarioEditando.role} onChange={e => setUsuarioEditando({...usuarioEditando, role: e.target.value})} style={{ borderColor: '#fbcfe8' }}>
                       <option value="supervisor">Supervisor de Producción</option>
                       <option value="lector">Lector KPI (Auditoría)</option>
                       <option value="admin">Administrador TI</option>
@@ -1017,7 +1015,7 @@ function App() {
                   </div>
                   <div style={{ flex: '1 1 200px' }}>
                     <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 'bold', marginBottom: '0.3rem', color: '#701a75' }}>Cambiar Mina a Cargo</label>
-                    <select className="input-field" value={usuarioEditando.mina} onChange={e => setUsuarioEditando({...usuarioEditando, mina: e.target.value})} disabled={usuarioEditando.rol === 'admin'} style={{ borderColor: '#fbcfe8' }}>
+                    <select className="input-field" value={usuarioEditando.mina} onChange={e => setUsuarioEditando({...usuarioEditando, mina: e.target.value})} disabled={usuarioEditando.role === 'admin'} style={{ borderColor: '#fbcfe8' }}>
                       <option value="PB">Pribbenow (PB)</option>
                       <option value="ED">El Descanso (ED)</option>
                       <option value="Ambas">Ambas Minas (PB/ED)</option>
@@ -1034,7 +1032,7 @@ function App() {
                 <div style={{ marginTop: '1rem', textAlign: 'right' }}>
                   <button className="btn btn-primary" style={{ background: '#c026d3', borderColor: '#c026d3' }} onClick={async () => {
                     if(!usuarioEditando.username || !usuarioEditando.nombre) return alert('No puedes dejar campos principales vacíos.');
-                    if(usuarioEditando.rol === 'admin') usuarioEditando.mina = 'Ambas';
+                    if(usuarioEditando.role === 'admin') usuarioEditando.mina = 'Ambas';
                     
                     const { error } = await supabase.from('usuarios').update(usuarioEditando).eq('id', usuarioEditando.id);
                     if (error) return alert('Error al actualizar: ' + error.message);
@@ -1078,11 +1076,11 @@ function App() {
                         )}
                       </td>
                       <td style={{ textTransform: 'capitalize' }}>
-                        <span className="badge" style={{ background: u.rol === 'admin' ? '#fee2e2' : '#e0e7ff', color: u.rol === 'admin' ? '#991b1b' : '#3730a3' }}>
-                          {u.rol}
+                        <span className="badge" style={{ background: u.role === 'admin' ? '#fee2e2' : '#e0e7ff', color: u.role === 'admin' ? '#991b1b' : '#3730a3' }}>
+                          {u.role}
                         </span>
                       </td>
-                      <td style={{ fontWeight: '500' }}>{u.rol === 'admin' ? 'Todo' : `Mina ${u.mina}`}</td>
+                      <td style={{ fontWeight: '500' }}>{u.role === 'admin' ? 'Todo' : `Mina ${u.mina}`}</td>
                       <td style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>{u.creado}</td>
                       <td style={{ textAlign: 'right' }}>
                         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
