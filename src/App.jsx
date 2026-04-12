@@ -864,12 +864,28 @@ function App() {
                   </div>
                 </div>
                 <div style={{ marginTop: '1rem', textAlign: 'right' }}>
-                  <button className="btn btn-primary" onClick={() => {
+                  <button className="btn btn-primary" onClick={async () => {
                     if(!nuevoUsuarioParams.username || !nuevoUsuarioParams.nombre) return alert('Por favor, completa nombre y usuario.');
-                    setDbUsuarios([{ id: Date.now(), nombre: nuevoUsuarioParams.nombre, username: nuevoUsuarioParams.username, password: 'con123', rol: nuevoUsuarioParams.rol, mina: nuevoUsuarioParams.rol === 'admin' ? 'Ambas' : nuevoUsuarioParams.mina, creado: 'Ahora', firstTime: true, estado: nuevoUsuarioParams.estado }, ...dbUsuarios]);
+                    
+                    const nuevoUser = { 
+                      nombre: nuevoUsuarioParams.nombre, 
+                      username: nuevoUsuarioParams.username, 
+                      password: 'con123', 
+                      rol: nuevoUsuarioParams.rol, 
+                      mina: nuevoUsuarioParams.rol === 'admin' ? 'Ambas' : nuevoUsuarioParams.mina, 
+                      creado: new Date().toLocaleDateString(), 
+                      firstTime: true, 
+                      estado: nuevoUsuarioParams.estado 
+                    };
+
+                    const { data, error } = await supabase.from('usuarios').insert([nuevoUser]).select();
+                    
+                    if (error) return alert('Error al crear usuario: ' + error.message);
+                    
+                    setDbUsuarios([data[0], ...dbUsuarios]);
                     setIsCreandoUsuario(false);
                     setNuevoUsuarioParams({ nombre: '', username: '', password: 'con123', mina: 'PB', rol: 'supervisor', estado: 'Activo' });
-                    alert('✅ Operador ' + nuevoUsuarioParams.nombre + ' (Usuario Login: ' + nuevoUsuarioParams.username + ') admitido exitosamente.');
+                    alert('✅ Operador ' + nuevoUsuarioParams.nombre + ' admitido exitosamente.');
                   }}>Crear Acreditación</button>
                 </div>
               </div>
@@ -916,9 +932,13 @@ function App() {
                   </div>
                 </div>
                 <div style={{ marginTop: '1rem', textAlign: 'right' }}>
-                  <button className="btn btn-primary" style={{ background: '#c026d3', borderColor: '#c026d3' }} onClick={() => {
+                  <button className="btn btn-primary" style={{ background: '#c026d3', borderColor: '#c026d3' }} onClick={async () => {
                     if(!usuarioEditando.username || !usuarioEditando.nombre) return alert('No puedes dejar campos principales vacíos.');
                     if(usuarioEditando.rol === 'admin') usuarioEditando.mina = 'Ambas';
+                    
+                    const { error } = await supabase.from('usuarios').update(usuarioEditando).eq('id', usuarioEditando.id);
+                    if (error) return alert('Error al actualizar: ' + error.message);
+
                     setDbUsuarios(dbUsuarios.map(u => u.id === usuarioEditando.id ? usuarioEditando : u));
                     setUsuarioEditando(null);
                     alert('✅ Modificaciones aplicadas en el directorio.');
@@ -981,9 +1001,11 @@ function App() {
                           }}>
                               <RefreshCcw size={15} />
                           </button>
-                          <button title="Eliminar del Sistema" className="btn btn-secondary" style={{ padding: '0.4rem 0.6rem', fontSize: '1rem', border: '1px solid #ef4444', color: '#ef4444', display: 'flex', alignItems: 'center' }} onClick={() => {
+                          <button title="Eliminar del Sistema" className="btn btn-secondary" style={{ padding: '0.4rem 0.6rem', fontSize: '1rem', border: '1px solid #ef4444', color: '#ef4444', display: 'flex', alignItems: 'center' }} onClick={async () => {
                             if(u.username === 'admin' || u.username === 'aramirez') return alert('No se puede despedir al Administrador Supremo del sistema.');
                             if(window.confirm(`¿Remover a ${u.username} del ecosistema corporativo absolutamente?`)) {
+                              const { error } = await supabase.from('usuarios').delete().eq('id', u.id);
+                              if (error) return alert('Error al eliminar: ' + error.message);
                               setDbUsuarios(dbUsuarios.filter(x => x.id !== u.id));
                             }
                           }}>
@@ -1118,10 +1140,27 @@ function App() {
               <button 
                 className="btn btn-primary" 
                 disabled={!isFlotaValid || !operador || totalImpacto === 0}
-                onClick={() => {
-                    alert('✅ Camión ' + flota + ' enviado a la Lista de Espera con estado de Atención: ' + (totalImpacto > 50 ? 'CRÍTICA' : totalImpacto > 20 ? 'ALTA' : 'NORMAL'));
+                onClick={async () => {
+                    const atencionLabel = totalImpacto > 50 ? 'CRÍTICA' : totalImpacto > 20 ? 'ALTA' : 'NORMAL';
+                    
+                    const nuevoCamion = {
+                      flota: flota,
+                      operador: operador,
+                      mina: mina,
+                      estado: 'espera',
+                      atencion: atencionLabel,
+                      fallas: Object.keys(selectedDanos).map(id => fallas.find(f => f.id === id)?.nombre).join(', '),
+                      time: new Date().toLocaleString(),
+                      puntos: totalImpacto
+                    };
+
+                    const { data, error } = await supabase.from('camiones').insert([nuevoCamion]).select();
+
+                    if (error) return alert('Error al registrar camión: ' + error.message);
+
+                    setCamionesRegistrados([data[0], ...camionesRegistrados]);
+                    alert('✅ Camión ' + flota + ' enviado a la Lista de Espera con éxito.');
                     setActiveTab('dashboard');
-                    // Reset form
                     setFlota(''); setOperador(''); setSelectedDanos({}); setObservaciones({});
                 }}
                 style={{ opacity: (!isFlotaValid || !operador || totalImpacto === 0) ? 0.5 : 1 }}
