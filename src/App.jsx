@@ -1452,8 +1452,8 @@ function App() {
             style={{ 
               position: 'fixed', 
               top: 0, left: 0, right: 0, bottom: 0, 
-              backgroundColor: 'rgba(0,0,0,0.5)', 
-              backdropFilter: 'blur(10px)',
+              backgroundColor: 'rgba(0,0,0,0.4)', 
+              backdropFilter: 'blur(12px)',
               zIndex: 1100, 
               display: 'flex', 
               alignItems: 'center', 
@@ -1464,33 +1464,41 @@ function App() {
             <div 
               className="card" 
               style={{ 
-                maxWidth: '600px', 
+                maxWidth: '650px', 
                 width: '100%', 
-                padding: '2rem',
+                padding: '2.5rem',
                 border: '1px solid rgba(255,255,255,0.4)',
-                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
-                maxHeight: '90vh',
-                overflowY: 'auto'
+                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
+                maxHeight: '85vh',
+                overflowY: 'auto',
+                background: 'rgba(255, 255, 255, 0.7)',
+                backdropFilter: 'blur(25px)'
               }}
             >
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem', borderBottom: '1px solid #f1f5f9', paddingBottom: '1rem' }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
-                  <Edit3 size={24} color="var(--primary-red)" />
-                  <h3 style={{ margin: 0, color: 'var(--primary-black)' }}>Edición Técnica del Camión</h3>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', borderBottom: '1px solid rgba(0,0,0,0.05)', paddingBottom: '1rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                  <div style={{ background: 'rgba(227, 25, 55, 0.1)', padding: '0.6rem', borderRadius: '12px' }}>
+                    <Edit3 size={24} color="var(--primary-red)" />
+                  </div>
+                  <div>
+                    <h3 style={{ margin: 0, color: 'var(--primary-black)', fontSize: '1.3rem' }}>Edición del Diagnóstico</h3>
+                    <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-muted)' }}>Corrija fallas y operador para el equipo <b>#{camionEditando.flota}</b></p>
+                  </div>
                 </div>
-                <button onClick={() => setCamionEditando(null)} style={{ background: 'transparent', border: 'none', color: '#9ca3af', cursor: 'pointer', fontSize: '1.5rem' }}>×</button>
+                <button onClick={() => setCamionEditando(null)} style={{ background: 'transparent', border: 'none', color: '#9ca3af', cursor: 'pointer', fontSize: '1.8rem' }}>×</button>
               </div>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
-                {/* Primera Fila: Flota y Operador */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
+                {/* Campos Principales */}
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '1.5rem' }}>
                   <div className="input-group" style={{ marginBottom: 0 }}>
-                     <label className="input-label">Número de Flota</label>
+                     <label className="input-label">N° Flota</label>
                      <input 
                        type="text" 
                        className="input-field" 
                        value={camionEditando.flota} 
                        onChange={e => setCamionEditando({...camionEditando, flota: e.target.value.replace(/\D/g, '').slice(0,4)})} 
+                       style={{ background: 'rgba(255,255,255,0.5)', border: '1px solid rgba(0,0,0,0.1)' }}
                      />
                   </div>
                   <div className="input-group" style={{ marginBottom: 0 }}>
@@ -1500,81 +1508,88 @@ function App() {
                        className="input-field" 
                        value={camionEditando.operador || ''} 
                        onChange={e => setCamionEditando({...camionEditando, operador: e.target.value})} 
-                       placeholder="Nombre del conductor..."
+                       placeholder="Nombre completo del conductor..."
+                       style={{ background: 'rgba(255,255,255,0.5)', border: '1px solid rgba(0,0,0,0.1)' }}
                      />
                   </div>
                 </div>
 
-                {/* Segunda Fila: Mina y Grupo */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
-                  <div className="input-group" style={{ marginBottom: 0 }}>
-                    <label className="input-label">Mina</label>
-                    <select 
-                      className="input-field" 
-                      value={camionEditando.mina} 
-                      onChange={e => setCamionEditando({...camionEditando, mina: e.target.value})}
-                    >
-                      <option value="PB">PB</option>
-                      <option value="ED">ED</option>
-                    </select>
-                  </div>
-                  <div className="input-group" style={{ marginBottom: 0 }}>
-                    <label className="input-label">Grupo</label>
-                    <select 
-                      className="input-field" 
-                      value={camionEditando.grupo} 
-                      onChange={e => setCamionEditando({...camionEditando, grupo: e.target.value})}
-                    >
-                      <option value="1">Grupo 1</option>
-                      <option value="2">Grupo 2</option>
-                      <option value="3">Grupo 3</option>
-                    </select>
-                  </div>
-                </div>
-
-                {/* Sección de Fallas Detalladas */}
+                {/* Checklist de Fallas Estilo Premium */}
                 <div style={{ marginTop: '0.5rem' }}>
-                  <label className="input-label">Checklist de Daños y Fallas (Actualizar Diagnóstico):</label>
+                  <label className="input-label" style={{ marginBottom: '1rem', display: 'block' }}>Items de Fallas Reportadas</label>
                   <div style={{ 
-                    maxHeight: '250px', 
-                    overflowY: 'auto', 
-                    background: '#f8fafc', 
-                    padding: '1rem', 
-                    borderRadius: '8px', 
-                    border: '1px solid #e2e8f0',
                     display: 'flex',
                     flexDirection: 'column',
-                    gap: '0.6rem'
+                    gap: '0.8rem'
                   }}>
                     {fallas.map(falla => (
-                      <div key={falla.id} style={{ borderBottom: '1px solid #edf2f7', paddingBottom: '0.6rem' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
+                      <div 
+                        key={falla.id} 
+                        style={{ 
+                          background: selectedDanosEdit[falla.id] ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.4)', 
+                          padding: '1rem', 
+                          borderRadius: '12px', 
+                          border: selectedDanosEdit[falla.id] ? '1px solid var(--primary-red)' : '1px solid rgba(0,0,0,0.05)',
+                          transition: 'all 0.3s ease',
+                          boxShadow: selectedDanosEdit[falla.id] ? '0 4px 12px rgba(227, 25, 55, 0.05)' : 'none'
+                        }}
+                      >
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
                            <input 
                              type="checkbox" 
                              checked={!!selectedDanosEdit[falla.id]}
                              onChange={() => handleDanoToggleEdit(falla.id)}
+                             style={{ width: '20px', height: '20px', accentColor: 'var(--primary-red)', cursor: 'pointer' }}
                            />
-                           <span style={{ fontSize: '0.9rem', flex: 1 }}>{falla.nombre}</span>
-                           <span style={{ fontSize: '0.7rem', color: '#64748b' }}>{falla.impacto} pts</span>
+                           <span style={{ fontSize: '0.95rem', fontWeight: selectedDanosEdit[falla.id] ? '600' : '400', flex: 1, color: 'var(--primary-black)' }}>
+                             {falla.nombre}
+                           </span>
                         </div>
                         {selectedDanosEdit[falla.id] && (
-                          <input 
-                            type="text"
-                            className="input-field"
-                            style={{ padding: '0.3rem 0.6rem', fontSize: '0.8rem', marginTop: '0.4rem', marginLeft: '1.8rem', width: '90%' }}
-                            placeholder="Añadir comentario técnico..."
-                            value={observacionesEdit[falla.id] || ''}
-                            onChange={(e) => handleObsChangeEdit(falla.id, e.target.value)}
-                          />
+                          <div className="fade-in" style={{ marginTop: '0.8rem', paddingLeft: '2.2rem' }}>
+                            <input 
+                              type="text"
+                              className="input-field"
+                              style={{ 
+                                padding: '0.6rem 0.8rem', 
+                                fontSize: '0.85rem', 
+                                background: 'white',
+                                borderRadius: '8px',
+                                border: '1px solid #e2e8f0'
+                              }}
+                              placeholder="Observación técnica opcional..."
+                              value={observacionesEdit[falla.id] || ''}
+                              onChange={(e) => handleObsChangeEdit(falla.id, e.target.value)}
+                            />
+                          </div>
                         )}
                       </div>
                     ))}
                   </div>
                 </div>
 
-                <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem', position: 'sticky', bottom: 0, background: 'white', paddingTop: '1rem', borderTop: '1px solid #f1f5f9' }}>
-                  <button className="btn btn-secondary" style={{ flex: 1 }} onClick={() => setCamionEditando(null)}>Cancelar</button>
-                  <button className="btn btn-primary" style={{ flex: 2, background: 'var(--primary-red)', borderColor: 'var(--primary-red)' }} onClick={guardarEdicionAvanzada}>Actualizar y Recalcular Prioridad</button>
+                {/* Footer del Modal */}
+                <div style={{ 
+                  display: 'flex', 
+                  gap: '1.2rem', 
+                  marginTop: '1rem', 
+                  paddingTop: '1.5rem', 
+                  borderTop: '1px solid rgba(0,0,0,0.05)' 
+                }}>
+                  <button className="btn btn-secondary" style={{ flex: 1, height: '48px' }} onClick={() => setCamionEditando(null)}>Descartar Cambios</button>
+                  <button 
+                    className="btn btn-primary" 
+                    style={{ 
+                      flex: 2, 
+                      height: '48px',
+                      background: 'var(--primary-red)', 
+                      borderColor: 'var(--primary-red)',
+                      boxShadow: '0 10px 15px -3px rgba(227, 25, 55, 0.3)' 
+                    }} 
+                    onClick={guardarEdicionAvanzada}
+                  >
+                    Actualizar Ficha Técnica
+                  </button>
                 </div>
               </div>
             </div>
