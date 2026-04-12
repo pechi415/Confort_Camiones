@@ -141,14 +141,18 @@ function App() {
     e.dataTransfer.setData('camion_id', id);
   };
 
-  const handleDrop = (e, nuevoEstado) => {
+  const handleDrop = async (e, nuevoEstado) => {
     e.preventDefault();
     const idStr = e.dataTransfer.getData('camion_id');
     if (!idStr) return;
     
+    // UI Optimista (Instantáneo para el operador)
     setCamionesRegistrados(prev => 
       prev.map(c => c.id.toString() === idStr ? { ...c, estado: nuevoEstado } : c)
     );
+
+    // Persistencia Oficial a la Nube (Asíncrono en segundo plano)
+    await supabase.from('camiones').update({ estado: nuevoEstado }).eq('id', parseInt(idStr));
   };
 
   const handleDragOver = (e) => {
@@ -430,8 +434,8 @@ function App() {
           <div className="dashboard-view fade-in">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '1rem' }}>
               <h2 style={{ fontSize: '1.4rem', color: 'var(--primary-black)', margin: 0 }}><LayoutDashboard strokeWidth={1.5} size={24} style={{ marginBottom: '-0.3rem', color: '#2563eb' }} />  Resumen de Control</h2>
-              <span className="badge" style={{ fontSize: '0.9rem', padding: '0.4rem 0.8rem', display: 'flex', alignItems: 'center', gap: '0.4rem', background: '#ecfdf5', color: '#059669', border: '1px solid #a7f3d0' }}>
-                <Award size={16} strokeWidth={2} /> 14 Camiones Entregados Satisfactoriamente
+              <span className="badge badge-liberado" style={{ fontSize: '0.9rem', padding: '0.6rem 1.2rem', display: 'flex', alignItems: 'center', gap: '0.4rem', border: '1px solid #10b981', background: 'rgba(16, 185, 129, 0.15)', color: '#059669', boxShadow: '0 2px 4px rgba(16, 185, 129, 0.1)' }}>
+                <Award size={16} strokeWidth={2} /> Camiones Registrados: {camionesRegistrados.length}
               </span>
             </div>
             <div className="kpi-grid">
