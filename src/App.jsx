@@ -10,7 +10,15 @@ function App() {
   // Supabase Auth Session State
   const [session, setSession] = useState(() => {
     const saved = localStorage.getItem('drummond_session');
-    return saved ? JSON.parse(saved) : null;
+    if (!saved) return null;
+    try {
+      const parsed = JSON.parse(saved);
+      // Parche de compatibilidad: Si la sesión es vieja y usa 'rol', lo pasamos a 'role'
+      if (parsed.rol && !parsed.role) parsed.role = parsed.rol;
+      return parsed;
+    } catch (e) {
+      return null;
+    }
   }); // null = No Logueado
   const [pendingPasswordChangeUser, setPendingPasswordChangeUser] = useState(null);
   const [newPassword, setNewPassword] = useState('');
@@ -560,7 +568,7 @@ function App() {
                         <td>{camion.time}</td>
                         <td>
                           <div style={{ display: 'flex', justifyContent: 'center', gap: '0.6rem' }}>
-                            {(session.role === 'admin' || session.role === 'supervisor') && (
+                            {(session?.role?.toLowerCase() === 'admin' || session?.role?.toLowerCase() === 'supervisor' || session?.rol?.toLowerCase() === 'admin' || session?.rol?.toLowerCase() === 'supervisor') && (
                               <button 
                                 onClick={() => setCamionEditando(camion)} 
                                 className="btn-icon" 
@@ -570,7 +578,7 @@ function App() {
                                 <Edit3 size={16} />
                               </button>
                             )}
-                            {session.role === 'admin' && (
+                            {(session?.role?.toLowerCase() === 'admin' || session?.rol?.toLowerCase() === 'admin') && (
                               <button 
                                 onClick={() => eliminarCamion(camion.id)} 
                                 className="btn-icon" 
