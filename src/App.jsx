@@ -497,7 +497,7 @@ function App() {
                     </tr>
                   </thead>
                   <tbody>
-                    {camionesRegistrados.slice(0, 5).map(camion => (
+                    {camionesRegistrados.filter(c => c.estado !== 'liberado').slice(0, 5).map(camion => (
                       <tr key={camion.id}>
                         <td><strong style={{ fontSize: '1.1rem' }}>{camion.flota}</strong></td>
                         <td>
