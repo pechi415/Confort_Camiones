@@ -39,6 +39,7 @@ function App() {
   const [nuevoUsuarioParams, setNuevoUsuarioParams] = useState({ nombre: '', username: '', password: 'con123', mina: 'PB', rol: 'supervisor', estado: 'Activo' });
   const [usuarioEditando, setUsuarioEditando] = useState(null);
   const [selectedReport, setSelectedReport] = useState(null); // Para el Modal de detalles técnicos
+  const [camionEditando, setCamionEditando] = useState(null); // Para el Modal de edición rápida camión
 
   // Algoritmo de Inteligencia Básica para auto-completar el username corporativo (Sin colisiones)
   const generarAliasBase = (nombreCompleto, bdActual) => {
@@ -178,6 +179,38 @@ function App() {
     // DB update
     await supabase.from('camiones').update({ estado: 'liberado' }).eq('id', camionId);
     alert("🚀 Camión liberado con éxito. Ahora reside en el Historial.");
+  };
+
+  const eliminarCamion = async (camionId) => {
+    if (!window.confirm("¿Seguro que desea eliminar este registro permanentemente de la lista de prioridades? Esta acción no se puede deshacer.")) return;
+    
+    const { error } = await supabase.from('camiones').delete().eq('id', camionId);
+    if (error) return alert("Error al eliminar: " + error.message);
+
+    setCamionesRegistrados(prev => prev.filter(c => c.id !== camionId));
+    alert("🗑️ Camión eliminado exitosamente.");
+  };
+
+  const guardarEdicionCamion = async () => {
+    if (!camionEditando) return;
+    
+    // Validación básica de flota (Inicia con 2 y tiene 4 digitos)
+    if (!camionEditando.flota.startsWith('2') || camionEditando.flota.length !== 4) {
+      return alert("El número de flota debe tener 4 dígitos y comenzar por 2.");
+    }
+
+    const { error } = await supabase.from('camiones').update({
+      flota: camionEditando.flota,
+      mina: camionEditando.mina,
+      grupo: camionEditando.grupo,
+      atencion: camionEditando.atencion
+    }).eq('id', camionEditando.id);
+
+    if (error) return alert("Error al actualizar: " + error.message);
+
+    setCamionesRegistrados(prev => prev.map(c => c.id === camionEditando.id ? camionEditando : c));
+    setCamionEditando(null);
+    alert("✅ Cambios guardados en la nube.");
   };
 
   const handleDragOver = (e) => {
@@ -495,6 +528,7 @@ function App() {
                       <th>Atención Requerida</th>
                       <th>Estado</th>
                       <th>Fecha Reporte</th>
+                      <th style={{ textAlign: 'center' }}>Acciones</th>
                     </tr>
                   </thead>
                   <tbody>
@@ -524,6 +558,30 @@ function App() {
                         </td>
                         <td><span className={`badge badge-${camion.estado}`}>{camion.estado.toUpperCase()}</span></td>
                         <td>{camion.time}</td>
+                        <td>
+                          <div style={{ display: 'flex', justifyContent: 'center', gap: '0.6rem' }}>
+                            {(session.role === 'admin' || session.role === 'supervisor') && (
+                              <button 
+                                onClick={() => setCamionEditando(camion)} 
+                                className="btn-icon" 
+                                style={{ color: '#4f46e5', background: '#eef2ff' }}
+                                title="Editar Ficha"
+                              >
+                                <Edit3 size={16} />
+                              </button>
+                            )}
+                            {session.role === 'admin' && (
+                              <button 
+                                onClick={() => eliminarCamion(camion.id)} 
+                                className="btn-icon" 
+                                style={{ color: '#ef4444', background: '#fef2f2' }}
+                                title="Eliminar Registro"
+                              >
+                                <Trash2 size={16} />
+                              </button>
+                            )}
+                          </div>
+                        </td>
                       </tr>
                     ))}
                     {camionesRegistrados.length === 0 && (
@@ -1297,6 +1355,99 @@ function App() {
               >
                 Cerrar Ficha Técnica
               </button>
+            </div>
+          </div>
+        )}
+
+        {/* Modal de Edición Rápida de Camión (Admin/Supervisor) */}
+        {camionEditando && (
+          <div 
+            className="fade-in" 
+            style={{ 
+              position: 'fixed', 
+              top: 0, left: 0, right: 0, bottom: 0, 
+              backgroundColor: 'rgba(0,0,0,0.5)', 
+              backdropFilter: 'blur(10px)',
+              zIndex: 1100, 
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center',
+              padding: '1rem' 
+            }}
+          >
+            <div 
+              className="card" 
+              style={{ 
+                maxWidth: '450px', 
+                width: '100%', 
+                padding: '2rem',
+                border: '1px solid rgba(255,255,255,0.4)',
+                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)'
+              }}
+            >
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
+                  <Edit3 size={20} color="var(--primary-red)" />
+                  <h3 style={{ margin: 0, color: 'var(--primary-black)' }}>Corregir Datos del Camión</h3>
+                </div>
+                <button onClick={() => setCamionEditando(null)} style={{ background: 'transparent', border: 'none', color: '#9ca3af', cursor: 'pointer', fontSize: '1.5rem' }}>×</button>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1.2rem' }}>
+                <div className="input-group">
+                   <label className="input-label">Número de Flota (Debe iniciar con 2)</label>
+                   <input 
+                     type="text" 
+                     className="input-field" 
+                     value={camionEditando.flota} 
+                     onChange={e => setCamionEditando({...camionEditando, flota: e.target.value.replace(/\D/g, '').slice(0,4)})} 
+                   />
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem' }}>
+                  <div className="input-group">
+                    <label className="input-label">Mina</label>
+                    <select 
+                      className="input-field" 
+                      value={camionEditando.mina} 
+                      onChange={e => setCamionEditando({...camionEditando, mina: e.target.value})}
+                    >
+                      <option value="PB">PB</option>
+                      <option value="ED">ED</option>
+                    </select>
+                  </div>
+                  <div className="input-group">
+                    <label className="input-label">Grupo</label>
+                    <select 
+                      className="input-field" 
+                      value={camionEditando.grupo} 
+                      onChange={e => setCamionEditando({...camionEditando, grupo: e.target.value})}
+                    >
+                      <option value="1">Grupo 1</option>
+                      <option value="2">Grupo 2</option>
+                      <option value="3">Grupo 3</option>
+                    </select>
+                  </div>
+                </div>
+
+                <div className="input-group">
+                  <label className="input-label">Prioridad de Atención</label>
+                  <select 
+                    className="input-field" 
+                    value={camionEditando.atencion} 
+                    onChange={e => setCamionEditando({...camionEditando, atencion: e.target.value})}
+                  >
+                    <option value="NORMAL">Normal</option>
+                    <option value="ALTA">Alta</option>
+                    <option value="CRÍTICA">Crítica</option>
+                  </select>
+                </div>
+
+                <div style={{ display: 'flex', gap: '1rem', marginTop: '1rem' }}>
+                  <button className="btn btn-secondary" style={{ flex: 1 }} onClick={() => setCamionEditando(null)}>Descartar</button>
+                  <button className="btn btn-primary" style={{ flex: 2, background: 'var(--primary-red)', borderColor: 'var(--primary-red)' }} onClick={guardarEdicionCamion}>Guardar en la Nube</button>
+                </div>
+              </div>
             </div>
           </div>
         )}
