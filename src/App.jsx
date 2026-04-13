@@ -8,7 +8,7 @@ import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
 
 function App() {
-  // Versión del Sistema: 1.2.3 (Sincronización Total - Supervisores en PDF y Tabla)
+  // Versión del Sistema: 1.2.4 (Trazabilidad Vinculada Grupo-Supervisor)
   const [activeTab, setActiveTab] = useState(() => localStorage.getItem('drummond_activeTab') || 'dashboard');
 
   // Supabase Auth Session State
@@ -492,7 +492,10 @@ function App() {
       doc.setFont("helvetica", "normal");
       doc.text(`Mina: ${registro.mina === 'PB' ? 'Pribbenow' : 'El Descanso'}`, 20, 65);
       doc.text(`Operador (Conductor): ${registro.operador}`, 20, 72);
-      doc.text(`Reportado Por: ${registro.supervisor || 'N/A'}`, 20, 79);
+      doc.setFont("helvetica", "bold");
+      doc.text(`Trazabilidad de Reporte:`, 20, 79);
+      doc.setFont("helvetica", "normal");
+      doc.text(`${registro.supervisor || 'N/A'}`, 65, 79);
       doc.text(`Fecha de Liberación: ${new Date().toLocaleDateString()}`, 140, 65);
       
       autoTable(doc, {
@@ -1219,8 +1222,12 @@ function App() {
                       <td style={{ fontSize: '0.85rem' }}>Calculando...</td>
                       <td style={{ fontSize: '0.85rem' }}>{registro.operador} / {registro.mina} - {String(registro.grupo || '?').split(', ').map(g => g.startsWith('G') ? g : `G${g}`).join(', ')}</td>
                       <td style={{ fontSize: '0.85rem', color: 'var(--primary-black)', fontWeight: '500' }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                          <Users size={14} strokeWidth={1.5} style={{ color: '#6366f1' }} /> {registro.supervisor || 'N/A'}
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
+                          {(registro.supervisor || 'N/A').split(', ').map((sup, idx) => (
+                            <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                              <Users size={12} strokeWidth={1.5} style={{ color: '#6366f1' }} /> {sup}
+                            </div>
+                          ))}
                         </div>
                       </td>
                       <td>
@@ -1629,7 +1636,9 @@ function App() {
                     if (camionExistente) {
                         // 1. Integración de Grupos y Supervisores
                         const listaGrupos = Array.from(new Set([...camionExistente.grupo.split(', '), grupo])).sort();
-                        const listaSupervisores = Array.from(new Set([...camionExistente.supervisor.split(', '), session.nombre]));
+                        const nuevoRegSup = `G${grupo}: ${session.nombre}`;
+                        const supsActuales = (camionExistente.supervisor || '').split(', ').filter(Boolean);
+                        const listaSupervisores = Array.from(new Set([...supsActuales, nuevoRegSup]));
                         const numGrupos = listaGrupos.length;
 
                         // 2. Integración de Fallas y Puntos Base
@@ -1691,7 +1700,7 @@ function App() {
                           operador: operador,
                           mina: mina,
                           grupo: grupo,
-                          supervisor: session.nombre,
+                          supervisor: `G${grupo}: ${session.nombre}`,
                           estado: 'espera',
                           atencion: atencionLabel,
                           fallas: fallasDetalladas,
