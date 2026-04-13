@@ -69,6 +69,59 @@ function App() {
   const [observacionesEdit, setObservacionesEdit] = useState({});
   const [camionInGarantia, setCamionInGarantia] = useState(null); // Para el Modal de Motivo de Garantía
   const [pendientesGarantia, setPendientesGarantia] = useState({});
+  
+  // ---------- SISTEMA DE MENSAJERÍA PERSONALIZADA (ZERO BROWSER DIALOGS) ----------
+  const [toasts, setToasts] = useState([]);
+  const [modalConfig, setModalConfig] = useState({
+    isOpen: false,
+    type: 'info', // 'info', 'confirm', 'prompt'
+    title: '',
+    message: '',
+    confirmText: 'Aceptar',
+    cancelText: 'Cancelar',
+    onConfirm: null,
+    onCancel: null,
+    showInput: false,
+    inputPlaceholder: '',
+    inputValue: '',
+    expectedValue: '' // Para el blindaje
+  });
+
+  const addToast = (message, type = 'success') => {
+    const id = Date.now();
+    setToasts(prev => [{ id, message, type }, ...prev]);
+    setTimeout(() => {
+      setToasts(prev => prev.filter(t => t.id !== id));
+    }, 4000);
+  };
+
+  const showConfirm = (opts) => {
+    setModalConfig({
+      isOpen: true,
+      type: opts.type || 'info',
+      title: opts.title || 'Atención',
+      message: opts.message || '',
+      confirmText: opts.confirmText || 'Aceptar',
+      cancelText: opts.cancelText || 'Cancelar',
+      onConfirm: opts.onConfirm || null,
+      onCancel: opts.onCancel || null,
+      showInput: opts.type === 'prompt',
+      inputPlaceholder: opts.placeholder || '',
+      inputValue: '',
+      expectedValue: opts.expectedValue || ''
+    });
+  };
+
+  const handleModalConfirm = () => {
+    if (modalConfig.type === 'prompt') {
+      if (modalConfig.inputValue !== modalConfig.expectedValue) {
+        addToast("❌ El número ingresado no coincide.", "error");
+        return;
+      }
+    }
+    if (modalConfig.onConfirm) modalConfig.onConfirm();
+    setModalConfig(prev => ({ ...prev, isOpen: false }));
+  };
 
   // Algoritmo de Inteligencia Básica para auto-completar el username corporativo (Sin colisiones)
   const generarAliasBase = (nombreCompleto, bdActual) => {
@@ -261,20 +314,21 @@ function App() {
   };
 
   const eliminarCamion = async (camionId, flota) => {
-    const confirmacion = window.prompt(`⚠ ADVERTENCIA DE SEGURIDAD\n\nEsta acción eliminará permanentemente el reporte del Camión ${flota}.\n\nPara confirmar, escribe el número del camión (${flota}) a continuación:`);
-    
-    if (confirmacion === null) return; // Usuario canceló
+    showConfirm({
+      type: 'prompt',
+      title: '⚠ ADVERTENCIA DE SEGURIDAD',
+      message: `Esta acción eliminará permanentemente el reporte del Camión ${flota}.\n\nPara confirmar, escribe el número del camión a continuación:`,
+      expectedValue: String(flota),
+      placeholder: `Escribe ${flota} aquí...`,
+      confirmText: 'ELIMINAR PERMANENTEMENTE',
+      onConfirm: async () => {
+        const { error } = await supabase.from('camiones').delete().eq('id', camionId);
+        if (error) return addToast("Error al eliminar: " + error.message, "error");
 
-    if (confirmacion !== String(flota)) {
-      alert("❌ El número ingresado no coincide con el camión seleccionado. Eliminación cancelada.");
-      return;
-    }
-    
-    const { error } = await supabase.from('camiones').delete().eq('id', camionId);
-    if (error) return alert("Error al eliminar: " + error.message);
-
-    setCamionesRegistrados(prev => prev.filter(c => c.id !== camionId));
-    alert(`🗑️ Camión ${flota} eliminado exitosamente del sistema.`);
+        setCamionesRegistrados(prev => prev.filter(c => c.id !== camionId));
+        addToast(`🗑️ Camión ${flota} eliminado exitosamente del sistema.`, "success");
+      }
+    });
   };
 
   const guardarEdicionCamion = async () => {
@@ -1168,7 +1222,7 @@ function App() {
                 </div>
                 <div style={{ marginTop: '1rem', textAlign: 'right' }}>
                   <button className="btn btn-primary" onClick={async () => {
-                    if(!nuevoUsuarioParams.username || !nuevoUsuarioParams.nombre) return alert('Por favor, completa nombre y usuario.');
+                    if(!nuevoUsuarioParams.username || !nuevoUsuarioParams.nombre) return addToast('Por favor, completa nombre y usuario.', 'error');
                     
                     const { data, error } = await supabase.from('usuarios').insert([{
                       nombre: nuevoUsuarioParams.nombre,
@@ -1181,12 +1235,12 @@ function App() {
                       creado: new Date().toLocaleDateString()
                     }]).select();
 
-                    if (error) return alert("Error al crear usuario: " + error.message);
+                    if (error) return addToast("Error al crear usuario: " + error.message, "error");
                     
                     setDbUsuarios([...dbUsuarios, data[0]]);
                     setIsCreandoUsuario(false);
                     setNuevoUsuarioParams({ nombre: '', username: '', password: 'con123', mina: 'PB', role: 'supervisor', estado: 'Activo' });
-                    alert('✅ Operador ' + nuevoUsuarioParams.nombre + ' admitido exitosamente.');
+                    addToast('✅ Operador ' + nuevoUsuarioParams.nombre + ' admitido exitosamente.');
                   }}>Crear Acreditación</button>
                 </div>
               </div>
@@ -1234,15 +1288,15 @@ function App() {
                 </div>
                 <div style={{ marginTop: '1rem', textAlign: 'right' }}>
                   <button className="btn btn-primary" style={{ background: '#c026d3', borderColor: '#c026d3' }} onClick={async () => {
-                    if(!usuarioEditando.username || !usuarioEditando.nombre) return alert('No puedes dejar campos principales vacíos.');
+                    if(!usuarioEditando.username || !usuarioEditando.nombre) return addToast('No puedes dejar campos principales vacíos.', 'error');
                     if(usuarioEditando.role === 'admin') usuarioEditando.mina = 'Ambas';
                     
                     const { error } = await supabase.from('usuarios').update(usuarioEditando).eq('id', usuarioEditando.id);
-                    if (error) return alert('Error al actualizar: ' + error.message);
+                    if (error) return addToast('Error al actualizar: ' + error.message, 'error');
 
                     setDbUsuarios(dbUsuarios.map(u => u.id === usuarioEditando.id ? usuarioEditando : u));
                     setUsuarioEditando(null);
-                    alert('✅ Modificaciones aplicadas en el directorio.');
+                    addToast('✅ Modificaciones aplicadas en el directorio.');
                   }}>💾 Guardar Cambios</button>
                 </div>
               </div>
@@ -1294,23 +1348,36 @@ function App() {
                           }}>
                               <Edit3 size={15} />
                           </button>
-                          <button title="Resetear Clave" className="btn btn-secondary" style={{ padding: '0.4rem 0.6rem', fontSize: '1rem', border: '1px solid #10b981', color: '#10b981', display: 'flex', alignItems: 'center' }} onClick={async () => {
-                            if(window.confirm(`¿Forzar a ${u.nombre} a actualizar su contraseña? Se le pedirá cambio obligatorio cuando intente loguearse nuevamente.`)) {
-                              const { error } = await supabase.from('usuarios').update({ password: 'con123', firstTime: true }).eq('id', u.id);
-                              if (error) return alert('Error al resetear clave: ' + error.message);
-                              setDbUsuarios(dbUsuarios.map(x => x.id === u.id ? {...x, password: 'con123', firstTime: true} : x));
-                              alert(`Se ha suspendido temporalmente por reseteo a ${u.nombre}. Usará clave estándar "con123".`);
-                            }
+                          <button title="Resetear Clave" className="btn btn-secondary" style={{ padding: '0.4rem 0.6rem', fontSize: '1rem', border: '1px solid #10b981', color: '#10b981', display: 'flex', alignItems: 'center' }} onClick={() => {
+                            showConfirm({
+                              type: 'confirm',
+                              title: '🔐 Reseteo de Credenciales',
+                              message: `¿Forzar a ${u.nombre} a actualizar su contraseña? Se le pedirá cambio obligatorio cuando intente loguearse nuevamente.`,
+                              onConfirm: async () => {
+                                const { error } = await supabase.from('usuarios').update({ password: 'con123', firstTime: true }).eq('id', u.id);
+                                if (error) return addToast('Error al resetear clave: ' + error.message, 'error');
+                                setDbUsuarios(dbUsuarios.map(x => x.id === u.id ? {...x, password: 'con123', firstTime: true} : x));
+                                addToast(`Se ha suspendido temporalmente por reseteo a ${u.nombre}. Usará clave estándar "con123".`);
+                              }
+                            });
                           }}>
                               <RefreshCcw size={15} />
                           </button>
-                          <button title="Eliminar del Sistema" className="btn btn-secondary" style={{ padding: '0.4rem 0.6rem', fontSize: '1rem', border: '1px solid #ef4444', color: '#ef4444', display: 'flex', alignItems: 'center' }} onClick={async () => {
-                            if(u.username === 'admin' || u.username === 'aramirez') return alert('No se puede despedir al Administrador Supremo del sistema.');
-                            if(window.confirm(`¿Remover a ${u.username} del ecosistema corporativo absolutamente?`)) {
-                              const { error } = await supabase.from('usuarios').delete().eq('id', u.id);
-                              if (error) return alert('Error al eliminar: ' + error.message);
-                              setDbUsuarios(dbUsuarios.filter(x => x.id !== u.id));
+                          <button title="Eliminar del Sistema" className="btn btn-secondary" style={{ padding: '0.4rem 0.6rem', fontSize: '1rem', border: '1px solid #ef4444', color: '#ef4444', display: 'flex', alignItems: 'center' }} onClick={() => {
+                            if(u.username === 'admin' || u.username === 'aramirez') {
+                              return addToast('No se puede despedir al Administrador Supremo del sistema.', 'error');
                             }
+                            showConfirm({
+                              type: 'confirm',
+                              title: '🗑️ Baja de Colaborador',
+                              message: `¿Remover a ${u.username} del ecosistema corporativo absolutamente?`,
+                              onConfirm: async () => {
+                                const { error } = await supabase.from('usuarios').delete().eq('id', u.id);
+                                if (error) return addToast('Error al eliminar: ' + error.message, 'error');
+                                setDbUsuarios(dbUsuarios.filter(x => x.id !== u.id));
+                                addToast('Usuario removido del sistema con éxito.');
+                              }
+                            });
                           }}>
                               <Trash2 size={15} />
                           </button>
@@ -1493,10 +1560,10 @@ function App() {
                         };
 
                         const { error } = await supabase.from('camiones').update(camionActualizado).eq('id', camionExistente.id);
-                        if (error) return alert('Error al integrar reporte: ' + error.message);
+                        if (error) return addToast('Error al integrar reporte: ' + error.message, "error");
 
                         setCamionesRegistrados(prev => prev.map(c => c.id === camionExistente.id ? camionActualizado : c));
-                        alert(`✅ Reporte integrado con éxito. Se ha actualizado la información del camión ${flota} en la Lista de Espera.`);
+                        addToast(`✅ Reporte integrado con éxito para el camión ${flota}.`);
 
                     } else {
                         // Lógica de Inserción Normal (Primer reporte)
@@ -1523,10 +1590,10 @@ function App() {
                         };
 
                         const { data, error } = await supabase.from('camiones').insert([nuevoCamion]).select();
-                        if (error) return alert('Error al registrar camión: ' + error.message);
+                        if (error) return addToast('Error al registrar camión: ' + error.message, "error");
 
                         setCamionesRegistrados([data[0], ...camionesRegistrados]);
-                        alert('✅ Camión ' + flota + ' enviado a la Lista de Espera con éxito.');
+                        addToast('✅ Camión ' + flota + ' enviado a la Lista de Espera con éxito.');
                     }
 
                     setActiveTab('dashboard');
@@ -1867,6 +1934,143 @@ function App() {
           </div>
         )}
       </main>
+
+      {/* ---------- SISTEMA DE MENSAJERÍA PERSONALIZADA (UI) ---------- */}
+      
+      {/* Container de Toasts (Superior Central) */}
+      <div style={{
+        position: 'fixed',
+        top: '20px',
+        left: '50%',
+        transform: 'translateX(-50%)',
+        zIndex: 9999,
+        display: 'flex',
+        flexDirection: 'column',
+        gap: '10px',
+        pointerEvents: 'none',
+        width: 'min(90%, 400px)'
+      }}>
+        {toasts.map(toast => (
+          <div key={toast.id} className="toast-animation" style={{
+            background: toast.type === 'error' ? 'rgba(185, 28, 28, 0.9)' : 'rgba(16, 185, 129, 0.9)',
+            color: 'white',
+            padding: '12px 20px',
+            borderRadius: '12px',
+            backdropFilter: 'blur(10px)',
+            boxShadow: '0 8px 32px rgba(0,0,0,0.15)',
+            display: 'flex',
+            alignItems: 'center',
+            gap: '10px',
+            pointerEvents: 'auto',
+            border: '1px solid rgba(255,255,255,0.2)',
+            fontSize: '0.95rem',
+            fontWeight: '500'
+          }}>
+            {toast.type === 'error' ? <AlertTriangle size={18} /> : <CheckCircle2 size={18} />}
+            {toast.message}
+          </div>
+        ))}
+      </div>
+
+      {/* Modal Personalizado (Alert / Confirm / Prompt) */}
+      {modalConfig.isOpen && (
+        <div style={{
+          position: 'fixed',
+          top: 0,
+          left: 0,
+          width: '100%',
+          height: '100%',
+          background: 'rgba(0,0,0,0.5)',
+          backdropFilter: 'blur(4px)',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          zIndex: 10000,
+          padding: '20px'
+        }}>
+          <div className="modal-pop" style={{
+            background: 'rgba(255, 255, 255, 0.95)',
+            backdropFilter: 'blur(15px)',
+            width: 'min(100%, 500px)',
+            borderRadius: '24px',
+            padding: '2rem',
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+            border: '1px solid rgba(255, 255, 255, 0.3)'
+          }}>
+            <h3 style={{ margin: '0 0 1rem 0', color: 'var(--primary-black)', fontSize: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
+              {modalConfig.type === 'prompt' ? <ShieldAlert size={28} color="#ef4444" /> : 
+               modalConfig.type === 'confirm' ? <AlertCircle size={28} color="#f59e0b" /> : 
+               <Info size={28} color="#2563eb" />}
+              {modalConfig.title}
+            </h3>
+            <p style={{ color: '#4b5563', lineHeight: '1.6', fontSize: '1.05rem', margin: '0 0 1.5rem 0', whiteSpace: 'pre-wrap' }}>
+              {modalConfig.message}
+            </p>
+
+            {modalConfig.showInput && (
+              <div style={{ marginBottom: '2rem' }}>
+                <input 
+                  autoFocus
+                  type="text"
+                  className="input-field"
+                  placeholder={modalConfig.inputPlaceholder}
+                  value={modalConfig.inputValue}
+                  onChange={(e) => setModalConfig(prev => ({ ...prev, inputValue: e.target.value }))}
+                  onKeyDown={(e) => e.key === 'Enter' && handleModalConfirm()}
+                  style={{ 
+                    fontSize: '1.2rem', 
+                    textAlign: 'center', 
+                    letterSpacing: '2px', 
+                    fontWeight: 'bold',
+                    padding: '1rem',
+                    border: '2px solid #e5e7eb'
+                  }}
+                />
+              </div>
+            )}
+
+            <div style={{ display: 'flex', gap: '1rem', justifyContent: 'flex-end' }}>
+              {(modalConfig.type === 'confirm' || modalConfig.type === 'prompt') && (
+                <button 
+                  className="btn btn-secondary" 
+                  onClick={() => {
+                    if (modalConfig.onCancel) modalConfig.onCancel();
+                    setModalConfig(prev => ({ ...prev, isOpen: false }));
+                  }}
+                >
+                  {modalConfig.cancelText}
+                </button>
+              )}
+              <button 
+                className="btn btn-primary" 
+                style={{
+                  backgroundColor: modalConfig.type === 'prompt' ? '#ef4444' : 'var(--primary-red)'
+                }}
+                onClick={handleModalConfirm}
+              >
+                {modalConfig.confirmText}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <style>{`
+        @keyframes slideDown {
+          from { transform: translateY(-100%); opacity: 0; }
+          to { transform: translateY(0); opacity: 1; }
+        }
+        @keyframes modalPop {
+          from { transform: scale(0.95); opacity: 0; }
+          to { transform: scale(1); opacity: 1; }
+        }
+        .toast-animation {
+          animation: slideDown 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+        .modal-pop {
+          animation: modalPop 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+      `}</style>
     </div>
   );
 }
