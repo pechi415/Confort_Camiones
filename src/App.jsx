@@ -3,6 +3,9 @@ import './index.css';
 import { LayoutDashboard, FileText, Blocks, ClipboardList, ShieldAlert, MonitorCheck, PlusCircle, Trash2, Edit3, Settings, Shield, Unlock, LockKeyhole, Lock, RefreshCcw, Users, AlertTriangle, CheckCircle2, Wrench, Activity, Truck, Search, Hourglass, SearchCheck, Award, FileSpreadsheet, MapPin, Calendar, Siren } from 'lucide-react';
 
 import { supabase } from './supabaseClient';
+import { jsPDF } from 'jspdf';
+import 'jspdf-autotable';
+import * as XLSX from 'xlsx';
 
 function App() {
   const [activeTab, setActiveTab] = useState(() => localStorage.getItem('drummond_activeTab') || 'dashboard');
@@ -271,7 +274,7 @@ function App() {
         return `${nombre}${comment}`;
       });
 
-    if (motivosArray.length === 0) return alert("Por favor, selecciona al menos una falla que persista.");
+    if (motivosArray.length === 0) return addToast("Por favor, selecciona al menos una falla que persista.", "error");
 
     const motivosStr = motivosArray.join(', ');
 
@@ -310,7 +313,7 @@ function App() {
 
     // DB update
     await supabase.from('camiones').update({ estado: 'liberado' }).eq('id', camionId);
-    alert("🚀 Camión liberado con éxito. Ahora reside en el Historial.");
+    addToast("🚀 Camión liberado con éxito. Ahora reside en el Historial.");
   };
 
   const eliminarCamion = async (camionId, flota) => {
@@ -336,7 +339,7 @@ function App() {
     
     // Validación básica de flota (Inicia con 2 y tiene 4 digitos)
     if (!camionEditando.flota.startsWith('2') || camionEditando.flota.length !== 4) {
-      return alert("El número de flota debe tener 4 dígitos y comenzar por 2.");
+      return addToast("El número de flota debe tener 4 dígitos y comenzar por 2.", "error");
     }
 
     const { error } = await supabase.from('camiones').update({
@@ -346,11 +349,11 @@ function App() {
       atencion: camionEditando.atencion
     }).eq('id', camionEditando.id);
 
-    if (error) return alert("Error al actualizar: " + error.message);
+    if (error) return addToast("Error al actualizar: " + error.message, "error");
 
     setCamionesRegistrados(prev => prev.map(c => c.id === camionEditando.id ? camionEditando : c));
     setCamionEditando(null);
-    alert("✅ Cambios guardados en la nube.");
+    addToast("✅ Cambios guardados en la nube.");
   };
 
   const prepararEdicion = (camion) => {
@@ -430,7 +433,107 @@ function App() {
     } : c));
 
     setCamionEditando(null);
-    alert("✅ Edición avanzada guardada y prioridad recalculada.");
+    addToast("✅ Edición avanzada guardada y prioridad recalculada.");
+  };
+
+  // ---------- FUNCIONES DE EXPORTACIÓN (REPORTES) ----------
+
+  const exportarAExcel = () => {
+    if (registrosFiltrados.length === 0) {
+      return addToast("No hay datos filtrados para exportar.", "error");
+    }
+
+    try {
+      addToast("⏳ Preparando archivo Excel...", "info");
+      
+      const datosExcel = registrosFiltrados.map(r => ({
+        "Flota": r.flota,
+        "Ubicación": r.mina,
+        "Operador": r.operador,
+        "Fallas Reportadas": r.fallas,
+        "Fecha Registro": r.time,
+        "VB G1": r.aprobado_g1 ? 'Aprobado' : '-',
+        "VB G2": r.aprobado_g2 ? 'Aprobado' : '-',
+        "VB G3": r.aprobado_g3 ? 'Aprobado' : '-',
+        "Estado Final": "LIBERADO"
+      }));
+
+      const worksheet = XLSX.utils.json_to_sheet(datosExcel);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Historial Mantenimiento");
+      XLSX.writeFile(workbook, `Historial_Drummond_Confort_${new Date().toLocaleDateString()}.xlsx`);
+      addToast("✅ Excel descargado con éxito.");
+    } catch (error) {
+      addToast("❌ Error al generar Excel: " + error.message, "error");
+    }
+  };
+
+  const generarPDF = (registro) => {
+    try {
+      addToast("⏳ Generando acta de trazabilidad...", "info");
+      const doc = new jsPDF();
+      
+      doc.setFillColor(31, 41, 55); 
+      doc.rect(0, 0, 210, 40, 'F');
+      
+      doc.setTextColor(255, 255, 255);
+      doc.setFontSize(22);
+      doc.text("DRUMMOND LTD.", 105, 20, { align: 'center' });
+      doc.setFontSize(12);
+      doc.text("REPORTE TÉCNICO DE TRAZABILIDAD - CAMIONES DE CONFORT", 105, 30, { align: 'center' });
+      
+      doc.setTextColor(0, 0, 0);
+      doc.setFontSize(14);
+      doc.setFont("helvetica", "bold");
+      doc.text(`Identificación de Unidad: ${registro.flota}`, 20, 55);
+      
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "normal");
+      doc.text(`Mina: ${registro.mina === 'PB' ? 'Pribbenow' : 'El Descanso'}`, 20, 65);
+      doc.text(`Operador Reportante: ${registro.operador}`, 20, 72);
+      doc.text(`Fecha de Liberación: ${new Date().toLocaleDateString()}`, 140, 65);
+      
+      doc.autoTable({
+        startY: 85,
+        head: [['Detalle de Fallas Intervniendas']],
+        body: (registro.fallas || '').split(', ').map(f => [f]),
+        theme: 'striped',
+        headStyles: { fillColor: [227, 25, 55], textColor: [255, 255, 255] }
+      });
+
+      const finalY = doc.lastAutoTable.finalY + 20;
+      doc.setFontSize(12);
+      doc.setFont("helvetica", "bold");
+      doc.text("HISTORIAL DE VALIDACIÓN POR GRUPOS", 20, finalY);
+      
+      doc.autoTable({
+        startY: finalY + 5,
+        head: [['Grupo de Turno', 'Visto Bueno (VB)', 'Estado']],
+        body: [
+          ['Grupo 1', registro.aprobado_g1 ? 'CONFIRMADO' : 'N/A', registro.aprobado_g1 ? 'Aceptado a Satisfacción' : 'Sin intervención'],
+          ['Grupo 2', registro.aprobado_g2 ? 'CONFIRMADO' : 'N/A', registro.aprobado_g2 ? 'Aceptado a Satisfacción' : 'Sin intervención'],
+          ['Grupo 3', registro.aprobado_g3 ? 'CONFIRMADO' : 'N/A', registro.aprobado_g3 ? 'Aceptado a Satisfacción' : 'Sin intervención'],
+        ],
+        theme: 'grid',
+        headStyles: { fillColor: [31, 41, 55] }
+      });
+      
+      const signY = doc.lastAutoTable.finalY + 40;
+      doc.line(20, signY, 80, signY);
+      doc.text("Firma Supervisor Turno", 20, signY + 5);
+      
+      doc.line(130, signY, 190, signY);
+      doc.text("V.B. Operaciones", 130, signY + 5);
+
+      doc.setFontSize(8);
+      doc.setTextColor(150);
+      doc.text(`Documento generado digitalmente por Drummond Confort System`, 105, 285, { align: 'center' });
+
+      doc.save(`Acta_Trazabilidad_${registro.flota}_${new Date().getTime()}.pdf`);
+      addToast(`✅ PDF del camión ${registro.flota} generado.`);
+    } catch (err) {
+      addToast("❌ Error al generar PDF: " + err.message, "error");
+    }
   };
 
   const handleDragOver = (e) => {
@@ -1045,7 +1148,7 @@ function App() {
                 <button 
                   className="btn btn-primary" 
                   style={{ backgroundColor: 'rgba(16, 185, 129, 0.7)', borderColor: 'rgba(255,255,255,0.4)', backdropFilter: 'blur(10px)', boxShadow: '0 4px 15px rgba(16, 185, 129, 0.2)' }}
-                  onClick={() => alert('⏳ Simulando: Generando consolidado maestro en Excel...')}
+                  onClick={exportarAExcel}
                 >
                   <FileSpreadsheet size={16} strokeWidth={2} /> Exportar a Excel
                 </button>
@@ -1124,7 +1227,7 @@ function App() {
                         <button 
                           className="btn btn-secondary" 
                           style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem', border: '1px solid rgba(227, 25, 55, 0.4)', color: 'var(--primary-red)', background: 'rgba(255, 255, 255, 0.4)', backdropFilter: 'blur(5px)' }}
-                          onClick={() => alert(`🖨️ Simulando: Generando PDF de Trazabilidad Histórica para el Camión ${registro.flota}`)}
+                          onClick={() => generarPDF(registro)}
                         >
                           <div style={{display: 'flex', alignItems: 'center', gap: '0.3rem'}}>
                             <FileText size={15} strokeWidth={1.5} /> Ver PDF
