@@ -8,7 +8,7 @@ import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
 
 function App() {
-  // Versión del Sistema: 1.2.7 (Trazabilidad de Conductores por Turno)
+  // Versión del Sistema: 1.2.8 (Mina en Mayúsculas y Trazabilidad Total)
   const [activeTab, setActiveTab] = useState(() => localStorage.getItem('drummond_activeTab') || 'dashboard');
 
   // Supabase Auth Session State
@@ -1241,7 +1241,7 @@ function App() {
                                  borderLeft: '3px solid var(--secondary-blue)'
                                }}>
                                  <Truck size={14} style={{ color: 'var(--secondary-blue)' }} />
-                                 <span>{nombreOp.toUpperCase()} {grupoLabel} / {String(registro.mina || '').toLowerCase()}</span>
+                                 <span>{nombreOp.toUpperCase()} {grupoLabel} / {String(registro.mina || '').toUpperCase()}</span>
                                </div>
                              );
                           })}
