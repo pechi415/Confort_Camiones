@@ -832,7 +832,12 @@ function App() {
                         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.4rem' }}>
                           <Truck size={18} color="var(--primary-red)" />
                           <strong style={{ fontSize: '1.25rem', color: 'var(--primary-black)', letterSpacing: '-0.5px' }}>{camion.flota}</strong>
-                          <div style={{ marginLeft: 'auto' }}>
+                          <div style={{ marginLeft: 'auto', display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
+                            {camion.consenso > 1 && (
+                              <div title={`Consenso de ${camion.consenso} grupos`} style={{ background: '#eff6ff', color: '#2563eb', padding: '0.2rem 0.4rem', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '0.2rem', border: '1px solid #dbeafe' }}>
+                                <Users size={12} /> {camion.consenso}
+                              </div>
+                            )}
                             {camion.atencion === 'CRÍTICA' && <span><Siren size={18} color="#ef4444" strokeWidth={2} /></span>}
                             {camion.atencion === 'ALTA' && <span><AlertTriangle size={18} color="#eab308" strokeWidth={2} /></span>}
                             {camion.atencion === 'NORMAL' && <span><CheckCircle2 size={18} color="#10b981" strokeWidth={2} /></span>}
@@ -1422,33 +1427,92 @@ function App() {
                 className="btn btn-primary" 
                 disabled={!isFlotaValid || !operador || totalImpacto === 0}
                 onClick={async () => {
-                    const atencionLabel = totalImpacto > 50 ? 'CRÍTICA' : totalImpacto > 20 ? 'ALTA' : 'NORMAL';
+                    const camionExistente = camionesRegistrados.find(c => c.flota === flota && c.estado !== 'liberado');
                     
-                    const fallasDetalladas = Object.keys(selectedDanos).map(id => {
-                      const nombreFalla = fallas.find(f => f.id === id)?.nombre;
-                      const comentario = observaciones[id] ? ` (${observaciones[id]})` : '';
-                      return `${nombreFalla}${comentario}`;
-                    }).join(', ');
+                    if (camionExistente) {
+                        const confirmar = window.confirm(`El camión ${flota} ya tiene un reporte activo del grupo ${camionExistente.grupo}. ¿Deseas integrar este nuevo reporte y aumentar su prioridad por consenso?`);
+                        if (!confirmar) return;
 
-                    const nuevoCamion = {
-                      flota: flota,
-                      operador: operador,
-                      mina: mina,
-                      grupo: grupo, // Aseguramos el grupo
-                      supervisor: session.nombre, // Guardamos quién hace el reporte
-                      estado: 'espera',
-                      atencion: atencionLabel,
-                      fallas: fallasDetalladas,
-                      time: new Date().toLocaleString(),
-                      puntos: totalImpacto
-                    };
+                        // 1. Integración de Grupos y Supervisores
+                        const listaGrupos = Array.from(new Set([...camionExistente.grupo.split(', '), grupo])).sort();
+                        const listaSupervisores = Array.from(new Set([...camionExistente.supervisor.split(', '), session.nombre]));
+                        const numGrupos = listaGrupos.length;
 
-                    const { data, error } = await supabase.from('camiones').insert([nuevoCamion]).select();
+                        // 2. Integración de Fallas y Puntos Base
+                        // Identificamos IDs de fallas nuevas y existentes para desduplicar puntos
+                        const fallasActualesIds = new Set();
+                        fallas.forEach(f => {
+                          if (camionExistente.fallas.includes(f.nombre)) fallasActualesIds.add(f.id);
+                        });
+                        
+                        const todasFallasIds = new Set([...Array.from(fallasActualesIds), ...Object.keys(selectedDanos)]);
+                        
+                        const puntosBase = Array.from(todasFallasIds).reduce((acc, id) => {
+                          const f = fallas.find(x => x.id === id);
+                          return acc + (f ? f.impacto : 0);
+                        }, 0);
 
-                    if (error) return alert('Error al registrar camión: ' + error.message);
+                        // 3. Algoritmo de Prioridad Escalable (Bono Consenso)
+                        const bonoConsenso = (numGrupos - 1) * 30;
+                        const puntosFinales = puntosBase + bonoConsenso;
+                        const atencionLabel = puntosFinales > 50 ? 'CRÍTICA' : puntosFinales > 20 ? 'ALTA' : 'NORMAL';
 
-                    setCamionesRegistrados([data[0], ...camionesRegistrados]);
-                    alert('✅ Camión ' + flota + ' enviado a la Lista de Espera con éxito.');
+                        // 4. Construcción del string de fallas consolidado
+                        const fallasConsolidadas = Array.from(todasFallasIds).map(id => {
+                          const f = fallas.find(x => x.id === id);
+                          const esNueva = selectedDanos[id];
+                          const obs = esNueva ? observaciones[id] : null; // Priorizamos obs nuevas si coinciden? No, mejor mantener original.
+                          // Para simplificar, usamos los nombres de fallas unicos
+                          return f.nombre + (obs ? ` (${obs})` : '');
+                        }).join(', ');
+
+                        const camionActualizado = {
+                          ...camionExistente,
+                          grupo: listaGrupos.join(', '),
+                          supervisor: listaSupervisores.join(', '),
+                          fallas: fallasConsolidadas,
+                          puntos: puntosFinales,
+                          atencion: atencionLabel,
+                          consenso: numGrupos // Nuevo campo para UI
+                        };
+
+                        const { error } = await supabase.from('camiones').update(camionActualizado).eq('id', camionExistente.id);
+                        if (error) return alert('Error al integrar reporte: ' + error.message);
+
+                        setCamionesRegistrados(prev => prev.map(c => c.id === camionExistente.id ? camionActualizado : c));
+                        alert(`✅ Reporte integrado. El camión ${flota} ahora tiene ${puntosFinales} puntos (Bono Consenso: +${bonoConsenso}).`);
+
+                    } else {
+                        // Lógica de Inserción Normal (Primer reporte)
+                        const atencionLabel = totalImpacto > 50 ? 'CRÍTICA' : totalImpacto > 20 ? 'ALTA' : 'NORMAL';
+                        
+                        const fallasDetalladas = Object.keys(selectedDanos).map(id => {
+                          const nombreFalla = fallas.find(f => f.id === id)?.nombre;
+                          const comentario = observaciones[id] ? ` (${observaciones[id]})` : '';
+                          return `${nombreFalla}${comentario}`;
+                        }).join(', ');
+
+                        const nuevoCamion = {
+                          flota: flota,
+                          operador: operador,
+                          mina: mina,
+                          grupo: grupo,
+                          supervisor: session.nombre,
+                          estado: 'espera',
+                          atencion: atencionLabel,
+                          fallas: fallasDetalladas,
+                          time: new Date().toLocaleString(),
+                          puntos: totalImpacto,
+                          consenso: 1
+                        };
+
+                        const { data, error } = await supabase.from('camiones').insert([nuevoCamion]).select();
+                        if (error) return alert('Error al registrar camión: ' + error.message);
+
+                        setCamionesRegistrados([data[0], ...camionesRegistrados]);
+                        alert('✅ Camión ' + flota + ' enviado a la Lista de Espera con éxito.');
+                    }
+
                     setActiveTab('dashboard');
                     setFlota(''); setOperador(''); setSelectedDanos({}); setObservaciones({});
                 }}
