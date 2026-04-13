@@ -68,7 +68,7 @@ const limpiarFallasIA = (fallasStr) => {
 };
 
 function App() {
-  // Versión del Sistema: 1.4.2 (IA con Normalización y Palabras Clave)
+  // Versión del Sistema: 1.4.3 (Renombrar a Operador Permanente)
   const [activeTab, setActiveTab] = useState(() => localStorage.getItem('drummond_activeTab') || 'dashboard');
 
   // Supabase Auth Session State
@@ -551,7 +551,7 @@ function App() {
       doc.setFontSize(10);
       doc.setFont("helvetica", "normal");
       doc.text(`Mina: ${registro.mina === 'PB' ? 'Pribbenow' : 'El Descanso'}`, 20, 65);
-      doc.text(`Operador (Conductor): ${registro.operador}`, 20, 72);
+      doc.text(`Operador Permanente: ${registro.operador}`, 20, 72);
       doc.setFont("helvetica", "bold");
       doc.text(`Trazabilidad de Conductores por Turno:`, 20, 79);
       doc.setFont("helvetica", "normal");
@@ -1267,7 +1267,7 @@ function App() {
                     <th>Fallas Reparadas</th>
                     <th>Ingreso a Fila</th>
                     <th>Tiempo de Ciclo</th>
-                    <th>Operador / Mina</th>
+                    <th>Operador Permanente / Mina</th>
                     <th>Aprobado Por</th>
                     <th>Reporte</th>
                     {session.role === 'admin' && <th style={{ textAlign: 'center' }}>Acciones</th>}
@@ -1992,7 +1992,7 @@ function App() {
                    <span style={{ fontSize: '0.85rem', color: '#0c4a6e', fontWeight: 'bold' }}>{selectedReport.supervisor || 'N/A'}</span>
                 </div>
                 <div style={{ background: '#f8fafc', padding: '1rem', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-                   <span style={{ display: 'block', fontSize: '0.7rem', color: '#64748b', fontWeight: 'bold' }}>OPERADOR / CONDUCTOR:</span>
+                   <span style={{ display: 'block', fontSize: '0.7rem', color: '#64748b', fontWeight: 'bold' }}>OPERADOR PERMANENTE:</span>
                    <span style={{ fontSize: '0.85rem', color: '#1e293b' }}>{selectedReport.operador || 'No asignado'}</span>
                 </div>
               </div>
