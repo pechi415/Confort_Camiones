@@ -67,6 +67,8 @@ function App() {
   const [camionEditando, setCamionEditando] = useState(null); // Para el Modal de edición rápida camión
   const [selectedDanosEdit, setSelectedDanosEdit] = useState({});
   const [observacionesEdit, setObservacionesEdit] = useState({});
+  const [camionInGarantia, setCamionInGarantia] = useState(null); // Para el Modal de Motivo de Garantía
+  const [pendientesGarantia, setPendientesGarantia] = useState({});
 
   // Algoritmo de Inteligencia Básica para auto-completar el username corporativo (Sin colisiones)
   const generarAliasBase = (nombreCompleto, bdActual) => {
@@ -174,7 +176,15 @@ function App() {
     e.preventDefault();
     const idStr = e.dataTransfer.getData('camion_id');
     if (!idStr) return;
-    
+
+    // Interceptamos si es paso a GARANTÍA
+    if (nuevoEstado === 'garantia') {
+      const camion = camionesRegistrados.find(c => c.id.toString() === idStr);
+      setCamionInGarantia(camion);
+      setPendientesGarantia({}); // Reset selección
+      return; 
+    }
+
     // UI Optimista (Instantáneo para el operador)
     setCamionesRegistrados(prev => 
       prev.map(c => c.id.toString() === idStr ? { ...c, estado: nuevoEstado } : c)
@@ -182,6 +192,31 @@ function App() {
 
     // Persistencia Oficial a la Nube (Asíncrono en segundo plano)
     await supabase.from('camiones').update({ estado: nuevoEstado }).eq('id', parseInt(idStr));
+  };
+
+  // Función para confirmar el envío a garantía con motivos
+  const confirmarGarantia = async () => {
+    if (!camionInGarantia) return;
+
+    const motivosStr = Object.keys(pendientesGarantia)
+      .filter(id => pendientesGarantia[id])
+      .map(id => fallas.find(f => f.id === id)?.nombre)
+      .join(', ');
+
+    if (!motivosStr) return alert("Por favor, selecciona al menos una falla que persista.");
+
+    // Actualizamos localmente
+    setCamionesRegistrados(prev => 
+      prev.map(c => c.id === camionInGarantia.id ? { ...c, estado: 'garantia', motivo_garantia: motivosStr } : c)
+    );
+
+    // Actualizamos en Supabase
+    await supabase.from('camiones').update({ 
+      estado: 'garantia', 
+      motivo_garantia: motivosStr 
+    }).eq('id', camionInGarantia.id);
+
+    setCamionInGarantia(null);
   };
 
   const toggleAprobacion = async (camionId, grupo, valorActual) => {
@@ -808,6 +843,16 @@ function App() {
                         >
                           <MonitorCheck size={14} /> Ver Diagnóstico
                         </button>
+
+                        {/* Mostrar motivo de garantía si aplica */}
+                        {camion.estado === 'garantia' && camion.motivo_garantia && (
+                          <div style={{ marginBottom: '0.8rem', padding: '0.6rem', background: '#fff1f2', border: '1px solid #fecaca', borderRadius: '6px' }}>
+                            <div style={{ fontSize: '0.7rem', fontWeight: 'bold', color: '#be123c', marginBottom: '0.2rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                              <ShieldAlert size={12} /> FALLAS PENDIENTES:
+                            </div>
+                            <div style={{ fontSize: '0.75rem', color: '#9f1239', lineHeight: '1.2' }}>{camion.motivo_garantia}</div>
+                          </div>
+                        )}
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                           <span style={{ fontSize: '0.75rem', fontWeight: 'bold', color: '#6b7280' }}>Prioridad:</span>
                           <span className="badge" style={{ 
@@ -1391,6 +1436,85 @@ function App() {
           </div>
         )}
 
+
+        {/* Modal de Motivo de Garantía */}
+        {camionInGarantia && (
+          <div 
+            className="fade-in" 
+            style={{ 
+              position: 'fixed', 
+              top: 0, left: 0, right: 0, bottom: 0, 
+              backgroundColor: 'rgba(0,0,0,0.6)', 
+              backdropFilter: 'blur(4px)',
+              display: 'flex', 
+              alignItems: 'center', 
+              justifyContent: 'center', 
+              zIndex: 1000,
+              padding: '1rem'
+            }}
+          >
+            <div 
+              style={{ 
+                backgroundColor: 'white', 
+                padding: '2rem', 
+                borderRadius: '16px', 
+                width: '100%', 
+                maxWidth: '500px', 
+                boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04)'
+              }}
+            >
+              <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
+                <div style={{ width: '50px', height: '50px', background: '#fee2e2', color: '#ef4444', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem' }}>
+                  <ShieldAlert size={28} />
+                </div>
+                <h2 style={{ margin: 0, color: 'var(--primary-black)' }}>Reportar Garantía</h2>
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginTop: '0.5rem' }}>Camión {camionInGarantia.flota}: Marca las fallas que persisten y motivan el regreso a garantía.</p>
+              </div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', marginBottom: '2rem', maxHeight: '300px', overflowY: 'auto', padding: '0.5rem' }}>
+                {fallas.map(f => (
+                  <label key={f.id} style={{ 
+                    display: 'flex', 
+                    alignItems: 'center', 
+                    gap: '1rem', 
+                    padding: '0.8rem', 
+                    border: '1px solid',
+                    borderColor: pendientesGarantia[f.id] ? '#fecaca' : '#e5e7eb',
+                    background: pendientesGarantia[f.id] ? '#fff1f2' : 'white',
+                    borderRadius: '8px',
+                    cursor: 'pointer',
+                    transition: 'all 0.2s'
+                  }}>
+                    <input 
+                      type="checkbox" 
+                      checked={!!pendientesGarantia[f.id]}
+                      onChange={() => setPendientesGarantia(prev => ({ ...prev, [f.id]: !prev[f.id] }))}
+                      style={{ width: '18px', height: '18px', accentColor: '#ef4444' }}
+                    />
+                    <span style={{ fontSize: '0.9rem', color: pendientesGarantia[f.id] ? '#9f1239' : 'var(--text-main)', fontWeight: pendientesGarantia[f.id] ? '600' : 'normal' }}>{f.nombre}</span>
+                  </label>
+                ))}
+              </div>
+
+              <div style={{ display: 'flex', gap: '1rem' }}>
+                <button 
+                  className="btn btn-secondary" 
+                  onClick={() => setCamionInGarantia(null)}
+                  style={{ flex: 1 }}
+                >
+                  Cancelar
+                </button>
+                <button 
+                  className="btn btn-primary" 
+                  onClick={confirmarGarantia}
+                  style={{ flex: 2, background: '#ef4444', borderColor: '#ef4444' }}
+                >
+                  Enviar a Garantía
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
 
         {/* Modal de Detalles Técnicos (Global) */}
         {selectedReport && (
