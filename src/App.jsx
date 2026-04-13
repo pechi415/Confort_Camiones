@@ -543,7 +543,7 @@ function App() {
             </div>
             <div>
               <div style={{ color: 'white', fontWeight: 'bold', fontSize: '0.85rem' }}>{session.nombre}</div>
-              <div style={{ fontSize: '0.75rem', textTransform: 'capitalize' }}>{session.role} ({session.mina})</div>
+              <div style={{ fontSize: '0.75rem', textTransform: 'capitalize' }}>Mina {session.mina}</div>
             </div>
           </div>
           <button 
