@@ -8,7 +8,7 @@ import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
 
 function App() {
-  // Versión del Sistema: 1.2.6 (Formato Detallado de Operadores de Grupo)
+  // Versión del Sistema: 1.2.7 (Trazabilidad de Conductores por Turno)
   const [activeTab, setActiveTab] = useState(() => localStorage.getItem('drummond_activeTab') || 'dashboard');
 
   // Supabase Auth Session State
@@ -493,9 +493,10 @@ function App() {
       doc.text(`Mina: ${registro.mina === 'PB' ? 'Pribbenow' : 'El Descanso'}`, 20, 65);
       doc.text(`Operador (Conductor): ${registro.operador}`, 20, 72);
       doc.setFont("helvetica", "bold");
-      doc.text(`Trazabilidad de Reporte:`, 20, 79);
+      doc.text(`Trazabilidad de Conductores por Turno:`, 20, 79);
       doc.setFont("helvetica", "normal");
-      doc.text(`${registro.supervisor || 'N/A'}`, 65, 79);
+      doc.text(`${registro.operador || 'N/A'}`, 20, 86);
+      doc.text(`Supervisor(es) de Gestión: ${registro.supervisor || 'N/A'}`, 20, 93);
       doc.text(`Fecha de Liberación: ${new Date().toLocaleDateString()}`, 140, 65);
       
       autoTable(doc, {
@@ -1220,29 +1221,27 @@ function App() {
                       <td style={{ fontSize: '0.85rem' }}>{registro.time}</td>
                       <td style={{ fontSize: '0.85rem' }}>Calculando...</td>
                       <td style={{ fontSize: '0.85rem' }}>
-                        <div style={{ color: '#9ca3af', fontSize: '0.7rem', marginBottom: '0.4rem', borderBottom: '1px solid #f1f5f9', paddingBottom: '0.2rem' }}>
-                           Conductor: <b>{registro.operador}</b>
-                        </div>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-                          {(registro.supervisor || 'N/A').split(', ').map((sup, idx) => {
+                          {(registro.operador || 'N/A').split(', ').map((op, idx) => {
                              // Transformamos "G1: Carlos Perez" en "CARLOS PEREZ G1 / mina"
-                             const parts = sup.split(': ');
+                             const parts = op.split(': ');
                              const grupoLabel = parts.length > 1 ? parts[0] : '';
-                             const nombreSup = parts.length > 1 ? parts[1] : parts[0];
+                             const nombreOp = parts.length > 1 ? parts[1] : parts[0];
                              return (
                                <div key={idx} style={{ 
                                  background: 'rgba(99, 102, 241, 0.05)', 
-                                 padding: '0.3rem 0.5rem', 
-                                 borderRadius: '6px',
+                                 padding: '0.4rem 0.6rem', 
+                                 borderRadius: '8px',
                                  color: 'var(--primary-black)', 
-                                 fontWeight: '500',
-                                 fontSize: '0.8rem',
+                                 fontWeight: '600',
+                                 fontSize: '0.85rem',
                                  display: 'flex',
                                  alignItems: 'center',
-                                 gap: '0.3rem'
+                                 gap: '0.4rem',
+                                 borderLeft: '3px solid var(--secondary-blue)'
                                }}>
-                                 <Users size={12} style={{ color: '#6366f1' }} />
-                                 <span>{nombreSup.toUpperCase()} {grupoLabel} / {String(registro.mina || '').toLowerCase()}</span>
+                                 <Truck size={14} style={{ color: 'var(--secondary-blue)' }} />
+                                 <span>{nombreOp.toUpperCase()} {grupoLabel} / {String(registro.mina || '').toLowerCase()}</span>
                                </div>
                              );
                           })}
@@ -1652,11 +1651,17 @@ function App() {
                     const camionExistente = camionesRegistrados.find(c => c.flota === flota && c.estado !== 'liberado');
                     
                     if (camionExistente) {
-                        // 1. Integración de Grupos y Supervisores
+                        // 1. Integración de Grupos, Conductores y Supervisores
                         const listaGrupos = Array.from(new Set([...camionExistente.grupo.split(', '), grupo])).sort();
+                        
                         const nuevoRegSup = `G${grupo}: ${session.nombre}`;
                         const supsActuales = (camionExistente.supervisor || '').split(', ').filter(Boolean);
                         const listaSupervisores = Array.from(new Set([...supsActuales, nuevoRegSup]));
+
+                        const nuevoRegOp = `G${grupo}: ${operador}`;
+                        const opsActuales = (camionExistente.operador || '').split(', ').filter(Boolean);
+                        const listaOperadores = Array.from(new Set([...opsActuales, nuevoRegOp]));
+
                         const numGrupos = listaGrupos.length;
 
                         // 2. Integración de Fallas y Puntos Base
@@ -1691,6 +1696,7 @@ function App() {
                           ...camionExistente,
                           grupo: listaGrupos.join(', '),
                           supervisor: listaSupervisores.join(', '),
+                          operador: listaOperadores.join(', '),
                           fallas: fallasConsolidadas,
                           puntos: puntosFinales,
                           atencion: atencionLabel,
@@ -1715,7 +1721,7 @@ function App() {
 
                         const nuevoCamion = {
                           flota: flota,
-                          operador: operador,
+                          operador: `G${grupo}: ${operador}`,
                           mina: mina,
                           grupo: grupo,
                           supervisor: `G${grupo}: ${session.nombre}`,
