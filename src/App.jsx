@@ -181,7 +181,14 @@ function App() {
     if (nuevoEstado === 'garantia') {
       const camion = camionesRegistrados.find(c => c.id.toString() === idStr);
       setCamionInGarantia(camion);
-      setPendientesGarantia({}); // Reset selección
+      // Inicializamos pendientes con formato de objeto { selected, comment }
+      const iniciales = {};
+      fallas.forEach(f => {
+        if ((camion?.fallas || '').includes(f.nombre)) {
+          iniciales[f.id] = { selected: false, comment: '' };
+        }
+      });
+      setPendientesGarantia(iniciales);
       return; 
     }
 
@@ -194,16 +201,21 @@ function App() {
     await supabase.from('camiones').update({ estado: nuevoEstado }).eq('id', parseInt(idStr));
   };
 
-  // Función para confirmar el envío a garantía con motivos
+  // Función para confirmar el envío a garantía con motivos detallados
   const confirmarGarantia = async () => {
     if (!camionInGarantia) return;
 
-    const motivosStr = Object.keys(pendientesGarantia)
-      .filter(id => pendientesGarantia[id])
-      .map(id => fallas.find(f => f.id === id)?.nombre)
-      .join(', ');
+    const motivosArray = Object.keys(pendientesGarantia)
+      .filter(id => pendientesGarantia[id].selected)
+      .map(id => {
+        const nombre = fallas.find(f => f.id === id)?.nombre;
+        const comment = pendientesGarantia[id].comment ? `: ${pendientesGarantia[id].comment}` : '';
+        return `${nombre}${comment}`;
+      });
 
-    if (!motivosStr) return alert("Por favor, selecciona al menos una falla que persista.");
+    if (motivosArray.length === 0) return alert("Por favor, selecciona al menos una falla que persista.");
+
+    const motivosStr = motivosArray.join(', ');
 
     // Actualizamos localmente
     setCamionesRegistrados(prev => 
@@ -844,9 +856,16 @@ function App() {
                           <MonitorCheck size={14} /> Ver Diagnóstico
                         </button>
 
-                        {/* Mostrar motivo de garantía si aplica */}
+                        {/* Mostrar motivo de garantía si aplica con transparencia */}
                         {camion.estado === 'garantia' && camion.motivo_garantia && (
-                          <div style={{ marginBottom: '0.8rem', padding: '0.6rem', background: '#fff1f2', border: '1px solid #fecaca', borderRadius: '6px' }}>
+                          <div style={{ 
+                            marginBottom: '0.8rem', 
+                            padding: '0.6rem', 
+                            background: 'rgba(254, 226, 226, 0.4)', 
+                            backdropFilter: 'blur(5px)',
+                            border: '1px solid rgba(239, 68, 68, 0.2)', 
+                            borderRadius: '8px' 
+                          }}>
                             <div style={{ fontSize: '0.7rem', fontWeight: 'bold', color: '#be123c', marginBottom: '0.2rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
                               <ShieldAlert size={12} /> FALLAS PENDIENTES:
                             </div>
@@ -1437,15 +1456,16 @@ function App() {
         )}
 
 
-        {/* Modal de Motivo de Garantía */}
+        {/* Modal de Motivo de Garantía Estilo Glassmorphism */}
         {camionInGarantia && (
           <div 
             className="fade-in" 
             style={{ 
               position: 'fixed', 
               top: 0, left: 0, right: 0, bottom: 0, 
-              backgroundColor: 'rgba(0,0,0,0.6)', 
-              backdropFilter: 'blur(4px)',
+              backgroundColor: 'rgba(0,0,0,0.5)', 
+              backdropFilter: 'blur(10px)',
+              WebkitBackdropFilter: 'blur(10px)',
               display: 'flex', 
               alignItems: 'center', 
               justifyContent: 'center', 
@@ -1455,44 +1475,62 @@ function App() {
           >
             <div 
               style={{ 
-                backgroundColor: 'white', 
+                backgroundColor: 'rgba(255, 255, 255, 0.85)', 
+                backdropFilter: 'blur(20px)',
+                WebkitBackdropFilter: 'blur(20px)',
                 padding: '2rem', 
-                borderRadius: '16px', 
+                borderRadius: '24px', 
                 width: '100%', 
-                maxWidth: '500px', 
-                boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04)'
+                maxWidth: '550px', 
+                boxShadow: '0 25px 50px -12px rgba(0,0,0,0.25)',
+                border: '1px solid rgba(255,255,255,0.4)'
               }}
             >
               <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
-                <div style={{ width: '50px', height: '50px', background: '#fee2e2', color: '#ef4444', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem' }}>
+                <div style={{ width: '50px', height: '50px', background: 'rgba(239, 68, 68, 0.15)', color: '#ef4444', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem' }}>
                   <ShieldAlert size={28} />
                 </div>
-                <h2 style={{ margin: 0, color: 'var(--primary-black)' }}>Reportar Garantía</h2>
-                <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginTop: '0.5rem' }}>Camión {camionInGarantia.flota}: Marca las fallas que persisten y motivan el regreso a garantía.</p>
+                <h2 style={{ margin: 0, color: 'var(--primary-black)', fontSize: '1.5rem' }}>Anotar Pendientes</h2>
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginTop: '0.5rem' }}>Camión {camionInGarantia.flota}: Selecciona las fallas originales que persisten.</p>
               </div>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '0.6rem', marginBottom: '2rem', maxHeight: '300px', overflowY: 'auto', padding: '0.5rem' }}>
-                {fallas.map(f => (
-                  <label key={f.id} style={{ 
-                    display: 'flex', 
-                    alignItems: 'center', 
-                    gap: '1rem', 
-                    padding: '0.8rem', 
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '2rem', maxHeight: '350px', overflowY: 'auto', padding: '0.5rem' }}>
+                {fallas.filter(f => (camionInGarantia?.fallas || '').includes(f.nombre)).map(f => (
+                  <div key={f.id} style={{ 
+                    padding: '1rem', 
+                    background: pendientesGarantia[f.id]?.selected ? 'rgba(239, 68, 68, 0.05)' : 'rgba(255, 255, 255, 0.4)',
+                    borderRadius: '12px',
                     border: '1px solid',
-                    borderColor: pendientesGarantia[f.id] ? '#fecaca' : '#e5e7eb',
-                    background: pendientesGarantia[f.id] ? '#fff1f2' : 'white',
-                    borderRadius: '8px',
-                    cursor: 'pointer',
+                    borderColor: pendientesGarantia[f.id]?.selected ? 'rgba(239, 68, 68, 0.2)' : 'rgba(0, 0, 0, 0.05)',
                     transition: 'all 0.2s'
                   }}>
-                    <input 
-                      type="checkbox" 
-                      checked={!!pendientesGarantia[f.id]}
-                      onChange={() => setPendientesGarantia(prev => ({ ...prev, [f.id]: !prev[f.id] }))}
-                      style={{ width: '18px', height: '18px', accentColor: '#ef4444' }}
-                    />
-                    <span style={{ fontSize: '0.9rem', color: pendientesGarantia[f.id] ? '#9f1239' : 'var(--text-main)', fontWeight: pendientesGarantia[f.id] ? '600' : 'normal' }}>{f.nombre}</span>
-                  </label>
+                    <label style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', cursor: 'pointer', marginBottom: pendientesGarantia[f.id]?.selected ? '0.8rem' : 0 }}>
+                      <input 
+                        type="checkbox" 
+                        checked={!!pendientesGarantia[f.id]?.selected}
+                        onChange={() => setPendientesGarantia(prev => ({ 
+                          ...prev, 
+                          [f.id]: { ...prev[f.id], selected: !prev[f.id]?.selected } 
+                        }))}
+                        style={{ width: '18px', height: '18px', accentColor: '#ef4444' }}
+                      />
+                      <span style={{ fontSize: '0.95rem', fontWeight: 'bold', color: 'var(--primary-black)' }}>{f.nombre}</span>
+                    </label>
+                    
+                    {pendientesGarantia[f.id]?.selected && (
+                      <input 
+                        type="text"
+                        placeholder="Explica qué sigue fallando..."
+                        className="input-field"
+                        style={{ padding: '0.4rem 0.6rem', fontSize: '0.85rem', background: 'white' }}
+                        value={pendientesGarantia[f.id]?.comment || ''}
+                        onChange={(e) => setPendientesGarantia(prev => ({
+                          ...prev,
+                          [f.id]: { ...prev[f.id], comment: e.target.value }
+                        }))}
+                      />
+                    )}
+                  </div>
                 ))}
               </div>
 
@@ -1500,16 +1538,16 @@ function App() {
                 <button 
                   className="btn btn-secondary" 
                   onClick={() => setCamionInGarantia(null)}
-                  style={{ flex: 1 }}
+                  style={{ flex: 1, background: 'rgba(0,0,0,0.05)', border: 'none' }}
                 >
                   Cancelar
                 </button>
                 <button 
                   className="btn btn-primary" 
                   onClick={confirmarGarantia}
-                  style={{ flex: 2, background: '#ef4444', borderColor: '#ef4444' }}
+                  style={{ flex: 2, background: 'var(--primary-red)', border: 'none', boxShadow: '0 4px 12px rgba(227, 25, 55, 0.2)' }}
                 >
-                  Enviar a Garantía
+                  Confirmar Garantía
                 </button>
               </div>
             </div>
