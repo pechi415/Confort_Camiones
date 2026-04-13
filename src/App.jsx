@@ -7,8 +7,26 @@ import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
 
+// Motor de Inteligencia Algorítmica (Fuzzy Logic) para Deduplicación de Reportes
+function calcularSimilitudIA(s1, s2) {
+  if (!s1 || !s2) return 0;
+  const n1 = s1.toLowerCase().replace(/\s+/g, '');
+  const n2 = s2.toLowerCase().replace(/\s+/g, '');
+  if (n1 === n2) return 1;
+  const getBigrams = (str) => {
+    const bigrams = new Set();
+    for (let i = 0; i < str.length - 1; i++) bigrams.add(str.substring(i, i + 2));
+    return bigrams;
+  };
+  const b1 = getBigrams(n1);
+  const b2 = getBigrams(n2);
+  let intersection = 0;
+  for (const b of b1) if (b2.has(b)) intersection++;
+  return (2 * intersection) / (b1.size + b2.size);
+}
+
 function App() {
-  // Versión del Sistema: 1.3.1 (Limpieza de Comentarios Redundantes)
+  // Versión del Sistema: 1.3.2 (Inteligencia Algorítmica Sorensen-Dice)
   const [activeTab, setActiveTab] = useState(() => localStorage.getItem('drummond_activeTab') || 'dashboard');
 
   // Supabase Auth Session State
@@ -1700,12 +1718,17 @@ function App() {
                           const obsViejas = obsAnteriores[id] || '';
                           const obsNuevas = observaciones[id] || '';
                           
-                          // Limpieza Inteligente: Filtrar redundancias si un comentario contiene a otro
+                          // Motor de Inteligencia Algorítmica (Detección Semántica / Lógica Difusa)
                           const todasObs = [obsViejas, obsNuevas].filter(Boolean).sort((a, b) => b.length - a.length);
                           const unicas = [];
                           todasObs.forEach(curr => {
-                            const esRedundante = unicas.some(larga => larga.toLowerCase().includes(curr.toLowerCase()));
-                            if (!esRedundante) unicas.push(curr);
+                            // Si la similitud con una observación ya aceptada es > 65%, descartar por redundante
+                            const esSimil = unicas.some(larga => {
+                               const sim = calcularSimilitudIA(larga, curr);
+                               const esSub = larga.toLowerCase().includes(curr.toLowerCase());
+                               return sim > 0.65 || esSub;
+                            });
+                            if (!esSimil) unicas.push(curr);
                           });
                           
                           const combined = unicas.join(' | ');
