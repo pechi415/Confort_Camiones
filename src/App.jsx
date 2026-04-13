@@ -3,8 +3,8 @@ import './index.css';
 import { LayoutDashboard, FileText, Blocks, ClipboardList, ShieldAlert, MonitorCheck, PlusCircle, Trash2, Edit3, Settings, Shield, Unlock, LockKeyhole, Lock, RefreshCcw, Users, AlertTriangle, CheckCircle2, Wrench, Activity, Truck, Search, Hourglass, SearchCheck, Award, FileSpreadsheet, MapPin, Calendar, Siren } from 'lucide-react';
 
 import { supabase } from './supabaseClient';
-import { jsPDF } from 'jspdf';
-import 'jspdf-autotable';
+import jsPDF from 'jspdf';
+import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
 
 function App() {
@@ -494,9 +494,9 @@ function App() {
       doc.text(`Operador Reportante: ${registro.operador}`, 20, 72);
       doc.text(`Fecha de Liberación: ${new Date().toLocaleDateString()}`, 140, 65);
       
-      doc.autoTable({
+      autoTable(doc, {
         startY: 85,
-        head: [['Detalle de Fallas Intervniendas']],
+        head: [['Detalle de Fallas Intervennidas']],
         body: (registro.fallas || '').split(', ').map(f => [f]),
         theme: 'striped',
         headStyles: { fillColor: [227, 25, 55], textColor: [255, 255, 255] }
@@ -507,7 +507,7 @@ function App() {
       doc.setFont("helvetica", "bold");
       doc.text("HISTORIAL DE VALIDACIÓN POR GRUPOS", 20, finalY);
       
-      doc.autoTable({
+      autoTable(doc, {
         startY: finalY + 5,
         head: [['Grupo de Turno', 'Visto Bueno (VB)', 'Estado']],
         body: [
