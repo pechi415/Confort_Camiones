@@ -8,7 +8,7 @@ import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
 
 function App() {
-  // Versión del Sistema: 1.2.2 (Columna Historial Supervisores Dedicada)
+  // Versión del Sistema: 1.2.3 (Sincronización Total - Supervisores en PDF y Tabla)
   const [activeTab, setActiveTab] = useState(() => localStorage.getItem('drummond_activeTab') || 'dashboard');
 
   // Supabase Auth Session State
@@ -491,7 +491,8 @@ function App() {
       doc.setFontSize(10);
       doc.setFont("helvetica", "normal");
       doc.text(`Mina: ${registro.mina === 'PB' ? 'Pribbenow' : 'El Descanso'}`, 20, 65);
-      doc.text(`Operador Reportante: ${registro.operador}`, 20, 72);
+      doc.text(`Operador (Conductor): ${registro.operador}`, 20, 72);
+      doc.text(`Reportado Por: ${registro.supervisor || 'N/A'}`, 20, 79);
       doc.text(`Fecha de Liberación: ${new Date().toLocaleDateString()}`, 140, 65);
       
       autoTable(doc, {
