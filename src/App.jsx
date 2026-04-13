@@ -5,7 +5,7 @@ import { LayoutDashboard, FileText, Blocks, ClipboardList, ShieldAlert, MonitorC
 import { supabase } from './supabaseClient';
 
 function App() {
-  const [activeTab, setActiveTab] = useState('dashboard');
+  const [activeTab, setActiveTab] = useState(() => localStorage.getItem('drummond_activeTab') || 'dashboard');
 
   // Supabase Auth Session State
   const [session, setSession] = useState(() => {
@@ -28,13 +28,30 @@ function App() {
   const [usuarioLogin, setUsuarioLogin] = useState('');
   const [passwordLogin, setPasswordLogin] = useState('');
 
-  // Report Form State
-  const [flota, setFlota] = useState('');
-  const [operador, setOperador] = useState('');
-  const [mina, setMina] = useState('PB');
-  const [grupo, setGrupo] = useState('1');
-  const [selectedDanos, setSelectedDanos] = useState({});
-  const [observaciones, setObservaciones] = useState({});
+  // Report Form State (Persistente)
+  const [reportForm, setReportForm] = useState(() => {
+    const saved = localStorage.getItem('drummond_report_form');
+    if (!saved) return { flota: '', operador: '', mina: 'PB', grupo: '1', selectedDanos: {}, observaciones: {} };
+    try {
+      return JSON.parse(saved);
+    } catch (e) {
+      return { flota: '', operador: '', mina: 'PB', grupo: '1', selectedDanos: {}, observaciones: {} };
+    }
+  });
+
+  const [flota, setFlota] = useState(reportForm.flota);
+  const [operador, setOperador] = useState(reportForm.operador);
+  const [mina, setMina] = useState(reportForm.mina);
+  const [grupo, setGrupo] = useState(reportForm.grupo);
+  const [selectedDanos, setSelectedDanos] = useState(reportForm.selectedDanos);
+  const [observaciones, setObservaciones] = useState(reportForm.observaciones);
+
+  // Efecto para persistir cambios en tiempo real
+  useEffect(() => {
+    localStorage.setItem('drummond_activeTab', activeTab);
+    const state = { flota, operador, mina, grupo, selectedDanos, observaciones };
+    localStorage.setItem('drummond_report_form', JSON.stringify(state));
+  }, [activeTab, flota, operador, mina, grupo, selectedDanos, observaciones]);
 
   // Historial Filters State (Hooks deben ir arriba de los return tempranos)
   const [filtroFlota, setFiltroFlota] = useState('');
@@ -391,6 +408,8 @@ function App() {
   const handleLogout = () => {
     setSession(null);
     localStorage.removeItem('drummond_session');
+    localStorage.removeItem('drummond_activeTab');
+    localStorage.removeItem('drummond_report_form');
     setUsuarioLogin('');
     setPasswordLogin('');
     setPendingPasswordChangeUser(null);
