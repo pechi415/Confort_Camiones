@@ -8,6 +8,7 @@ import 'jspdf-autotable';
 import * as XLSX from 'xlsx';
 
 function App() {
+  // Versión del Sistema: 1.2.0 (Reportes Técnicos Reales y Zero Browser Dialogs)
   const [activeTab, setActiveTab] = useState(() => localStorage.getItem('drummond_activeTab') || 'dashboard');
 
   // Supabase Auth Session State
@@ -599,7 +600,7 @@ function App() {
       .update({ password: newPassword, firstTime: false })
       .eq('id', pendingPasswordChangeUser.id);
     
-    if (error) return alert("Error al actualizar contraseña: " + error.message);
+    if (error) return addToast("Error al actualizar contraseña: " + error.message, "error");
 
     // Se realiza el setSession para pasar adelante
     const usuarioActivo = { ...pendingPasswordChangeUser, password: newPassword, firstTime: false };
