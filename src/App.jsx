@@ -708,7 +708,7 @@ function App() {
                           </div>
                         </td>
                         <td>
-                          {camion.mina} / G{camion.grupo || '?'}
+                          {camion.mina} / {String(camion.grupo || '?').split(', ').map(g => g.startsWith('G') ? g : `G${g}`).join(', ')}
                         </td>
                         <td>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
@@ -1049,7 +1049,7 @@ function App() {
                       <td style={{ fontSize: '0.9rem', color: 'var(--text-main)', maxWidth: '200px' }}>{registro.fallas || 'N/A'}</td>
                       <td style={{ fontSize: '0.85rem' }}>{registro.time}</td>
                       <td style={{ fontSize: '0.85rem' }}>Calculando...</td>
-                      <td style={{ fontSize: '0.85rem' }}>{registro.operador} / {registro.mina} - G{registro.grupo || '?'}</td>
+                      <td style={{ fontSize: '0.85rem' }}>{registro.operador} / {registro.mina} - {String(registro.grupo || '?').split(', ').map(g => g.startsWith('G') ? g : `G${g}`).join(', ')}</td>
                       <td>
                         <div style={{ display: 'flex', gap: '0.3rem' }}>
                           {registro.aprobado_g1 && <span className="badge" style={{ background: '#dcfce7', color: '#166534', fontSize: '0.7rem', padding: '0.2rem 0.5rem' }}>G1</span>}
