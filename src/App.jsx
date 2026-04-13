@@ -25,8 +25,50 @@ function calcularSimilitudIA(s1, s2) {
   return (2 * intersection) / (b1.size + b2.size);
 }
 
+// Motor de Limpieza Retroactiva (Aplica IA a datos existentes de la nube)
+const limpiarFallasIA = (fallasStr) => {
+  if (!fallasStr) return 'N/A';
+  const items = fallasStr.split(', ').filter(Boolean);
+  const result = [];
+  
+  items.forEach(item => {
+    const match = item.match(/^(.*?)(?:\s\((.*?)\))?$/);
+    if (!match) { result.push(item); return; }
+    
+    const nombre = match[1];
+    const obsStr = match[2] || '';
+    if (!obsStr) { result.push(nombre); return; }
+    
+    // Limpiar sub-comentarios redundantes con IA Avanzada (Normalización)
+    const normalize = (txt) => txt.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").trim();
+    const subObs = obsStr.split('|').map(s => s.trim()).filter(Boolean).sort((a,b) => b.length - a.length);
+    const uniqueSubObs = [];
+    
+    subObs.forEach(curr => {
+      const s2 = normalize(curr);
+      const isRedundant = uniqueSubObs.some(larga => {
+        const s1 = normalize(larga);
+        const sim = calcularSimilitudIA(s1, s2);
+        
+        // Detección por palabras clave significativas (>3 letras)
+        const words1 = s1.split(/\s+/).filter(w => w.length > 3);
+        const words2 = s2.split(/\s+/).filter(w => w.length > 3);
+        const common = words1.filter(w => words2.includes(w));
+        
+        return sim > 0.4 || s1.includes(s2) || s2.includes(s1) || common.length > 0;
+      });
+      if (!isRedundant) uniqueSubObs.push(curr);
+    });
+    
+    const obsFinal = uniqueSubObs.join(' | ');
+    result.push(nombre + (obsFinal ? ` (${obsFinal})` : ''));
+  });
+  
+  return result.join(', ');
+};
+
 function App() {
-  // Versión del Sistema: 1.3.2 (Inteligencia Algorítmica Sorensen-Dice)
+  // Versión del Sistema: 1.4.2 (IA con Normalización y Palabras Clave)
   const [activeTab, setActiveTab] = useState(() => localStorage.getItem('drummond_activeTab') || 'dashboard');
 
   // Supabase Auth Session State
@@ -518,9 +560,9 @@ function App() {
       doc.text(`Fecha de Liberación: ${new Date().toLocaleDateString()}`, 140, 65);
       
       autoTable(doc, {
-        startY: 85,
-        head: [['Detalle de Fallas Intervennidas']],
-        body: (registro.fallas || '').split(', ').map(f => [f]),
+        startY: 100,
+        head: [['Detalle de Fallas Intervenidas']],
+        body: limpiarFallasIA(registro.fallas).split(', ').map(f => [f]),
         theme: 'striped',
         headStyles: { fillColor: [227, 25, 55], textColor: [255, 255, 255] }
       });
@@ -1235,7 +1277,7 @@ function App() {
                   {registrosFiltrados.length > 0 ? registrosFiltrados.map(registro => (
                     <tr key={registro.id}>
                       <td><strong style={{ fontSize: '1.1rem', color: 'var(--primary-black)' }}>{registro.flota}</strong></td>
-                      <td style={{ fontSize: '0.9rem', color: 'var(--text-main)', maxWidth: '200px' }}>{registro.fallas || 'N/A'}</td>
+                      <td style={{ fontSize: '0.9rem', color: 'var(--text-main)', maxWidth: '200px' }}>{limpiarFallasIA(registro.fallas)}</td>
                       <td style={{ fontSize: '0.85rem' }}>{registro.time}</td>
                       <td style={{ fontSize: '0.85rem' }}>Calculando...</td>
                       <td style={{ fontSize: '0.85rem' }}>
@@ -1940,7 +1982,7 @@ function App() {
               <div style={{ marginBottom: '1.5rem' }}>
                 <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 'bold', color: '#6b7280', marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Descripción de Fallas y Comentarios:</label>
                 <div style={{ background: '#f8fafc', padding: '1.2rem', borderRadius: '8px', border: '1px solid #e2e8f0', color: '#1e293b', lineHeight: '1.6', fontSize: '0.95rem' }}>
-                  {selectedReport.fallas || 'No se registraron fallas específicas durante el reporte inicial.'}
+                  {limpiarFallasIA(selectedReport.fallas)}
                 </div>
               </div>
 
