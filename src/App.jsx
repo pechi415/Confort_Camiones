@@ -8,7 +8,7 @@ import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
 
 function App() {
-  // Versión del Sistema: 1.2.9 (Preservación Total de Comentarios en Consenso)
+  // Versión del Sistema: 1.3.1 (Limpieza de Comentarios Redundantes)
   const [activeTab, setActiveTab] = useState(() => localStorage.getItem('drummond_activeTab') || 'dashboard');
 
   // Supabase Auth Session State
@@ -1700,8 +1700,15 @@ function App() {
                           const obsViejas = obsAnteriores[id] || '';
                           const obsNuevas = observaciones[id] || '';
                           
-                          // Unimos comentarios sin duplicados
-                          const combined = Array.from(new Set([obsViejas, obsNuevas].filter(Boolean))).join(' | ');
+                          // Limpieza Inteligente: Filtrar redundancias si un comentario contiene a otro
+                          const todasObs = [obsViejas, obsNuevas].filter(Boolean).sort((a, b) => b.length - a.length);
+                          const unicas = [];
+                          todasObs.forEach(curr => {
+                            const esRedundante = unicas.some(larga => larga.toLowerCase().includes(curr.toLowerCase()));
+                            if (!esRedundante) unicas.push(curr);
+                          });
+                          
+                          const combined = unicas.join(' | ');
                           
                           return f.nombre + (combined ? ` (${combined})` : '');
                         }).join(', ');
