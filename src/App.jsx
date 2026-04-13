@@ -1430,9 +1430,6 @@ function App() {
                     const camionExistente = camionesRegistrados.find(c => c.flota === flota && c.estado !== 'liberado');
                     
                     if (camionExistente) {
-                        const confirmar = window.confirm(`El camión ${flota} ya tiene un reporte activo del grupo ${camionExistente.grupo}. ¿Deseas integrar este nuevo reporte y aumentar su prioridad por consenso?`);
-                        if (!confirmar) return;
-
                         // 1. Integración de Grupos y Supervisores
                         const listaGrupos = Array.from(new Set([...camionExistente.grupo.split(', '), grupo])).sort();
                         const listaSupervisores = Array.from(new Set([...camionExistente.supervisor.split(', '), session.nombre]));
