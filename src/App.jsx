@@ -8,7 +8,7 @@ import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
 
 function App() {
-  // Versión del Sistema: 1.2.5 (Unificación de Operadores y Supervisores en Tabla)
+  // Versión del Sistema: 1.2.6 (Formato Detallado de Operadores de Grupo)
   const [activeTab, setActiveTab] = useState(() => localStorage.getItem('drummond_activeTab') || 'dashboard');
 
   // Supabase Auth Session State
@@ -1220,16 +1220,32 @@ function App() {
                       <td style={{ fontSize: '0.85rem' }}>{registro.time}</td>
                       <td style={{ fontSize: '0.85rem' }}>Calculando...</td>
                       <td style={{ fontSize: '0.85rem' }}>
-                        <div style={{ fontWeight: '600', color: 'var(--primary-black)' }}>{registro.operador} / {registro.mina}</div>
-                        <div style={{ color: '#6b7280', fontSize: '0.75rem', marginBottom: '0.3rem' }}>
-                          Grupos: {String(registro.grupo || '?').split(', ').map(g => g.startsWith('G') ? g : `G${g}`).join(', ')}
+                        <div style={{ color: '#9ca3af', fontSize: '0.7rem', marginBottom: '0.4rem', borderBottom: '1px solid #f1f5f9', paddingBottom: '0.2rem' }}>
+                           Conductor: <b>{registro.operador}</b>
                         </div>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.1rem', borderTop: '1px solid #f1f5f9', paddingTop: '0.3rem' }}>
-                          {(registro.supervisor || 'N/A').split(', ').map((sup, idx) => (
-                            <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '0.2rem', color: '#6366f1', fontSize: '0.7rem', fontWeight: '500' }}>
-                              <Users size={10} strokeWidth={2} /> {sup}
-                            </div>
-                          ))}
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                          {(registro.supervisor || 'N/A').split(', ').map((sup, idx) => {
+                             // Transformamos "G1: Carlos Perez" en "CARLOS PEREZ G1 / mina"
+                             const parts = sup.split(': ');
+                             const grupoLabel = parts.length > 1 ? parts[0] : '';
+                             const nombreSup = parts.length > 1 ? parts[1] : parts[0];
+                             return (
+                               <div key={idx} style={{ 
+                                 background: 'rgba(99, 102, 241, 0.05)', 
+                                 padding: '0.3rem 0.5rem', 
+                                 borderRadius: '6px',
+                                 color: 'var(--primary-black)', 
+                                 fontWeight: '500',
+                                 fontSize: '0.8rem',
+                                 display: 'flex',
+                                 alignItems: 'center',
+                                 gap: '0.3rem'
+                               }}>
+                                 <Users size={12} style={{ color: '#6366f1' }} />
+                                 <span>{nombreSup.toUpperCase()} {grupoLabel} / {String(registro.mina || '').toLowerCase()}</span>
+                               </div>
+                             );
+                          })}
                         </div>
                       </td>
                       <td>
