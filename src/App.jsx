@@ -1477,7 +1477,7 @@ function App() {
                         if (error) return alert('Error al integrar reporte: ' + error.message);
 
                         setCamionesRegistrados(prev => prev.map(c => c.id === camionExistente.id ? camionActualizado : c));
-                        alert(`✅ Reporte integrado. El camión ${flota} ahora tiene ${puntosFinales} puntos (Bono Consenso: +${bonoConsenso}).`);
+                        alert(`✅ Reporte integrado con éxito. Se ha actualizado la información del camión ${flota} en la Lista de Espera.`);
 
                     } else {
                         // Lógica de Inserción Normal (Primer reporte)
