@@ -185,7 +185,12 @@ function App() {
       const iniciales = {};
       fallas.forEach(f => {
         if ((camion?.fallas || '').includes(f.nombre)) {
-          iniciales[f.id] = { selected: false, comment: '' };
+          // Extraemos el comentario original si existe (texto entre paréntesis después del nombre)
+          const regex = new RegExp(`${f.nombre}\\s*\\(([^)]+)\\)`);
+          const match = (camion?.fallas || '').match(regex);
+          const originalComment = match ? match[1] : '';
+          
+          iniciales[f.id] = { selected: false, comment: originalComment };
         }
       });
       setPendientesGarantia(iniciales);
