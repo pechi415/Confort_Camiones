@@ -8,7 +8,7 @@ import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
 
 function App() {
-  // Versión del Sistema: 1.2.8 (Mina en Mayúsculas y Trazabilidad Total)
+  // Versión del Sistema: 1.2.9 (Preservación Total de Comentarios en Consenso)
   const [activeTab, setActiveTab] = useState(() => localStorage.getItem('drummond_activeTab') || 'dashboard');
 
   // Supabase Auth Session State
@@ -1683,13 +1683,27 @@ function App() {
                         const puntosFinales = puntosBase + bonoConsenso;
                         const atencionLabel = puntosFinales > 50 ? 'CRÍTICA' : puntosFinales > 20 ? 'ALTA' : 'NORMAL';
 
-                        // 4. Construcción del string de fallas consolidado
+                        // 4. Construcción del string de fallas consolidado (Preservando comentarios anteriores)
+                        const obsAnteriores = {};
+                        if (camionExistente.fallas) {
+                          camionExistente.fallas.split(', ').forEach(p => {
+                            const match = p.match(/^(.*?)(?:\s\((.*?)\))?$/);
+                            if (match && match[2]) {
+                              const fObj = fallas.find(f => f.nombre === match[1]);
+                              if (fObj) obsAnteriores[fObj.id] = match[2];
+                            }
+                          });
+                        }
+
                         const fallasConsolidadas = Array.from(todasFallasIds).map(id => {
                           const f = fallas.find(x => x.id === id);
-                          const esNueva = selectedDanos[id];
-                          const obs = esNueva ? observaciones[id] : null; // Priorizamos obs nuevas si coinciden? No, mejor mantener original.
-                          // Para simplificar, usamos los nombres de fallas unicos
-                          return f.nombre + (obs ? ` (${obs})` : '');
+                          const obsViejas = obsAnteriores[id] || '';
+                          const obsNuevas = observaciones[id] || '';
+                          
+                          // Unimos comentarios sin duplicados
+                          const combined = Array.from(new Set([obsViejas, obsNuevas].filter(Boolean))).join(' | ');
+                          
+                          return f.nombre + (combined ? ` (${combined})` : '');
                         }).join(', ');
 
                         const camionActualizado = {
