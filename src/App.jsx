@@ -8,7 +8,7 @@ import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
 
 function App() {
-  // Versión del Sistema: 1.2.0 (Reportes Técnicos Reales y Zero Browser Dialogs)
+  // Versión del Sistema: 1.2.2 (Columna Historial Supervisores Dedicada)
   const [activeTab, setActiveTab] = useState(() => localStorage.getItem('drummond_activeTab') || 'dashboard');
 
   // Supabase Auth Session State
@@ -1203,6 +1203,7 @@ function App() {
                     <th>Ingreso a Fila</th>
                     <th>Tiempo de Ciclo</th>
                     <th>Operador / Mina</th>
+                    <th>Reportado Por</th>
                     <th>Aprobado Por</th>
                     <th>Reporte</th>
                     {session.role === 'admin' && <th style={{ textAlign: 'center' }}>Acciones</th>}
@@ -1216,6 +1217,11 @@ function App() {
                       <td style={{ fontSize: '0.85rem' }}>{registro.time}</td>
                       <td style={{ fontSize: '0.85rem' }}>Calculando...</td>
                       <td style={{ fontSize: '0.85rem' }}>{registro.operador} / {registro.mina} - {String(registro.grupo || '?').split(', ').map(g => g.startsWith('G') ? g : `G${g}`).join(', ')}</td>
+                      <td style={{ fontSize: '0.85rem', color: 'var(--primary-black)', fontWeight: '500' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                          <Users size={14} strokeWidth={1.5} style={{ color: '#6366f1' }} /> {registro.supervisor || 'N/A'}
+                        </div>
+                      </td>
                       <td>
                         <div style={{ display: 'flex', gap: '0.3rem' }}>
                           {registro.aprobado_g1 && <span className="badge" style={{ background: '#dcfce7', color: '#166534', fontSize: '0.7rem', padding: '0.2rem 0.5rem' }}>G1</span>}
