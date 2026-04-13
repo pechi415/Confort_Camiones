@@ -260,14 +260,21 @@ function App() {
     alert("🚀 Camión liberado con éxito. Ahora reside en el Historial.");
   };
 
-  const eliminarCamion = async (camionId) => {
-    if (!window.confirm("¿Seguro que desea eliminar este registro permanentemente de la lista de prioridades? Esta acción no se puede deshacer.")) return;
+  const eliminarCamion = async (camionId, flota) => {
+    const confirmacion = window.prompt(`⚠ ADVERTENCIA DE SEGURIDAD\n\nEsta acción eliminará permanentemente el reporte del Camión ${flota}.\n\nPara confirmar, escribe el número del camión (${flota}) a continuación:`);
+    
+    if (confirmacion === null) return; // Usuario canceló
+
+    if (confirmacion !== String(flota)) {
+      alert("❌ El número ingresado no coincide con el camión seleccionado. Eliminación cancelada.");
+      return;
+    }
     
     const { error } = await supabase.from('camiones').delete().eq('id', camionId);
     if (error) return alert("Error al eliminar: " + error.message);
 
     setCamionesRegistrados(prev => prev.filter(c => c.id !== camionId));
-    alert("🗑️ Camión eliminado exitosamente.");
+    alert(`🗑️ Camión ${flota} eliminado exitosamente del sistema.`);
   };
 
   const guardarEdicionCamion = async () => {
@@ -732,7 +739,7 @@ function App() {
                             )}
                             {(session?.role?.toLowerCase() === 'admin' || session?.rol?.toLowerCase() === 'admin') && (
                               <button 
-                                onClick={() => eliminarCamion(camion.id)} 
+                                onClick={() => eliminarCamion(camion.id, camion.flota)} 
                                 className="btn-action btn-action-delete"
                                 title="Eliminar Registro"
                               >
@@ -1073,7 +1080,7 @@ function App() {
                       {session.role === 'admin' && (
                         <td style={{ textAlign: 'center' }}>
                           <button 
-                            onClick={() => eliminarCamion(registro.id)} 
+                            onClick={() => eliminarCamion(registro.id, registro.flota)} 
                             className="btn-action btn-action-delete"
                             title="Eliminar Reporte Histórico"
                           >
