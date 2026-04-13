@@ -879,8 +879,8 @@ function App() {
           <div className="card fade-in">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
               <div>
-                <h2 style={{ marginBottom: '0.2rem', color: 'var(--primary-black)' }}>
-                  📋 Historial de Mantenimientos 
+                <h2 style={{ marginBottom: '0.2rem', color: 'var(--primary-black)', display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                  <ClipboardList size={22} strokeWidth={2} style={{ color: 'var(--secondary-blue)' }} /> Historial de Mantenimientos 
                 </h2>
                 <p style={{ color: 'var(--text-muted)', margin: 0, fontSize: '0.9rem' }}>Registro histórico de camiones de confort completamente solucionados.</p>
               </div>
@@ -1215,7 +1215,9 @@ function App() {
         {/* New Report View */}
         {activeTab === 'nuevo' && (
           <div className="card fade-in" style={{ maxWidth: '800px', margin: '0 auto' }}>
-            <h2 style={{ marginBottom: '1.5rem', color: 'var(--primary-black)' }}>📝 Nuevo Reporte</h2>
+            <h2 style={{ marginBottom: '1.5rem', color: 'var(--primary-black)', display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+              <PlusCircle size={22} strokeWidth={2} style={{ color: 'var(--primary-red)' }} /> Nuevo Reporte
+            </h2>
             
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
               <div className="input-group">
