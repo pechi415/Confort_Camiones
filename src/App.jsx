@@ -1040,6 +1040,7 @@ function App() {
                     <th>Operador / Mina</th>
                     <th>Aprobado Por</th>
                     <th>Reporte</th>
+                    {session.role === 'admin' && <th style={{ textAlign: 'center' }}>Acciones</th>}
                   </tr>
                 </thead>
                 <tbody>
@@ -1069,10 +1070,21 @@ function App() {
                           </div>
                         </button>
                       </td>
+                      {session.role === 'admin' && (
+                        <td style={{ textAlign: 'center' }}>
+                          <button 
+                            onClick={() => eliminarCamion(registro.id)} 
+                            className="btn-action btn-action-delete"
+                            title="Eliminar Reporte Histórico"
+                          >
+                            <Trash2 size={18} />
+                          </button>
+                        </td>
+                      )}
                     </tr>
                   )) : (
                     <tr>
-                      <td colSpan="7" style={{ textAlign: 'center', padding: '2rem', color: '#9ca3af' }}>No hay registros que coincidan con estos filtros.</td>
+                      <td colSpan={session.role === 'admin' ? "7" : "6"} style={{ textAlign: 'center', padding: '2rem', color: '#9ca3af' }}>No hay registros que coincidan con estos filtros.</td>
                     </tr>
                   )}
                 </tbody>
