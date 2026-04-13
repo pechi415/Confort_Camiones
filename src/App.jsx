@@ -518,7 +518,7 @@ function App() {
             className={`nav-item ${activeTab === 'nuevo' ? 'active' : ''}`}
             onClick={() => setActiveTab('nuevo')}
           >
-            <PlusCircle size={18} style={{ marginRight: '0.6rem', marginBottom: '-0.15rem' }} /> Reportar Carga
+            <PlusCircle size={18} style={{ marginRight: '0.6rem', marginBottom: '-0.15rem' }} /> Nuevo Reporte
           </div>
           <div 
             className={`nav-item ${activeTab === 'cola' ? 'active' : ''}`}
@@ -560,7 +560,7 @@ function App() {
         <header className="page-header">
           <h1 className="page-title">
             {activeTab === 'dashboard' && 'Panel de Control - Confort'}
-            {activeTab === 'nuevo' && 'Registrar Falta de Confort'}
+            {activeTab === 'nuevo' && 'Nuevo Reporte'}
             {activeTab === 'cola' && 'Cola de Priorización Taller'}
             {activeTab === 'historial' && 'Historial de Mantenimientos'}
           </h1>
@@ -1215,7 +1215,7 @@ function App() {
         {/* New Report View */}
         {activeTab === 'nuevo' && (
           <div className="card fade-in" style={{ maxWidth: '800px', margin: '0 auto' }}>
-            <h2 style={{ marginBottom: '1.5rem', color: 'var(--primary-black)' }}>📝 Registro de Nuevo Reporte</h2>
+            <h2 style={{ marginBottom: '1.5rem', color: 'var(--primary-black)' }}>📝 Nuevo Reporte</h2>
             
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
               <div className="input-group">
