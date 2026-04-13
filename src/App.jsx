@@ -2101,7 +2101,7 @@ function App() {
         top: '20px',
         left: '50%',
         transform: 'translateX(-50%)',
-        zIndex: 9999,
+        zIndex: 11000,
         display: 'flex',
         flexDirection: 'column',
         gap: '10px',
