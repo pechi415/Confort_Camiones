@@ -8,7 +8,7 @@ import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
 
 function App() {
-  // Versión del Sistema: 1.2.4 (Trazabilidad Vinculada Grupo-Supervisor)
+  // Versión del Sistema: 1.2.5 (Unificación de Operadores y Supervisores en Tabla)
   const [activeTab, setActiveTab] = useState(() => localStorage.getItem('drummond_activeTab') || 'dashboard');
 
   // Supabase Auth Session State
@@ -1207,7 +1207,6 @@ function App() {
                     <th>Ingreso a Fila</th>
                     <th>Tiempo de Ciclo</th>
                     <th>Operador / Mina</th>
-                    <th>Reportado Por</th>
                     <th>Aprobado Por</th>
                     <th>Reporte</th>
                     {session.role === 'admin' && <th style={{ textAlign: 'center' }}>Acciones</th>}
@@ -1220,12 +1219,15 @@ function App() {
                       <td style={{ fontSize: '0.9rem', color: 'var(--text-main)', maxWidth: '200px' }}>{registro.fallas || 'N/A'}</td>
                       <td style={{ fontSize: '0.85rem' }}>{registro.time}</td>
                       <td style={{ fontSize: '0.85rem' }}>Calculando...</td>
-                      <td style={{ fontSize: '0.85rem' }}>{registro.operador} / {registro.mina} - {String(registro.grupo || '?').split(', ').map(g => g.startsWith('G') ? g : `G${g}`).join(', ')}</td>
-                      <td style={{ fontSize: '0.85rem', color: 'var(--primary-black)', fontWeight: '500' }}>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.2rem' }}>
+                      <td style={{ fontSize: '0.85rem' }}>
+                        <div style={{ fontWeight: '600', color: 'var(--primary-black)' }}>{registro.operador} / {registro.mina}</div>
+                        <div style={{ color: '#6b7280', fontSize: '0.75rem', marginBottom: '0.3rem' }}>
+                          Grupos: {String(registro.grupo || '?').split(', ').map(g => g.startsWith('G') ? g : `G${g}`).join(', ')}
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.1rem', borderTop: '1px solid #f1f5f9', paddingTop: '0.3rem' }}>
                           {(registro.supervisor || 'N/A').split(', ').map((sup, idx) => (
-                            <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                              <Users size={12} strokeWidth={1.5} style={{ color: '#6366f1' }} /> {sup}
+                            <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '0.2rem', color: '#6366f1', fontSize: '0.7rem', fontWeight: '500' }}>
+                              <Users size={10} strokeWidth={2} /> {sup}
                             </div>
                           ))}
                         </div>
