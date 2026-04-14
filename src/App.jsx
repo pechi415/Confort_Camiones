@@ -68,7 +68,7 @@ const limpiarFallasIA = (fallasStr) => {
 };
 
 function App() {
-  // Versión del Sistema: 1.5.0 (Gestión de Grupos en Cuentas)
+  // Versión del Sistema: 1.6.0 (Visibilidad por Mina y Automatización)
   const [activeTab, setActiveTab] = useState(() => localStorage.getItem('drummond_activeTab') || 'dashboard');
 
   // Supabase Auth Session State
@@ -267,13 +267,19 @@ function App() {
     fetchDatabase();
   }, [session]); // Recarga si el estado auth cambia.
 
+  // Filtro de Seguridad Global por Mina (v1.6.0)
+  const camionesAccessibles = camionesRegistrados.filter(c => {
+    if (session?.mina === 'Global' || session?.role === 'admin') return true;
+    return c.mina === session?.mina;
+  });
+
   const kpis = [
-    { id: 'espera', titulo: 'Lista de Espera', icon: <Hourglass strokeWidth={1.5} size={20} />, valor: camionesRegistrados.filter(c => c.estado === 'espera').length.toString(), color: '#9ca3af', subtitulo: 'Pre-Programa' },
-    { id: 'evaluar', titulo: 'Por Evaluar', icon: <Search strokeWidth={1.5} size={20} />, valor: camionesRegistrados.filter(c => c.estado === 'evaluar').length.toString(), color: 'var(--secondary-blue)', subtitulo: 'En Programa' },
-    { id: 'evaluados', titulo: 'Evaluados', icon: <SearchCheck strokeWidth={1.5} size={20} />, valor: camionesRegistrados.filter(c => c.estado === 'evaluados').length.toString(), color: '#8b5cf6', subtitulo: 'En Programa' },
-    { id: 'taller', titulo: 'En Taller', icon: <Wrench strokeWidth={1.5} size={20} />, valor: camionesRegistrados.filter(c => c.estado === 'taller').length.toString(), color: 'var(--secondary-yellow)', subtitulo: 'Ejecución' },
-    { id: 'feedback', titulo: 'Feedback', icon: <CheckCircle2 strokeWidth={1.5} size={20} />, valor: camionesRegistrados.filter(c => c.estado === 'feedback').length.toString(), color: '#10b981', subtitulo: 'Validación' },
-    { id: 'garantia', titulo: 'Garantía', icon: <ShieldAlert strokeWidth={1.5} size={20} />, valor: camionesRegistrados.filter(c => c.estado === 'garantia').length.toString(), color: 'var(--primary-red)', subtitulo: 'Retorno VIP' }
+    { id: 'espera', titulo: 'Lista de Espera', icon: <Hourglass strokeWidth={1.5} size={20} />, valor: camionesAccessibles.filter(c => c.estado === 'espera').length.toString(), color: '#9ca3af', subtitulo: 'Pre-Programa' },
+    { id: 'evaluar', titulo: 'Por Evaluar', icon: <Search strokeWidth={1.5} size={20} />, valor: camionesAccessibles.filter(c => c.estado === 'evaluar').length.toString(), color: 'var(--secondary-blue)', subtitulo: 'En Programa' },
+    { id: 'evaluados', titulo: 'Evaluados', icon: <SearchCheck strokeWidth={1.5} size={20} />, valor: camionesAccessibles.filter(c => c.estado === 'evaluados').length.toString(), color: '#8b5cf6', subtitulo: 'En Programa' },
+    { id: 'taller', titulo: 'En Taller', icon: <Wrench strokeWidth={1.5} size={20} />, valor: camionesAccessibles.filter(c => c.estado === 'taller').length.toString(), color: 'var(--secondary-yellow)', subtitulo: 'Ejecución' },
+    { id: 'feedback', titulo: 'Feedback', icon: <CheckCircle2 strokeWidth={1.5} size={20} />, valor: camionesAccessibles.filter(c => c.estado === 'feedback').length.toString(), color: '#10b981', subtitulo: 'Validación' },
+    { id: 'garantia', titulo: 'Garantía', icon: <ShieldAlert strokeWidth={1.5} size={20} />, valor: camionesAccessibles.filter(c => c.estado === 'garantia').length.toString(), color: 'var(--primary-red)', subtitulo: 'Retorno VIP' }
   ];
 
   const columnasKanban = [
@@ -640,6 +646,7 @@ function App() {
         user: { username: usernameReq },
         role: usuarioActivo.role,
         mina: usuarioActivo.mina === 'Ambas' || usuarioActivo.mina === 'Global' ? 'Global' : usuarioActivo.mina,
+        grupo: usuarioActivo.grupo || '1',
         nombre: usuarioActivo.nombre,
         id: usuarioActivo.id
       };
@@ -788,14 +795,16 @@ function App() {
     );
   }
 
-  const registrosFiltrados = camionesRegistrados.filter(r => {
+
+
+  const registrosFiltrados = camionesAccessibles.filter(r => {
     return r.estado === 'liberado' &&
            r.flota.includes(filtroFlota) && 
            (filtroMina === '' || r.mina === filtroMina) && 
            r.time.toLowerCase().includes(filtroMes.toLowerCase());
   });
 
-  const conteoLiberados = camionesRegistrados.filter(c => c.estado === 'liberado').length;
+  const conteoLiberados = camionesAccessibles.filter(c => c.estado === 'liberado').length;
 
   return (
     <div className="app-container">
@@ -817,7 +826,14 @@ function App() {
           </div>
           <div 
             className={`nav-item ${activeTab === 'nuevo' ? 'active' : ''}`}
-            onClick={() => setActiveTab('nuevo')}
+            onClick={() => {
+              setActiveTab('nuevo');
+              // Automatización de Datos por Usuario (v1.6.0)
+              if (session.role !== 'admin') {
+                setMina(session.mina === 'Global' ? mina : session.mina);
+                setGrupo(session.grupo);
+              }
+            }}
           >
             <PlusCircle size={18} style={{ marginRight: '0.6rem', marginBottom: '-0.15rem' }} /> Nuevo Reporte
           </div>
@@ -923,7 +939,7 @@ function App() {
                     </tr>
                   </thead>
                   <tbody>
-                    {camionesRegistrados.filter(c => c.estado !== 'liberado').slice(0, 5).map(camion => (
+                    {camionesAccessibles.filter(c => c.estado !== 'liberado').slice(0, 5).map(camion => (
                       <tr key={camion.id}>
                         <td>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
@@ -1013,7 +1029,7 @@ function App() {
               alignItems: 'flex-start'
             }}>
               {columnasKanban.map(col => {
-                const camionesColumna = camionesRegistrados.filter(c => c.estado === col.id).sort((a,b) => b.puntos - a.puntos);
+                const camionesColumna = camionesAccessibles.filter(c => c.estado === col.id).sort((a,b) => b.puntos - a.puntos);
                 
                 return (
                   <div 
@@ -1652,11 +1668,11 @@ function App() {
                   className="input-field" 
                   value={mina} 
                   onChange={(e) => setMina(e.target.value)}
-                  disabled={session.role === 'supervisor'}
+                  disabled={session.role !== 'admin'}
                   style={{ 
-                    backgroundColor: session.role === 'supervisor' ? '#f3f4f6' : 'white', 
-                    cursor: session.role === 'supervisor' ? 'not-allowed' : 'default',
-                    color: session.role === 'supervisor' ? '#6b7280' : 'inherit'
+                    backgroundColor: session.role !== 'admin' ? '#f3f4f6' : 'white', 
+                    cursor: session.role !== 'admin' ? 'not-allowed' : 'default',
+                    color: session.role !== 'admin' ? '#6b7280' : 'inherit'
                   }}
                 >
                     <option value="PB">Mina Pribbenow (PB)</option>
@@ -1665,7 +1681,17 @@ function App() {
                </div>
                <div className="input-group">
                 <label className="input-label">Grupo</label>
-                <select className="input-field" value={grupo} onChange={(e) => setGrupo(e.target.value)}>
+                <select 
+                  className="input-field" 
+                  value={grupo} 
+                  onChange={(e) => setGrupo(e.target.value)}
+                  disabled={session.role !== 'admin'}
+                  style={{ 
+                    backgroundColor: session.role !== 'admin' ? '#f3f4f6' : 'white', 
+                    cursor: session.role !== 'admin' ? 'not-allowed' : 'default',
+                    color: session.role !== 'admin' ? '#6b7280' : 'inherit'
+                  }}
+                >
                     <option value="1">Grupo 1</option>
                     <option value="2">Grupo 2</option>
                     <option value="3">Grupo 3</option>
