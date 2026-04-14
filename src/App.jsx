@@ -537,18 +537,22 @@ function App() {
     try {
       addToast("⏳ Preparando archivo Excel...", "info");
       
-      const datosExcel = registrosFiltrados.map(r => ({
-        "Flota": r.flota,
-        "Ubicación": r.mina,
-        "Grupo": String(r.grupo || 'N/A').split(', ').map(g => String(g).trim().startsWith('G') ? String(g).trim() : `G${String(g).trim()}`).join(', '),
-        "Operador": typeof r.operador === 'string' ? r.operador.replace(/G\d+:\s*/g, '').trim() : (r.operador || 'N/A'),
-        "Fallas Reportadas": r.fallas,
-        "Fecha Registro": r.time,
-        "VB G1": r.aprobado_g1 ? 'Aprobado' : '-',
-        "VB G2": r.aprobado_g2 ? 'Aprobado' : '-',
-        "VB G3": r.aprobado_g3 ? 'Aprobado' : '-',
-        "Estado Final": "LIBERADO"
-      }));
+      const datosExcel = registrosFiltrados.map(r => {
+        const opEntries = (r.operador || '').split(', ');
+        const getOp = (g) => opEntries.find(n => n.includes(`G${g}:`))?.replace(`G${g}:`, '').trim() || '-';
+        return {
+          "Fecha Registro": r.time,
+          "Flota": r.flota,
+          "Ubicación": r.mina,
+          "Op. Grupo 1": getOp(1),
+          "Op. Grupo 2": getOp(2),
+          "Op. Grupo 3": getOp(3),
+          "Fallas Reportadas": r.fallas,
+          "VB G1": r.aprobado_g1 ? 'Aprobado' : '-',
+          "VB G2": r.aprobado_g2 ? 'Aprobado' : '-',
+          "VB G3": r.aprobado_g3 ? 'Aprobado' : '-'
+        };
+      });
 
       const worksheet = XLSX.utils.json_to_sheet(datosExcel);
       const workbook = XLSX.utils.book_new();
