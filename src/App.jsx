@@ -68,7 +68,7 @@ const limpiarFallasIA = (fallasStr) => {
 };
 
 function App() {
-  // Versión del Sistema: 1.7.3 (Auto-Wrap PDF Fix)
+  // Versión del Sistema: 1.7.4 (Alineación y Pipes PDF)
   const [activeTab, setActiveTab] = useState(() => localStorage.getItem('drummond_activeTab') || 'dashboard');
 
   // Supabase Auth Session State
@@ -584,19 +584,21 @@ function App() {
       doc.setFont("helvetica", "bold");
       doc.text(`Operadores Permanentes:`, 20, 75);
       doc.setFont("helvetica", "normal");
-      const operText = registro.operador || 'N/A';
+      const operText = (registro.operador || 'N/A').replace(/, /g, ' | ');
       const operSplit = doc.splitTextToSize(operText, 170);
       doc.text(operSplit, 20, 82);
       
-      const supY = 82 + (operSplit.length * 5);
+      const supLabelY = 82 + (operSplit.length * 5) + 2;
       doc.setFont("helvetica", "bold");
-      doc.text(`Supervisor(es) de Gestión:`, 20, supY);
-      doc.setFont("helvetica", "normal");
-      const supText = registro.supervisor || 'N/A';
-      const supSplit = doc.splitTextToSize(supText, 110); // Empezando en 80, tiene 110 hasta margen 190
-      doc.text(supSplit, 80, supY);
+      doc.text(`Supervisor(es) de Gestión:`, 20, supLabelY);
       
-      const tableY = Math.max(105, supY + (supSplit.length * 5) + 5);
+      doc.setFont("helvetica", "normal");
+      const supText = (registro.supervisor || 'N/A').replace(/, /g, ' | ');
+      const supSplit = doc.splitTextToSize(supText, 170);
+      const supDataY = supLabelY + 7;
+      doc.text(supSplit, 20, supDataY);
+      
+      const tableY = Math.max(105, supDataY + (supSplit.length * 5) + 5);
 
       // Fix Universal para jspdf-autotable en Vite (v1.7.0)
       const tableFunc = typeof autoTable === 'function' ? autoTable : autoTable.default;
