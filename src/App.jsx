@@ -593,7 +593,7 @@ function App() {
       doc.text(`Fecha: ${new Date().toLocaleDateString()}`, 140, 55);
       
       doc.setFont("helvetica", "bold");
-      doc.text(`Operadores Permanentes:`, 20, 75);
+      doc.text(`Personal que reporta el estado (Operadores Permanentes):`, 20, 75);
       doc.setFont("helvetica", "normal");
       const operText = (registro.operador || 'N/A').replace(/, /g, ' | ');
       const operSplit = doc.splitTextToSize(operText, 170);
@@ -601,7 +601,7 @@ function App() {
       
       const supLabelY = 82 + (operSplit.length * 5) + 2;
       doc.setFont("helvetica", "bold");
-      doc.text(`Supervisor(es) de Gestión:`, 20, supLabelY);
+      doc.text(`Gestor del reporte (Supervisor de Gestión):`, 20, supLabelY);
       
       doc.setFont("helvetica", "normal");
       const supText = (registro.supervisor || 'N/A').replace(/, /g, ' | ');
