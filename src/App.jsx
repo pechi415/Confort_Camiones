@@ -68,7 +68,7 @@ const limpiarFallasIA = (fallasStr) => {
 };
 
 function App() {
-  // Versión del Sistema: 1.7.6 (Simplificación de Fechas PDF)
+  // Versión del Sistema: 1.7.7 (Refinamiento de Firma PDF)
   const [activeTab, setActiveTab] = useState(() => localStorage.getItem('drummond_activeTab') || 'dashboard');
 
   // Supabase Auth Session State
@@ -639,9 +639,9 @@ function App() {
       const signY = doc.lastAutoTable.finalY + 40;
       doc.line(20, signY, 80, signY);
       doc.setFont("helvetica", "bold");
-      doc.text(`Firma Operador - Grupo ${session.grupo || '1'}`, 20, signY + 5);
+      doc.text(`${registro.operador || ''}`, 20, signY + 5);
       doc.setFont("helvetica", "normal");
-      doc.text(`${registro.operador || ''}`, 20, signY + 12);
+      doc.text(`operador grupo ${session.grupo || '1'}`, 20, signY + 12);
 
       doc.setFontSize(8);
       doc.setTextColor(150);
