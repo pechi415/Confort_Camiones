@@ -68,7 +68,7 @@ const limpiarFallasIA = (fallasStr) => {
 };
 
 function App() {
-  // Versión del Sistema: 1.7.4 (Alineación y Pipes PDF)
+  // Versión del Sistema: 1.7.5 (Precisión de Datos PDF)
   const [activeTab, setActiveTab] = useState(() => localStorage.getItem('drummond_activeTab') || 'dashboard');
 
   // Supabase Auth Session State
@@ -574,12 +574,13 @@ function App() {
       doc.setTextColor(0, 0, 0);
       doc.setFontSize(14);
       doc.setFont("helvetica", "bold");
-      doc.text(`Identificación de Unidad: ${registro.flota}`, 20, 55);
+      doc.text(`Identificación del Camión: ${registro.flota}`, 20, 55);
       
       doc.setFontSize(10);
       doc.setFont("helvetica", "normal");
       doc.text(`Mina: ${registro.mina === 'PB' ? 'Pribbenow' : 'El Descanso'}`, 20, 65);
-      doc.text(`Fecha de Liberación: ${new Date().toLocaleDateString()}`, 140, 65);
+      doc.text(`Fecha de Registro: ${registro.time}`, 140, 55);
+      doc.text(`Fecha de Impresión: ${new Date().toLocaleDateString()}`, 140, 65);
       
       doc.setFont("helvetica", "bold");
       doc.text(`Operadores Permanentes:`, 20, 75);
