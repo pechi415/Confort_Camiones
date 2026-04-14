@@ -68,7 +68,7 @@ const limpiarFallasIA = (fallasStr) => {
 };
 
 function App() {
-  // Versión del Sistema: 1.7.1 (Ajuste Etiquetas PDF)
+  // Versión del Sistema: 1.7.2 (Jerarquía Visual PDF)
   const [activeTab, setActiveTab] = useState(() => localStorage.getItem('drummond_activeTab') || 'dashboard');
 
   // Supabase Auth Session State
@@ -585,7 +585,10 @@ function App() {
       doc.text(`Operadores Permanentes:`, 20, 75);
       doc.setFont("helvetica", "normal");
       doc.text(`${registro.operador || 'N/A'}`, 20, 82);
-      doc.text(`Supervisor(es) de Gestión: ${registro.supervisor || 'N/A'}`, 20, 89);
+      doc.setFont("helvetica", "bold");
+      doc.text(`Supervisor(es) de Gestión:`, 20, 89);
+      doc.setFont("helvetica", "normal");
+      doc.text(`${registro.supervisor || 'N/A'}`, 80, 89);
       
       // Fix Universal para jspdf-autotable en Vite (v1.7.0)
       const tableFunc = typeof autoTable === 'function' ? autoTable : autoTable.default;
