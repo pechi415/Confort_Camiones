@@ -68,7 +68,7 @@ const limpiarFallasIA = (fallasStr) => {
 };
 
 function App() {
-  // Versión del Sistema: 1.6.7 (Respaldo Universal PDF)
+  // Versión del Sistema: 1.6.8 (Cierre Motor PDF)
   const [activeTab, setActiveTab] = useState(() => localStorage.getItem('drummond_activeTab') || 'dashboard');
 
   // Supabase Auth Session State
@@ -602,7 +602,7 @@ function App() {
       doc.setFont("helvetica", "bold");
       doc.text("HISTORIAL DE VALIDACIÓN POR GRUPOS", 20, finalY);
       
-      autoTable(doc, {
+      tableFunc(doc, {
         startY: finalY + 5,
         head: [['Grupo de Turno', 'Visto Bueno (VB)', 'Estado']],
         body: [
