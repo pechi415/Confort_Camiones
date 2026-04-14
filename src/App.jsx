@@ -4,7 +4,7 @@ import { LayoutDashboard, FileText, Blocks, ClipboardList, ShieldAlert, MonitorC
 
 import { supabase } from './supabaseClient';
 import { jsPDF } from 'jspdf';
-import autoTable from 'jspdf-autotable';
+import 'jspdf-autotable';
 import * as XLSX from 'xlsx';
 
 // Motor de Inteligencia Algorítmica (Fuzzy Logic) para Deduplicación de Reportes
@@ -68,7 +68,7 @@ const limpiarFallasIA = (fallasStr) => {
 };
 
 function App() {
-  // Versión del Sistema: 1.6.5 (Checkboxes Circulares Reales)
+  // Versión del Sistema: 1.6.6 (PDF Engine Fix)
   const [activeTab, setActiveTab] = useState(() => localStorage.getItem('drummond_activeTab') || 'dashboard');
 
   // Supabase Auth Session State
@@ -587,7 +587,7 @@ function App() {
       doc.text(`Supervisor(es) de Gestión: ${registro.supervisor || 'N/A'}`, 20, 93);
       doc.text(`Fecha de Liberación: ${new Date().toLocaleDateString()}`, 140, 65);
       
-      autoTable(doc, {
+      doc.autoTable({
         startY: 100,
         head: [['Detalle de Fallas Intervenidas']],
         body: limpiarFallasIA(registro.fallas).split(', ').map(f => [f]),
