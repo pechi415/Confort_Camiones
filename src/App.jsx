@@ -68,7 +68,7 @@ const limpiarFallasIA = (fallasStr) => {
 };
 
 function App() {
-  // Versión del Sistema: 1.7.0 (Acta PDF Optimizada)
+  // Versión del Sistema: 1.7.1 (Ajuste Etiquetas PDF)
   const [activeTab, setActiveTab] = useState(() => localStorage.getItem('drummond_activeTab') || 'dashboard');
 
   // Supabase Auth Session State
@@ -582,7 +582,7 @@ function App() {
       doc.text(`Fecha de Liberación: ${new Date().toLocaleDateString()}`, 140, 65);
       
       doc.setFont("helvetica", "bold");
-      doc.text(`Trazabilidad de Conductores por Turno:`, 20, 75);
+      doc.text(`Operadores Permanentes:`, 20, 75);
       doc.setFont("helvetica", "normal");
       doc.text(`${registro.operador || 'N/A'}`, 20, 82);
       doc.text(`Supervisor(es) de Gestión: ${registro.supervisor || 'N/A'}`, 20, 89);
