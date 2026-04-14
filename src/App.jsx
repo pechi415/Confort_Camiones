@@ -68,7 +68,7 @@ const limpiarFallasIA = (fallasStr) => {
 };
 
 function App() {
-  // Versión del Sistema: 1.6.2 (IA de Nombres Optimizada)
+  // Versión del Sistema: 1.6.3 (Item Otro en Fallas)
   const [activeTab, setActiveTab] = useState(() => localStorage.getItem('drummond_activeTab') || 'dashboard');
 
   // Supabase Auth Session State
@@ -246,6 +246,7 @@ function App() {
     { id: 'transmision', nombre: 'Transmisión al modular', impacto: 10 },
     { id: 'ruido', nombre: 'Ruido y polución en cabina', impacto: 5 },
     { id: 'varillaje', nombre: 'Varillaje de dirección', impacto: 5 },
+    { id: 'otro', nombre: 'Otro', impacto: 0 },
   ];
 
   const handleDanoToggle = (id) => {
