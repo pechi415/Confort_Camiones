@@ -540,7 +540,8 @@ function App() {
       const datosExcel = registrosFiltrados.map(r => ({
         "Flota": r.flota,
         "Ubicación": r.mina,
-        "Operador": r.operador,
+        "Grupo": String(r.grupo || 'N/A').split(', ').map(g => String(g).trim().startsWith('G') ? String(g).trim() : `G${String(g).trim()}`).join(', '),
+        "Operador": typeof r.operador === 'string' ? r.operador.replace(/G\d+:\s*/g, '').trim() : (r.operador || 'N/A'),
         "Fallas Reportadas": r.fallas,
         "Fecha Registro": r.time,
         "VB G1": r.aprobado_g1 ? 'Aprobado' : '-',
