@@ -68,7 +68,7 @@ const limpiarFallasIA = (fallasStr) => {
 };
 
 function App() {
-  // Versión del Sistema: 1.6.3 (Item Otro en Fallas)
+  // Versión del Sistema: 1.6.4 (Estética Redondeada Premium)
   const [activeTab, setActiveTab] = useState(() => localStorage.getItem('drummond_activeTab') || 'dashboard');
 
   // Supabase Auth Session State
@@ -1736,14 +1736,14 @@ function App() {
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
                 {fallas.map(falla => (
-                  <div key={falla.id} style={{ background: 'white', padding: '1rem', borderRadius: '6px', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '0.8rem' }}>
+                  <div key={falla.id} style={{ background: 'white', padding: '0.8rem 1.5rem', borderRadius: '50px', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '0.8rem', transition: 'all 0.3s', boxShadow: selectedDanos[falla.id] ? '0 4px 12px rgba(239, 68, 68, 0.1)' : 'none', borderColor: selectedDanos[falla.id] ? 'var(--primary-red)' : 'var(--border-color)' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <label style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', cursor: 'pointer', fontWeight: '500', width: '100%' }}>
                         <input 
                           type="checkbox" 
                           checked={!!selectedDanos[falla.id]}
                           onChange={() => handleDanoToggle(falla.id)}
-                          style={{ width: '18px', height: '18px', accentColor: 'var(--primary-red)', cursor: 'pointer' }}
+                          style={{ width: '20px', height: '20px', accentColor: 'var(--primary-red)', cursor: 'pointer', borderRadius: '50%' }}
                         />
                         {falla.nombre}
                       </label>
@@ -2166,8 +2166,8 @@ function App() {
                         key={falla.id} 
                         style={{ 
                           background: selectedDanosEdit[falla.id] ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.4)', 
-                          padding: '1rem', 
-                          borderRadius: '12px', 
+                          padding: '0.8rem 1.5rem', 
+                          borderRadius: '50px', 
                           border: selectedDanosEdit[falla.id] ? '1px solid var(--primary-red)' : '1px solid rgba(0,0,0,0.05)',
                           transition: 'all 0.3s ease',
                           boxShadow: selectedDanosEdit[falla.id] ? '0 4px 12px rgba(227, 25, 55, 0.05)' : 'none'
@@ -2178,7 +2178,7 @@ function App() {
                              type="checkbox" 
                              checked={!!selectedDanosEdit[falla.id]}
                              onChange={() => handleDanoToggleEdit(falla.id)}
-                             style={{ width: '20px', height: '20px', accentColor: 'var(--primary-red)', cursor: 'pointer' }}
+                             style={{ width: '20px', height: '20px', accentColor: 'var(--primary-red)', cursor: 'pointer', borderRadius: '50%' }}
                            />
                            <span style={{ fontSize: '0.95rem', fontWeight: selectedDanosEdit[falla.id] ? '600' : '400', flex: 1, color: 'var(--primary-black)' }}>
                              {falla.nombre}
