@@ -68,7 +68,7 @@ const limpiarFallasIA = (fallasStr) => {
 };
 
 function App() {
-  // Versión del Sistema: 1.7.5 (Precisión de Datos PDF)
+  // Versión del Sistema: 1.7.6 (Simplificación de Fechas PDF)
   const [activeTab, setActiveTab] = useState(() => localStorage.getItem('drummond_activeTab') || 'dashboard');
 
   // Supabase Auth Session State
@@ -579,8 +579,7 @@ function App() {
       doc.setFontSize(10);
       doc.setFont("helvetica", "normal");
       doc.text(`Mina: ${registro.mina === 'PB' ? 'Pribbenow' : 'El Descanso'}`, 20, 65);
-      doc.text(`Fecha de Registro: ${registro.time}`, 140, 55);
-      doc.text(`Fecha de Impresión: ${new Date().toLocaleDateString()}`, 140, 65);
+      doc.text(`Fecha: ${new Date().toLocaleDateString()}`, 140, 55);
       
       doc.setFont("helvetica", "bold");
       doc.text(`Operadores Permanentes:`, 20, 75);
