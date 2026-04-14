@@ -4,7 +4,7 @@ import { LayoutDashboard, FileText, Blocks, ClipboardList, ShieldAlert, MonitorC
 
 import { supabase } from './supabaseClient';
 import { jsPDF } from 'jspdf';
-import 'jspdf-autotable';
+import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
 
 // Motor de Inteligencia Algorítmica (Fuzzy Logic) para Deduplicación de Reportes
@@ -68,7 +68,7 @@ const limpiarFallasIA = (fallasStr) => {
 };
 
 function App() {
-  // Versión del Sistema: 1.6.6 (PDF Engine Fix)
+  // Versión del Sistema: 1.6.7 (Respaldo Universal PDF)
   const [activeTab, setActiveTab] = useState(() => localStorage.getItem('drummond_activeTab') || 'dashboard');
 
   // Supabase Auth Session State
@@ -587,7 +587,9 @@ function App() {
       doc.text(`Supervisor(es) de Gestión: ${registro.supervisor || 'N/A'}`, 20, 93);
       doc.text(`Fecha de Liberación: ${new Date().toLocaleDateString()}`, 140, 65);
       
-      doc.autoTable({
+      // Fix Universal para jspdf-autotable en Vite (v1.6.7)
+      const tableFunc = typeof autoTable === 'function' ? autoTable : autoTable.default;
+      tableFunc(doc, {
         startY: 100,
         head: [['Detalle de Fallas Intervenidas']],
         body: limpiarFallasIA(registro.fallas).split(', ').map(f => [f]),
