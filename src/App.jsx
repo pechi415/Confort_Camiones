@@ -68,7 +68,7 @@ const limpiarFallasIA = (fallasStr) => {
 };
 
 function App() {
-  // Versión del Sistema: 1.4.3 (Renombrar a Operador Permanente)
+  // Versión del Sistema: 1.5.0 (Gestión de Grupos en Cuentas)
   const [activeTab, setActiveTab] = useState(() => localStorage.getItem('drummond_activeTab') || 'dashboard');
 
   // Supabase Auth Session State
@@ -125,7 +125,7 @@ function App() {
   // ---------- MÓDULO CRUD DE USUARIOS ----------
   const [dbUsuarios, setDbUsuarios] = useState([]);
   const [isCreandoUsuario, setIsCreandoUsuario] = useState(false);
-  const [nuevoUsuarioParams, setNuevoUsuarioParams] = useState({ nombre: '', username: '', password: 'con123', mina: 'PB', role: 'supervisor', estado: 'Activo' });
+  const [nuevoUsuarioParams, setNuevoUsuarioParams] = useState({ nombre: '', username: '', password: 'con123', mina: 'PB', grupo: '1', role: 'supervisor', estado: 'Activo' });
   const [usuarioEditando, setUsuarioEditando] = useState(null);
   const [selectedReport, setSelectedReport] = useState(null); // Para el Modal de detalles técnicos
   const [camionEditando, setCamionEditando] = useState(null); // Para el Modal de edición rápida camión
@@ -1414,6 +1414,14 @@ function App() {
                       <option value="Ambas">Ambas Minas (PB/ED)</option>
                     </select>
                   </div>
+                  <div style={{ flex: '1 1 200px' }}>
+                    <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 'bold', marginBottom: '0.3rem' }}>Asignar Grupo</label>
+                    <select className="input-field" value={nuevoUsuarioParams.grupo} onChange={e => setNuevoUsuarioParams({...nuevoUsuarioParams, grupo: e.target.value})}>
+                      <option value="1">Grupo 1</option>
+                      <option value="2">Grupo 2</option>
+                      <option value="3">Grupo 3</option>
+                    </select>
+                  </div>
                 </div>
                 <div style={{ marginTop: '1rem', textAlign: 'right' }}>
                   <button className="btn btn-primary" onClick={async () => {
@@ -1425,6 +1433,7 @@ function App() {
                       password: nuevoUsuarioParams.password,
                       role: nuevoUsuarioParams.role,
                       mina: nuevoUsuarioParams.mina,
+                      grupo: nuevoUsuarioParams.grupo,
                       estado: nuevoUsuarioParams.estado,
                       firstTime: true,
                       creado: new Date().toLocaleDateString()
@@ -1434,7 +1443,7 @@ function App() {
                     
                     setDbUsuarios([...dbUsuarios, data[0]]);
                     setIsCreandoUsuario(false);
-                    setNuevoUsuarioParams({ nombre: '', username: '', password: 'con123', mina: 'PB', role: 'supervisor', estado: 'Activo' });
+                    setNuevoUsuarioParams({ nombre: '', username: '', password: 'con123', mina: 'PB', grupo: '1', role: 'supervisor', estado: 'Activo' });
                     addToast('✅ Operador ' + nuevoUsuarioParams.nombre + ' admitido exitosamente.');
                   }}>Crear Acreditación</button>
                 </div>
@@ -1474,6 +1483,14 @@ function App() {
                     </select>
                   </div>
                   <div style={{ flex: '1 1 200px' }}>
+                    <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 'bold', marginBottom: '0.3rem', color: '#701a75' }}>Cambiar Grupo</label>
+                    <select className="input-field" value={usuarioEditando.grupo || '1'} onChange={e => setUsuarioEditando({...usuarioEditando, grupo: e.target.value})} style={{ borderColor: '#fbcfe8' }}>
+                      <option value="1">Grupo 1</option>
+                      <option value="2">Grupo 2</option>
+                      <option value="3">Grupo 3</option>
+                    </select>
+                  </div>
+                  <div style={{ flex: '1 1 200px' }}>
                     <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 'bold', marginBottom: '0.3rem', color: '#701a75' }}>Estado Corporativo</label>
                     <select className="input-field" value={usuarioEditando.estado} onChange={e => setUsuarioEditando({...usuarioEditando, estado: e.target.value})} style={{ borderColor: '#fbcfe8', background: usuarioEditando.estado === 'Activo' ? '#f0fdf4' : '#fef2f2' }}>
                       <option value="Activo">🟢 Activo</option>
@@ -1505,6 +1522,7 @@ function App() {
                     <th>Estado</th>
                     <th>Rol en el Sistema</th>
                     <th>Ubicación Fija</th>
+                    <th>Grupo</th>
                     <th>Otorgamiento</th>
                     <th style={{ textAlign: 'right' }}>Controles</th>
                   </tr>
@@ -1533,6 +1551,11 @@ function App() {
                         </span>
                       </td>
                       <td style={{ fontWeight: '500' }}>{u.role === 'admin' ? 'Todo' : `Mina ${u.mina}`}</td>
+                      <td>
+                        <span className="badge" style={{ background: '#f3f4f6', color: '#374151', fontSize: '0.8rem' }}>
+                          G{u.grupo || '1'}
+                        </span>
+                      </td>
                       <td style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>{u.creado}</td>
                       <td style={{ textAlign: 'right' }}>
                         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
