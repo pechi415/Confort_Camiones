@@ -664,7 +664,9 @@ function App() {
       doc.setTextColor(150);
       doc.text(`Documento generado digitalmente por Drummond Confort System`, 105, 285, { align: 'center' });
 
-      doc.save(`Acta_Trazabilidad_${registro.flota}_${new Date().getTime()}.pdf`);
+      const dPdf = new Date();
+      const fechaNombre = `${String(dPdf.getDate()).padStart(2, '0')}-${String(dPdf.getMonth() + 1).padStart(2, '0')}-${dPdf.getFullYear()}`;
+      doc.save(`Acta_Trazabilidad_${registro.flota}_${fechaNombre}.pdf`);
       addToast(`✅ PDF del camión ${registro.flota} generado.`);
     } catch (err) {
       addToast("❌ Error al generar PDF: " + err.message, "error");
