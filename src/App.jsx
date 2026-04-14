@@ -68,7 +68,7 @@ const limpiarFallasIA = (fallasStr) => {
 };
 
 function App() {
-  // Versión del Sistema: 1.6.8 (Cierre Motor PDF)
+  // Versión del Sistema: 1.6.9 (Refinamiento Acta PDF)
   const [activeTab, setActiveTab] = useState(() => localStorage.getItem('drummond_activeTab') || 'dashboard');
 
   // Supabase Auth Session State
@@ -579,22 +579,28 @@ function App() {
       doc.setFontSize(10);
       doc.setFont("helvetica", "normal");
       doc.text(`Mina: ${registro.mina === 'PB' ? 'Pribbenow' : 'El Descanso'}`, 20, 65);
-      doc.text(`Operador Permanente: ${registro.operador}`, 20, 72);
-      doc.setFont("helvetica", "bold");
-      doc.text(`Trazabilidad de Conductores por Turno:`, 20, 79);
-      doc.setFont("helvetica", "normal");
-      doc.text(`${registro.operador || 'N/A'}`, 20, 86);
-      doc.text(`Supervisor(es) de Gestión: ${registro.supervisor || 'N/A'}`, 20, 93);
       doc.text(`Fecha de Liberación: ${new Date().toLocaleDateString()}`, 140, 65);
       
-      // Fix Universal para jspdf-autotable en Vite (v1.6.7)
-      const tableFunc = typeof autoTable === 'function' ? autoTable : autoTable.default;
+      doc.setFont("helvetica", "bold");
+      doc.text(`Trazabilidad de Conductores por Turno:`, 20, 75);
+      doc.setFont("helvetica", "normal");
+      doc.text(`${registro.operador || 'N/A'}`, 20, 82);
+      doc.text(`Supervisor(es) de Gestión: ${registro.supervisor || 'N/A'}`, 20, 89);
+      
+      // Preparar datos de fallas con comentarios (v1.6.9)
+      const itemsFallas = limpiarFallasIA(registro.fallas).split(', ');
+      const bodyFallas = itemsFallas.map(item => {
+        const match = item.match(/^(.*?)(?:\s\((.*?)\))?$/);
+        return [match ? match[1] : item, match && match[2] ? match[2] : '-'];
+      });
+
       tableFunc(doc, {
         startY: 100,
-        head: [['Detalle de Fallas Intervenidas']],
-        body: limpiarFallasIA(registro.fallas).split(', ').map(f => [f]),
+        head: [['Detalle de Fallas Intervenidas', 'Comentarios Técnica / Observación']],
+        body: bodyFallas,
         theme: 'striped',
-        headStyles: { fillColor: [227, 25, 55], textColor: [255, 255, 255] }
+        headStyles: { fillColor: [227, 25, 55], textColor: [255, 255, 255] },
+        columnStyles: { 0: { cellWidth: 70 }, 1: { cellWidth: 'auto' } }
       });
 
       const finalY = doc.lastAutoTable.finalY + 20;
@@ -616,10 +622,10 @@ function App() {
       
       const signY = doc.lastAutoTable.finalY + 40;
       doc.line(20, signY, 80, signY);
-      doc.text("Firma Supervisor Turno", 20, signY + 5);
-      
-      doc.line(130, signY, 190, signY);
-      doc.text("V.B. Operaciones", 130, signY + 5);
+      doc.setFont("helvetica", "bold");
+      doc.text(`Firma Operador - Grupo ${session.grupo || '1'}`, 20, signY + 5);
+      doc.setFont("helvetica", "normal");
+      doc.text(`${registro.operador || ''}`, 20, signY + 12);
 
       doc.setFontSize(8);
       doc.setTextColor(150);
