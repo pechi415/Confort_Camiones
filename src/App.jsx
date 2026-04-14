@@ -68,7 +68,7 @@ const limpiarFallasIA = (fallasStr) => {
 };
 
 function App() {
-  // Versión del Sistema: 1.7.2 (Jerarquía Visual PDF)
+  // Versión del Sistema: 1.7.3 (Auto-Wrap PDF Fix)
   const [activeTab, setActiveTab] = useState(() => localStorage.getItem('drummond_activeTab') || 'dashboard');
 
   // Supabase Auth Session State
@@ -584,12 +584,20 @@ function App() {
       doc.setFont("helvetica", "bold");
       doc.text(`Operadores Permanentes:`, 20, 75);
       doc.setFont("helvetica", "normal");
-      doc.text(`${registro.operador || 'N/A'}`, 20, 82);
-      doc.setFont("helvetica", "bold");
-      doc.text(`Supervisor(es) de Gestión:`, 20, 89);
-      doc.setFont("helvetica", "normal");
-      doc.text(`${registro.supervisor || 'N/A'}`, 80, 89);
+      const operText = registro.operador || 'N/A';
+      const operSplit = doc.splitTextToSize(operText, 170);
+      doc.text(operSplit, 20, 82);
       
+      const supY = 82 + (operSplit.length * 5);
+      doc.setFont("helvetica", "bold");
+      doc.text(`Supervisor(es) de Gestión:`, 20, supY);
+      doc.setFont("helvetica", "normal");
+      const supText = registro.supervisor || 'N/A';
+      const supSplit = doc.splitTextToSize(supText, 110); // Empezando en 80, tiene 110 hasta margen 190
+      doc.text(supSplit, 80, supY);
+      
+      const tableY = Math.max(105, supY + (supSplit.length * 5) + 5);
+
       // Fix Universal para jspdf-autotable en Vite (v1.7.0)
       const tableFunc = typeof autoTable === 'function' ? autoTable : autoTable.default;
       
@@ -601,7 +609,7 @@ function App() {
       });
 
       tableFunc(doc, {
-        startY: 100,
+        startY: tableY,
         head: [['Detalle de Fallas Intervenidas', 'Comentarios Técnica / Observación']],
         body: bodyFallas,
         theme: 'striped',
