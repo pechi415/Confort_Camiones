@@ -68,7 +68,7 @@ const limpiarFallasIA = (fallasStr) => {
 };
 
 function App() {
-  // Versión del Sistema: 1.6.9 (Refinamiento Acta PDF)
+  // Versión del Sistema: 1.7.0 (Acta PDF Optimizada)
   const [activeTab, setActiveTab] = useState(() => localStorage.getItem('drummond_activeTab') || 'dashboard');
 
   // Supabase Auth Session State
@@ -587,7 +587,10 @@ function App() {
       doc.text(`${registro.operador || 'N/A'}`, 20, 82);
       doc.text(`Supervisor(es) de Gestión: ${registro.supervisor || 'N/A'}`, 20, 89);
       
-      // Preparar datos de fallas con comentarios (v1.6.9)
+      // Fix Universal para jspdf-autotable en Vite (v1.7.0)
+      const tableFunc = typeof autoTable === 'function' ? autoTable : autoTable.default;
+      
+      // Preparar datos de fallas con comentarios (v1.7.0)
       const itemsFallas = limpiarFallasIA(registro.fallas).split(', ');
       const bodyFallas = itemsFallas.map(item => {
         const match = item.match(/^(.*?)(?:\s\((.*?)\))?$/);
