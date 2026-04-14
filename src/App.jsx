@@ -582,6 +582,13 @@ function App() {
       doc.setFontSize(10);
       doc.text("REPORTE TÉCNICO DE TRAZABILIDAD - PROGRAMA CONFORT", 200, 30, { align: 'right' });
       
+      // Marca de Agua Central (v1.8.2)
+      doc.saveGraphicsState();
+      doc.setGState(new doc.GState({ opacity: 0.08 }));
+      // Usamos el logo principal como marca de agua estilizada en el fondo
+      doc.addImage(LOGO_DRUMMOND, 'PNG', 35, 100, 140, 45); 
+      doc.restoreGraphicsState();
+      
       doc.setTextColor(0, 0, 0);
       doc.setFontSize(14);
       doc.setFont("helvetica", "bold");
