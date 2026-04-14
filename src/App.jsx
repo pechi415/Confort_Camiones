@@ -601,7 +601,7 @@ function App() {
       
       const supLabelY = 82 + (operSplit.length * 5) + 2;
       doc.setFont("helvetica", "bold");
-      doc.text(`Gestor del reporte (Supervisor de Gestión):`, 20, supLabelY);
+      doc.text(`Gestor del reporte (Supervisor de Camiones):`, 20, supLabelY);
       
       doc.setFont("helvetica", "normal");
       const supText = (registro.supervisor || 'N/A').replace(/, /g, ' | ');
