@@ -68,7 +68,7 @@ const limpiarFallasIA = (fallasStr) => {
 };
 
 function App() {
-  // Versión del Sistema: 1.6.4 (Estética Redondeada Premium)
+  // Versión del Sistema: 1.6.5 (Checkboxes Circulares Reales)
   const [activeTab, setActiveTab] = useState(() => localStorage.getItem('drummond_activeTab') || 'dashboard');
 
   // Supabase Auth Session State
@@ -1739,12 +1739,38 @@ function App() {
                   <div key={falla.id} style={{ background: 'white', padding: '0.8rem 1.5rem', borderRadius: '50px', border: '1px solid var(--border-color)', display: 'flex', flexDirection: 'column', gap: '0.8rem', transition: 'all 0.3s', boxShadow: selectedDanos[falla.id] ? '0 4px 12px rgba(239, 68, 68, 0.1)' : 'none', borderColor: selectedDanos[falla.id] ? 'var(--primary-red)' : 'var(--border-color)' }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                       <label style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', cursor: 'pointer', fontWeight: '500', width: '100%' }}>
-                        <input 
-                          type="checkbox" 
-                          checked={!!selectedDanos[falla.id]}
-                          onChange={() => handleDanoToggle(falla.id)}
-                          style={{ width: '20px', height: '20px', accentColor: 'var(--primary-red)', cursor: 'pointer', borderRadius: '50%' }}
-                        />
+                        <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <input 
+                            type="checkbox" 
+                            checked={!!selectedDanos[falla.id]}
+                            onChange={() => handleDanoToggle(falla.id)}
+                            style={{ 
+                              width: '24px', 
+                              height: '24px', 
+                              appearance: 'none',
+                              WebkitAppearance: 'none',
+                              borderRadius: '50%', 
+                              border: `2px solid ${selectedDanos[falla.id] ? 'var(--primary-red)' : '#d1d5db'}`,
+                              backgroundColor: selectedDanos[falla.id] ? 'var(--primary-red)' : 'white',
+                              cursor: 'pointer',
+                              position: 'relative',
+                              transition: 'all 0.2s ease',
+                              display: 'flex',
+                              alignItems: 'center',
+                              justifyContent: 'center'
+                            }}
+                          />
+                          {selectedDanos[falla.id] && (
+                            <div style={{ 
+                              position: 'absolute', 
+                              width: '10px', 
+                              height: '10px', 
+                              borderRadius: '50%', 
+                              backgroundColor: 'white',
+                              pointerEvents: 'none'
+                             }} />
+                          )}
+                        </div>
                         {falla.nombre}
                       </label>
                       <span className="badge" style={{ 
@@ -2174,12 +2200,34 @@ function App() {
                         }}
                       >
                         <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                           <input 
-                             type="checkbox" 
-                             checked={!!selectedDanosEdit[falla.id]}
-                             onChange={() => handleDanoToggleEdit(falla.id)}
-                             style={{ width: '20px', height: '20px', accentColor: 'var(--primary-red)', cursor: 'pointer', borderRadius: '50%' }}
-                           />
+                           <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                             <input 
+                               type="checkbox" 
+                               checked={!!selectedDanosEdit[falla.id]}
+                               onChange={() => handleDanoToggleEdit(falla.id)}
+                               style={{ 
+                                 width: '24px', 
+                                 height: '24px', 
+                                 appearance: 'none',
+                                 WebkitAppearance: 'none',
+                                 borderRadius: '50%', 
+                                 border: `2px solid ${selectedDanosEdit[falla.id] ? 'var(--primary-red)' : '#d1d5db'}`,
+                                 backgroundColor: selectedDanosEdit[falla.id] ? 'var(--primary-red)' : 'white',
+                                 cursor: 'pointer',
+                                 transition: 'all 0.2s ease'
+                               }}
+                             />
+                             {selectedDanosEdit[falla.id] && (
+                               <div style={{ 
+                                 position: 'absolute', 
+                                 width: '10px', 
+                                 height: '10px', 
+                                 borderRadius: '50%', 
+                                 backgroundColor: 'white',
+                                 pointerEvents: 'none'
+                               }} />
+                             )}
+                           </div>
                            <span style={{ fontSize: '0.95rem', fontWeight: selectedDanosEdit[falla.id] ? '600' : '400', flex: 1, color: 'var(--primary-black)' }}>
                              {falla.nombre}
                            </span>
