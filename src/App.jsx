@@ -1112,7 +1112,7 @@ function App() {
                       borderTop: `4px solid ${col.color}`
                     }}
                   >
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.0rem' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.8rem' }}>
                       <strong style={{ color: 'var(--primary-black)' }}>{col.titulo}</strong>
                       <span className="badge" style={{ background: 'white', color: 'var(--primary-black)', borderRadius: '50px' }}>
                         {camionesColumna.length}
@@ -1122,7 +1122,7 @@ function App() {
                     {camionesColumna.map((camion, index) => {
                       const shouldStack = camionesColumna.length > 1 && index > 0;
                       const isExpanded = expandedCardId === camion.id || camionesColumna.length === 1;
-                      const marginTop = isExpanded ? '0' : (shouldStack ? '-1.2rem' : '-1.0rem');
+                      const marginTop = isExpanded ? '0' : (shouldStack ? '-1.2rem' : '0.5rem');
                       return (
                       <div 
                         key={camion.id}
