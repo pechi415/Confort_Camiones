@@ -1107,20 +1107,9 @@ function App() {
                     key={col.id}
                     onDragOver={handleDragOver}
                     onDrop={(e) => handleDrop(e, col.id)}
+                    className="kanban-column"
                     style={{
-                      flex: '1 1 200px',
-                      minWidth: '200px',
-                      background: 'rgba(255, 255, 255, 0.15)',
-                      backdropFilter: 'blur(10px)',
-                      WebkitBackdropFilter: 'blur(10px)',
-                      borderRadius: '12px',
-                      padding: '1rem',
-                      borderTop: `4px solid ${col.color}`,
-                      border: '1px solid rgba(255,255,255,0.4)',
-                      display: 'flex',
-                      flexDirection: 'column',
-                      gap: '0.8rem',
-                      minHeight: '60vh'
+                      borderTop: `4px solid ${col.color}`
                     }}
                   >
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
@@ -1130,45 +1119,19 @@ function App() {
                       </span>
                     </div>
 
-                    {camionesColumna.map((camion, index) => (
+                    {camionesColumna.map(camion => (
                       <div 
                         key={camion.id}
+                        className="kanban-card"
                         draggable
                         onDragStart={(e) => handleDragStart(e, camion.id)}
                         style={{
-                          background: expandedCardId === camion.id ? 'rgba(255, 255, 255, 0.8)' : 'rgba(255, 255, 255, 0.4)',
-                          backdropFilter: 'blur(15px)',
-                          padding: '1rem',
-                          borderRadius: '8px',
-                          boxShadow: expandedCardId === camion.id ? '0 10px 25px rgba(0,0,0,0.1)' : '0 4px 6px rgba(0,0,0,0.05)',
-                          cursor: 'grab',
-                          border: '1px solid rgba(255, 255, 255, 0.8)',
-                          transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
-                          borderLeft: `4px solid ${camion.atencion === 'CRÍTICA' ? '#ef4444' : camion.atencion === 'ALTA' ? 'var(--secondary-yellow)' : '#10b981'}`,
-                          marginTop: expandedCardId !== camion.id && index !== 0 ? '-0.8rem' : '0',
-                          zIndex: expandedCardId === camion.id ? 10 : index,
-                          position: 'relative',
-                          opacity: expandedCardId && expandedCardId !== camion.id ? 0.6 : 1,
-                          transform: expandedCardId !== camion.id ? 'scale(0.98)' : 'scale(1)'
-                        }}
-                        onMouseEnter={(e) => {
-                          if (expandedCardId !== camion.id) {
-                            e.currentTarget.style.transform = 'translateY(-5px) scale(1)';
-                            e.currentTarget.style.zIndex = '20';
-                            e.currentTarget.style.opacity = '1';
-                          }
-                        }}
-                        onMouseLeave={(e) => {
-                          if (expandedCardId !== camion.id) {
-                            e.currentTarget.style.transform = 'scale(0.98)';
-                            e.currentTarget.style.zIndex = index;
-                            e.currentTarget.style.opacity = expandedCardId ? '0.6' : '1';
-                          }
+                          borderLeft: `4px solid ${camion.atencion === 'CRÍTICA' ? '#ef4444' : camion.atencion === 'ALTA' ? 'var(--secondary-yellow)' : '#10b981'}`
                         }}
                       >
                         <div
+                          className={`kanban-card-header${expandedCardId === camion.id ? ' expanded' : ''}`}
                           onClick={() => setExpandedCardId(expandedCardId === camion.id ? null : camion.id)}
-                          style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.4rem', borderBottom: expandedCardId === camion.id ? '1px solid rgba(0,0,0,0.05)' : 'none', paddingBottom: expandedCardId === camion.id ? '0.5rem' : '0' }}
                         >
                           <Truck size={18} color="var(--primary-red)" />
                           <strong style={{ fontSize: '1.25rem', color: 'var(--primary-black)', letterSpacing: '-0.5px' }}>{camion.flota}</strong>
