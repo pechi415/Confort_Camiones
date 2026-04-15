@@ -2020,43 +2020,87 @@ function App() {
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '2rem', maxHeight: '350px', overflowY: 'auto', padding: '0.5rem' }}>
-                {fallas.filter(f => (camionInGarantia?.fallas || '').includes(f.nombre)).map(f => (
-                  <div key={f.id} style={{
-                    padding: '1rem',
-                    background: pendientesGarantia[f.id]?.selected ? 'rgba(239, 68, 68, 0.05)' : 'rgba(255, 255, 255, 0.4)',
-                    borderRadius: '12px',
-                    border: '1px solid',
-                    borderColor: pendientesGarantia[f.id]?.selected ? 'rgba(239, 68, 68, 0.2)' : 'rgba(0, 0, 0, 0.05)',
-                    transition: 'all 0.2s'
-                  }}>
-                    <label style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', cursor: 'pointer', marginBottom: pendientesGarantia[f.id]?.selected ? '0.8rem' : 0 }}>
-                      <input
-                        type="checkbox"
-                        checked={!!pendientesGarantia[f.id]?.selected}
-                        onChange={() => setPendientesGarantia(prev => ({
-                          ...prev,
-                          [f.id]: { ...prev[f.id], selected: !prev[f.id]?.selected }
-                        }))}
-                        style={{ width: '18px', height: '18px', accentColor: '#ef4444' }}
-                      />
-                      <span style={{ fontSize: '0.95rem', fontWeight: 'bold', color: 'var(--primary-black)' }}>{f.nombre}</span>
-                    </label>
+                {fallas.filter(f => (camionInGarantia?.fallas || '').includes(f.nombre)).map(f => {
+                  const isSelected = !!pendientesGarantia[f.id]?.selected;
+                  return (
+                    <div key={f.id} style={{ 
+                      background: 'white', 
+                      padding: '0.8rem 1.5rem', 
+                      borderRadius: '50px', 
+                      border: '1px solid var(--border-color)', 
+                      display: 'flex', 
+                      flexDirection: 'column', 
+                      gap: '0.8rem', 
+                      transition: 'all 0.3s', 
+                      boxShadow: isSelected ? '0 4px 12px rgba(239, 68, 68, 0.1)' : 'none', 
+                      borderColor: isSelected ? 'var(--primary-red)' : 'var(--border-color)' 
+                    }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+                        <label style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', cursor: 'pointer', fontWeight: '500', width: '100%' }}>
+                          <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                            <input
+                              type="checkbox"
+                              checked={isSelected}
+                              onChange={() => setPendientesGarantia(prev => ({
+                                ...prev,
+                                [f.id]: { ...prev[f.id], selected: !prev[f.id]?.selected }
+                              }))}
+                              style={{
+                                width: '24px',
+                                height: '24px',
+                                appearance: 'none',
+                                WebkitAppearance: 'none',
+                                borderRadius: '50%',
+                                border: `2px solid ${isSelected ? 'var(--primary-red)' : '#d1d5db'}`,
+                                backgroundColor: isSelected ? 'var(--primary-red)' : 'white',
+                                cursor: 'pointer',
+                                position: 'relative',
+                                transition: 'all 0.2s ease',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center'
+                              }}
+                            />
+                            {isSelected && (
+                              <div style={{
+                                position: 'absolute',
+                                width: '10px',
+                                height: '10px',
+                                borderRadius: '50%',
+                                backgroundColor: 'white',
+                                pointerEvents: 'none'
+                              }} />
+                            )}
+                          </div>
+                          {f.nombre}
+                        </label>
+                        <span className="badge" style={{
+                          background: f.impacto >= 25 ? 'rgba(227, 25, 55, 0.1)' : f.impacto >= 10 ? 'rgba(255, 242, 0, 0.2)' : '#e5e7eb',
+                          color: f.impacto >= 25 ? 'var(--primary-red)' : f.impacto >= 10 ? '#854d0e' : '#4b5563',
+                          padding: '0.4rem 0.8rem',
+                          border: `1px solid ${f.impacto >= 25 ? 'rgba(227, 25, 55, 0.2)' : f.impacto >= 10 ? 'rgba(255, 242, 0, 0.5)' : '#d1d5db'}`
+                        }}>
+                          {f.impacto >= 25 ? 'Crítico' : f.impacto >= 10 ? 'Mayor' : 'Menor'}
+                        </span>
+                      </div>
 
-                    {pendientesGarantia[f.id]?.selected && (
-                      <input
-                        type="text"
-                        placeholder="Explica qué sigue fallando..."
-                        className="input-field"
-                        style={{ padding: '0.4rem 0.6rem', fontSize: '0.85rem', background: 'white' }}
-                        value={pendientesGarantia[f.id]?.comment || ''}
-                        onChange={(e) => setPendientesGarantia(prev => ({
-                          ...prev,
-                          [f.id]: { ...prev[f.id], comment: e.target.value }
-                        }))}
-                      />
-                    )}
-                  </div>
-                ))}
+                      {isSelected && (
+                        <div className="fade-in" style={{ paddingLeft: '2.5rem' }}>
+                          <input
+                            type="text"
+                            className="input-field"
+                            placeholder="Explica qué sigue fallando..."
+                            value={pendientesGarantia[f.id]?.comment || ''}
+                            onChange={(e) => setPendientesGarantia(prev => ({
+                              ...prev,
+                              [f.id]: { ...prev[f.id], comment: e.target.value }
+                            }))}
+                          />
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
               </div>
 
               <div style={{ display: 'flex', gap: '1rem' }}>
