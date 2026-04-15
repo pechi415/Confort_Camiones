@@ -1293,7 +1293,12 @@ function App() {
               })}
             </div>
 
-            <div style={{ height: '0px' }}></div>
+            {/* Indicadores de Columnas (Móvil) - Posición Correcta */}
+            <div className="kanban-indicators mobile-only" style={{ display: 'flex', justifyContent: 'center', gap: '0.5rem', marginTop: '1rem', marginBottom: '1rem' }}>
+              {columnasKanban.map((_, i) => (
+                <div key={i} className={`indicator-dot ${i === 0 ? 'active' : ''}`} />
+              ))}
+            </div>
           </div>
         )}
 
@@ -1376,11 +1381,11 @@ function App() {
                 <tbody>
                   {registrosFiltrados.length > 0 ? registrosFiltrados.map(registro => (
                     <tr key={registro.id}>
-                      <td><strong style={{ fontSize: '1.1rem', color: 'var(--primary-black)' }}>{registro.flota}</strong></td>
-                      <td style={{ fontSize: '0.9rem', color: 'var(--text-main)', maxWidth: '200px' }}>{limpiarFallasIA(registro.fallas)}</td>
-                      <td style={{ fontSize: '0.85rem' }}>{registro.time}</td>
-                      <td style={{ fontSize: '0.85rem' }}>Calculando...</td>
-                      <td style={{ fontSize: '0.85rem' }}>
+                      <td data-label="Flota"><strong style={{ fontSize: '1.1rem', color: 'var(--primary-black)' }}>{registro.flota}</strong></td>
+                      <td data-label="Fallas" style={{ fontSize: '0.9rem', color: 'var(--text-main)', maxWidth: '200px' }}>{limpiarFallasIA(registro.fallas)}</td>
+                      <td data-label="Ingreso" style={{ fontSize: '0.85rem' }}>{registro.time}</td>
+                      <td data-label="Ciclo" style={{ fontSize: '0.85rem' }}>Calculando...</td>
+                      <td data-label="Operador / Mina" style={{ fontSize: '0.85rem' }}>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
                           {(registro.operador || 'N/A').split(', ').map((op, idx) => {
                             // Transformamos "G1: Carlos Perez" en "CARLOS PEREZ G1 / mina"
