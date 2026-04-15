@@ -590,7 +590,7 @@ h1, h2, h3, h4, h5, h6 {
     transform: scale(1.3);
   }
 
-  /* Tables as cards in mobile */
+  /* Tables as cards in mobile - Rediseñadas */
   .modern-table thead {
     display: none;
   }
@@ -601,34 +601,83 @@ h1, h2, h3, h4, h5, h6 {
   }
 
   .modern-table tr {
-    margin-bottom: 1rem;
-    background: rgba(255, 255, 255, 0.4);
-    border-radius: 12px;
-    padding: 1rem;
-    border: 1px solid rgba(0, 0, 0, 0.05);
+    margin-bottom: 1.5rem;
+    background: #ffffff;
+    border-radius: 20px;
+    padding: 1.5rem;
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+    position: relative;
+    overflow: hidden;
+  }
+
+  /* Indicador de estado lateral opcional */
+  .modern-table tr::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 6px;
+    background: var(--primary-red);
+    opacity: 0.8;
   }
 
   .modern-table td {
     border: none;
-    padding: 0.5rem 0;
+    padding: 0.7rem 0;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    text-align: right;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.03);
+  }
+
+  .modern-table td:last-child {
+    border-bottom: none;
+  }
+
+  /* Items que deben ocupar todo el ancho por ser texto largo */
+  .modern-table td[data-label="Fallas"],
+  .modern-table td[data-label="Operador / Mina"],
+  .modern-table td[data-label="Aprobado"] {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+    text-align: left;
+  }
+
+  .modern-table td[data-label="Fallas"] > *,
+  .modern-table td[data-label="Operador / Mina"] > * {
+    width: 100%;
+    margin-left: 0;
   }
 
   .modern-table td::before {
     content: attr(data-label);
-    font-weight: bold;
+    font-weight: 700;
     text-align: left;
     color: var(--text-muted);
-    font-size: 0.8rem;
+    font-size: 0.75rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
   }
 
-  /* Modals on mobile */
-  .card, .modal-pop {
-    padding: 1.2rem !important;
-    border-radius: 20px !important;
+  .modern-table td[data-label="Reporte"] {
+    justify-content: center;
+    padding-top: 1rem;
+    margin-top: 0.5rem;
+  }
+
+  .modern-table td[data-label="Reporte"]::before {
+    display: none; /* No necesitamos el texto "Reporte" al lado del botón PDF grande */
+  }
+
+  .modern-table td[data-label="Acciones"] {
+    background: #f9fafb;
+    margin: 1rem -1.5rem -1.5rem;
+    padding: 1rem;
+    border-radius: 0 0 20px 20px;
+    justify-content: center;
   }
 
   .input-field {
