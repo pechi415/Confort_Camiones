@@ -1145,7 +1145,7 @@ function App() {
                           border: '1px solid rgba(255, 255, 255, 0.8)',
                           transition: 'all 0.3s cubic-bezier(0.4, 0, 0.2, 1)',
                           borderLeft: `4px solid ${camion.atencion === 'CRÍTICA' ? '#ef4444' : camion.atencion === 'ALTA' ? 'var(--secondary-yellow)' : '#10b981'}`,
-                          marginTop: expandedCardId !== camion.id && index !== 0 ? '-3.5rem' : '0',
+                          marginTop: expandedCardId !== camion.id && index !== 0 ? '-0.8rem' : '0',
                           zIndex: expandedCardId === camion.id ? 10 : index,
                           position: 'relative',
                           opacity: expandedCardId && expandedCardId !== camion.id ? 0.6 : 1,
