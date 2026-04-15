@@ -1091,14 +1091,27 @@ function App() {
               ))}
             </div>
 
-            <div style={{
-              display: 'flex',
-              gap: '1rem',
-              overflowX: 'auto',
-              paddingBottom: '1rem',
-              flex: 1,
-              alignItems: 'flex-start'
-            }}>
+            <div 
+              className="kanban-board"
+              onScroll={(e) => {
+                const scrollLeft = e.target.scrollLeft;
+                const width = e.target.clientWidth;
+                const index = Math.round(scrollLeft / width);
+                const dots = document.querySelectorAll('.indicator-dot');
+                dots.forEach((dot, i) => {
+                  if (i === index) dot.classList.add('active');
+                  else dot.classList.remove('active');
+                });
+              }}
+              style={{
+                display: 'flex',
+                gap: '1rem',
+                overflowX: 'auto',
+                paddingBottom: '1rem',
+                flex: 1,
+                alignItems: 'flex-start'
+              }}
+            >
               {columnasKanban.map(col => {
                 const camionesColumna = camionesAccessibles.filter(c => c.estado === col.id).sort((a, b) => b.puntos - a.puntos);
 
@@ -1192,6 +1205,13 @@ function App() {
                                 </div>
                                 <div style={{ fontSize: '0.75rem', color: '#9f1239', lineHeight: '1.2' }}>{camion.motivo_garantia}</div>
                               </div>
+
+                  {/* Indicadores de Columnas (Móvil) */}
+                  <div className="kanban-indicators mobile-only">
+                    {columnas.map((_, i) => (
+                      <div key={i} className={`indicator-dot ${i === 0 ? 'active' : ''}`} />
+                    ))}
+                  </div>
                             )}
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                               <span style={{ fontSize: '0.75rem', fontWeight: 'bold', color: '#6b7280' }}>Prioridad:</span>
@@ -1614,11 +1634,11 @@ function App() {
                 <tbody>
                   {dbUsuarios.map(u => (
                     <tr key={u.id}>
-                      <td>
+                      <td data-label="Nombre Completo">
                         <strong style={{ color: 'var(--primary-black)', fontSize: '1rem' }}>{u.nombre}</strong><br />
                         <span style={{ color: 'var(--text-muted)', fontSize: '0.8rem' }}>@{u.username}</span>
                       </td>
-                      <td>
+                      <td data-label="Estado">
                         {u.estado === 'Activo' ? (
                           <span style={{ color: '#16a34a', display: 'flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.85rem', fontWeight: 'bold' }}>
                             <span style={{ width: '8px', height: '8px', background: '#22c55e', borderRadius: '50%' }}></span> Activo
@@ -1629,18 +1649,18 @@ function App() {
                           </span>
                         )}
                       </td>
-                      <td style={{ textTransform: 'capitalize' }}>
+                      <td data-label="Rol">
                         <span className="badge" style={{ background: u.role === 'admin' ? '#fee2e2' : '#e0e7ff', color: u.role === 'admin' ? '#991b1b' : '#3730a3' }}>
                           {u.role}
                         </span>
                       </td>
-                      <td style={{ fontWeight: '500' }}>{u.role === 'admin' ? 'Todo' : `Mina ${u.mina}`}</td>
-                      <td>
+                      <td data-label="Ubicación" style={{ fontWeight: '500' }}>{u.role === 'admin' ? 'Todo' : `Mina ${u.mina}`}</td>
+                      <td data-label="Grupo">
                         <span className="badge" style={{ background: '#f3f4f6', color: '#374151', fontSize: '0.8rem' }}>
                           G{u.grupo || '1'}
                         </span>
                       </td>
-                      <td style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>{u.creado}</td>
+                      <td data-label="Alta" style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>{u.creado}</td>
                       <td style={{ textAlign: 'right' }}>
                         <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
                           <button title="Editar Parametros" className="btn btn-secondary" style={{ padding: '0.4rem 0.6rem', fontSize: '1rem', display: 'flex', alignItems: 'center' }} onClick={() => {
@@ -2494,7 +2514,49 @@ function App() {
         </div>
       )}
 
+      {/* Navegación Inferior (Solo Móvil) */}
+      <nav className="bottom-nav mobile-only">
+        <a 
+          href="#" 
+          className={`bottom-nav-item ${activeTab === 'dashboard' ? 'active' : ''}`}
+          onClick={(e) => { e.preventDefault(); setActiveTab('dashboard'); }}
+        >
+          <LayoutDashboard size={20} />
+          <span>Dashboard</span>
+        </a>
+        <a 
+          href="#" 
+          className={`bottom-nav-item ${activeTab === 'kanban' ? 'active' : ''}`}
+          onClick={(e) => { e.preventDefault(); setActiveTab('kanban'); }}
+        >
+          <Truck size={20} />
+          <span>Lista</span>
+        </a>
+        <a 
+          href="#" 
+          className={`bottom-nav-item ${activeTab === 'report' || activeTab === 'manual_report' ? 'active' : ''}`}
+          onClick={(e) => { e.preventDefault(); setActiveTab(session.rol === 'operador' ? 'manual_report' : 'report'); }}
+        >
+          <ClipboardList size={20} />
+          <span>Reporte</span>
+        </a>
+        <a 
+          href="#" 
+          className={`bottom-nav-item ${activeTab === 'history' ? 'active' : ''}`}
+          onClick={(e) => { e.preventDefault(); setActiveTab('history'); }}
+        >
+          <History size={20} />
+          <span>Historial</span>
+        </a>
+      </nav>
+
       <style>{`
+        @media (min-width: 769px) {
+          .mobile-only { display: none !important; }
+        }
+        @media (max-width: 768px) {
+          .desktop-only { display: none !important; }
+        }
         @keyframes slideDown {
           from { transform: translateY(-100%); opacity: 0; }
           to { transform: translateY(0); opacity: 1; }
