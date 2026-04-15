@@ -1122,7 +1122,7 @@ function App() {
                     {camionesColumna.map((camion, index) => {
                       const shouldStack = camionesColumna.length > 1 && index > 0;
                       const isExpanded = expandedCardId === camion.id;
-                      const marginTop = isExpanded ? '0' : (shouldStack ? '-2rem' : '1rem');
+                      const marginTop = isExpanded ? '0' : (shouldStack ? '-2rem' : '0');
                       return (
                       <div 
                         key={camion.id}
