@@ -564,8 +564,8 @@ h1, h2, h3, h4, h5, h6 {
   }
 
   .kanban-column {
-    min-width: 85vw; /* Single column focus on mobile */
-    max-width: 85vw;
+    min-width: 72vw; /* Más estrechas para que se vea la siguiente */
+    max-width: 72vw;
     height: calc(100vh - 250px);
   }
 

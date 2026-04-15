@@ -2542,6 +2542,14 @@ function App() {
           <PlusCircle size={20} />
           <span>Nuevo Reporte</span>
         </a>
+        <a 
+          href="#" 
+          className={`bottom-nav-item ${activeTab === 'historial' ? 'active' : ''}`}
+          onClick={(e) => { e.preventDefault(); setActiveTab('historial'); }}
+        >
+          <History size={20} />
+          <span>Historial</span>
+        </a>
         {session?.role === 'admin' && (
           <a 
             href="#" 
@@ -2552,14 +2560,6 @@ function App() {
             <span>Usuarios</span>
           </a>
         )}
-        <a 
-          href="#" 
-          className={`bottom-nav-item ${activeTab === 'historial' ? 'active' : ''}`}
-          onClick={(e) => { e.preventDefault(); setActiveTab('historial'); }}
-        >
-          <History size={20} />
-          <span>Historial</span>
-        </a>
       </nav>
     </div>
   );
