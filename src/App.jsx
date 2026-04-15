@@ -1136,7 +1136,7 @@ function App() {
                         }}
                       >
                         <div
-                          className={`kanban-card-header${expandedCardId === camion.id ? ' expanded' : ''}`}
+                          className={`kanban-card-header${isExpanded ? ' expanded' : ''}`}
                           onClick={() => setExpandedCardId(expandedCardId === camion.id ? null : camion.id)}
                         >
                           <Truck size={18} color="var(--primary-red)" />
@@ -1152,7 +1152,7 @@ function App() {
                             {camion.atencion === 'NORMAL' && <span><CheckCircle2 size={18} color="#10b981" strokeWidth={2} /></span>}
                           </div>
                         </div>
-                        {expandedCardId === camion.id && (
+                        {isExpanded && (
                           <div className="fade-in">
                             <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>
                               Ingreso: {camion.time}
