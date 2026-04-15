@@ -1127,7 +1127,7 @@ function App() {
                         onDragStart={(e) => handleDragStart(e, camion.id)}
                         style={{
                           borderLeft: `4px solid ${camion.atencion === 'CRÍTICA' ? '#ef4444' : camion.atencion === 'ALTA' ? 'var(--secondary-yellow)' : '#10b981'}`,
-                          marginTop: index === 0 ? '0' : '-0.8rem',
+                          marginTop: index === 0 || camionesColumna.length === 1 ? '0' : '-0.8rem',
                           zIndex: expandedCardId === camion.id ? 1000 : index + 1,
                           opacity: 1 - (index * 0.08)
                         }}
