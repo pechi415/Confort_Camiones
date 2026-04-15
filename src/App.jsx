@@ -2536,7 +2536,7 @@ function App() {
         <a 
           href="#" 
           className={`bottom-nav-item ${activeTab === 'report' || activeTab === 'manual_report' ? 'active' : ''}`}
-          onClick={(e) => { e.preventDefault(); setActiveTab(session.rol === 'operador' ? 'manual_report' : 'report'); }}
+          onClick={(e) => { e.preventDefault(); setActiveTab(session?.rol === 'operador' ? 'manual_report' : 'report'); }}
         >
           <ClipboardList size={20} />
           <span>Reporte</span>
