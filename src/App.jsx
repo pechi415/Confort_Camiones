@@ -1433,7 +1433,7 @@ function App() {
                         </button>
                       </td>
                       {session.role === 'admin' && (
-                        <td style={{ textAlign: 'center' }}>
+                        <td data-label="Acciones" style={{ textAlign: 'center' }}>
                           <button
                             onClick={() => eliminarCamion(registro.id, registro.flota)}
                             className="btn-action btn-action-delete"
