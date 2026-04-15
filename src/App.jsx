@@ -868,14 +868,15 @@ function App() {
 
 
 
-  const registrosFiltrados = camionesAccessibles.filter(r => {
+  // Blindaje de Seguridad: Solo calcular si hay sesión activa
+  const registrosFiltrados = session ? camionesAccessibles.filter(r => {
     return r.estado === 'liberado' &&
       r.flota.includes(filtroFlota) &&
       (filtroMina === '' || r.mina === filtroMina) &&
       r.time.toLowerCase().includes(filtroMes.toLowerCase());
-  });
+  }) : [];
 
-  const conteoLiberados = camionesAccessibles.filter(c => c.estado === 'liberado').length;
+  const conteoLiberados = session ? camionesAccessibles.filter(c => c.estado === 'liberado').length : 0;
 
   return (
     <div className="app-container">
@@ -900,9 +901,9 @@ function App() {
             onClick={() => {
               setActiveTab('nuevo');
               // Automatización de Datos por Usuario (v1.6.0)
-              if (session.role !== 'admin') {
-                setMina(session.mina === 'Global' ? mina : session.mina);
-                setGrupo(session.grupo);
+              if (session?.role !== 'admin') {
+                setMina(session?.mina === 'Global' ? mina : session?.mina);
+                setGrupo(session?.grupo);
               }
             }}
           >
@@ -917,7 +918,7 @@ function App() {
           <div className={`nav-item ${activeTab === 'historial' ? 'active' : ''}`} onClick={() => setActiveTab('historial')}>
             <ClipboardList size={18} style={{ marginRight: '0.6rem', marginBottom: '-0.15rem' }} /> Historial Analítico
           </div>
-          {session.role === 'admin' && (
+          {session?.role === 'admin' && (
             <div className={`nav-item ${activeTab === 'usuarios' ? 'active' : ''}`} onClick={() => setActiveTab('usuarios')}>
               <Settings size={18} style={{ marginRight: '0.6rem', marginBottom: '-0.15rem' }} /> Gestor de Cuentas
             </div>
@@ -927,11 +928,11 @@ function App() {
         <div style={{ marginTop: 'auto', padding: '1.5rem', borderTop: '1px solid rgba(255,255,255,0.1)', color: 'rgba(255,255,255,0.7)', fontSize: '0.9rem' }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.8rem' }}>
             <div style={{ width: '32px', height: '32px', borderRadius: '50px', background: 'rgba(255,255,255,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 'bold', color: 'white' }}>
-              {session.nombre.charAt(0).toUpperCase()}
+              {session?.nombre?.charAt(0).toUpperCase() || '?'}
             </div>
             <div>
-              <div style={{ color: 'white', fontWeight: 'bold', fontSize: '0.85rem' }}>{session.nombre}</div>
-              <div style={{ fontSize: '0.75rem', textTransform: 'capitalize' }}>Mina {session.mina}</div>
+              <div style={{ color: 'white', fontWeight: 'bold', fontSize: '0.85rem' }}>{session?.nombre || 'Usuario'}</div>
+              <div style={{ fontSize: '0.75rem', textTransform: 'capitalize' }}>Mina {session?.mina || 'N/A'}</div>
             </div>
           </div>
           <button
