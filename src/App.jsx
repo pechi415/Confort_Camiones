@@ -1293,12 +1293,7 @@ function App() {
               })}
             </div>
 
-            {/* Indicadores de Columnas (Móvil) - Posición Correcta */}
-            <div className="kanban-indicators mobile-only" style={{ display: 'flex', justifyContent: 'center', gap: '0.5rem', marginTop: '1rem', marginBottom: '1rem' }}>
-              {columnasKanban.map((_, i) => (
-                <div key={i} className={`indicator-dot ${i === 0 ? 'active' : ''}`} />
-              ))}
-            </div>
+            <div style={{ height: '0px' }}></div>
           </div>
         )}
 
@@ -2515,66 +2510,9 @@ function App() {
         </div>
       )}
 
-      {/* Navegación Inferior (Solo Móvil) */}
-      <nav className="bottom-nav mobile-only">
-        <a 
-          href="#" 
-          className={`bottom-nav-item ${activeTab === 'dashboard' ? 'active' : ''}`}
-          onClick={(e) => { e.preventDefault(); setActiveTab('dashboard'); }}
-        >
-          <LayoutDashboard size={20} />
-          <span>Dashboard</span>
-        </a>
-        <a 
-          href="#" 
-          className={`bottom-nav-item ${activeTab === 'kanban' ? 'active' : ''}`}
-          onClick={(e) => { e.preventDefault(); setActiveTab('kanban'); }}
-        >
-          <Truck size={20} />
-          <span>Lista</span>
-        </a>
-        <a 
-          href="#" 
-          className={`bottom-nav-item ${activeTab === 'report' || activeTab === 'manual_report' ? 'active' : ''}`}
-          onClick={(e) => { e.preventDefault(); setActiveTab(session?.rol === 'operador' ? 'manual_report' : 'report'); }}
-        >
-          <ClipboardList size={20} />
-          <span>Reporte</span>
-        </a>
-        <a 
-          href="#" 
-          className={`bottom-nav-item ${activeTab === 'historial' ? 'active' : ''}`}
-          onClick={(e) => { e.preventDefault(); setActiveTab('historial'); }}
-        >
-          <History size={20} />
-          <span>Historial</span>
-        </a>
-      </nav>
-
-      <style>{`
-        @media (min-width: 769px) {
-          .mobile-only { display: none !important; }
-        }
-        @media (max-width: 768px) {
-          .desktop-only { display: none !important; }
-        }
-        @keyframes slideDown {
-          from { transform: translateY(-100%); opacity: 0; }
-          to { transform: translateY(0); opacity: 1; }
-        }
-        @keyframes modalPop {
-          from { transform: scale(0.95); opacity: 0; }
-          to { transform: scale(1); opacity: 1; }
-        }
-        .toast-animation {
-          animation: slideDown 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-        .modal-pop {
-          animation: modalPop 0.3s cubic-bezier(0.16, 1, 0.3, 1);
-        }
-      `}</style>
     </div>
   );
 }
 
 export default App;
+
