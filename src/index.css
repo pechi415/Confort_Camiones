@@ -169,8 +169,8 @@ h1, h2, h3, h4, h5, h6 {
 /* Cards & KPIs */
 .kpi-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
-  gap: 1.5rem;
+  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+  gap: 1rem;
   margin-bottom: 2.5rem;
 }
 
