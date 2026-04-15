@@ -71,7 +71,7 @@ const LOGO_DRUMMOND = "iVBORw0KGgoAAAANSUhEUgAAAOkAAABACAYAAAD/JFDFAAANVElEQVR4A
 
 function App() {
   // Versión del Sistema: 1.8.4 (Filtro Firma por Grupo)
-  const [activeTab, setActiveTab] = useState(() => localStorage.getItem('drummond_activeTab') || 'dashboard');
+  const [activeTab, setActiveTab] = useState(() => sessionStorage.getItem('drummond_activeTab') || 'dashboard');
 
   // Supabase Auth Session State
   const [session, setSession] = useState(() => {
@@ -114,7 +114,7 @@ function App() {
 
   // Efecto para persistir cambios en tiempo real
   useEffect(() => {
-    localStorage.setItem('drummond_activeTab', activeTab);
+    sessionStorage.setItem('drummond_activeTab', activeTab);
     const state = { flota, operador, mina, grupo, selectedDanos, observaciones };
     localStorage.setItem('drummond_report_form', JSON.stringify(state));
   }, [activeTab, flota, operador, mina, grupo, selectedDanos, observaciones]);
@@ -767,7 +767,7 @@ function App() {
   const handleLogout = () => {
     setSession(null);
     localStorage.removeItem('drummond_session');
-    localStorage.removeItem('drummond_activeTab');
+    sessionStorage.removeItem('drummond_activeTab');
     localStorage.removeItem('drummond_report_form');
     setUsuarioLogin('');
     setPasswordLogin('');
