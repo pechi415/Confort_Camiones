@@ -1121,6 +1121,8 @@ function App() {
 
                     {camionesColumna.map((camion, index) => {
                       const shouldStack = camionesColumna.length > 1 && index > 0;
+                      const isExpanded = expandedCardId === camion.id;
+                      const marginTop = isExpanded ? '0' : (shouldStack ? '-0.8rem' : '0');
                       return (
                       <div 
                         key={camion.id}
@@ -1129,8 +1131,8 @@ function App() {
                         onDragStart={(e) => handleDragStart(e, camion.id)}
                         style={{
                           borderLeft: `4px solid ${camion.atencion === 'CRÍTICA' ? '#ef4444' : camion.atencion === 'ALTA' ? 'var(--secondary-yellow)' : '#10b981'}`,
-                          marginTop: shouldStack ? '-0.8rem' : '0',
-                          zIndex: expandedCardId === camion.id ? 1000 : index + 1
+                          marginTop: marginTop,
+                          zIndex: isExpanded ? 1000 : index + 1
                         }}
                       >
                         <div
