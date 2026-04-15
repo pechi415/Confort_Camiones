@@ -1128,7 +1128,7 @@ function App() {
                         style={{
                           borderLeft: `4px solid ${camion.atencion === 'CRÍTICA' ? '#ef4444' : camion.atencion === 'ALTA' ? 'var(--secondary-yellow)' : '#10b981'}`,
                           marginTop: index === 0 ? '0' : '-1.4rem',
-                          zIndex: camionesColumna.length - index
+                          zIndex: index + 1
                         }}
                       >
                         <div
