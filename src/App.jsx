@@ -1107,7 +1107,8 @@ function App() {
                     onDragOver={handleDragOver}
                     onDrop={(e) => handleDrop(e, col.id)}
                     style={{ 
-                      flex: '0 0 280px', 
+                      flex: '1 1 200px', 
+                      minWidth: '200px',
                       background: 'rgba(255, 255, 255, 0.15)', 
                       backdropFilter: 'blur(10px)',
                       WebkitBackdropFilter: 'blur(10px)',
