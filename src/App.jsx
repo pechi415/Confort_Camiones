@@ -2516,7 +2516,7 @@ function App() {
         </div>
       )}
 
-      {/* Navegación Inferior (Solo Móvil) */}
+      {/* Navegación Inferior (Solo Móvil) - Estilo Liquid Glass Ready */}
       <nav className="bottom-nav mobile-only">
         <a 
           href="#" 
@@ -2524,24 +2524,34 @@ function App() {
           onClick={(e) => { e.preventDefault(); setActiveTab('dashboard'); }}
         >
           <LayoutDashboard size={20} />
-          <span>Dashboard</span>
+          <span>Inicio</span>
         </a>
         <a 
           href="#" 
-          className={`bottom-nav-item ${activeTab === 'kanban' ? 'active' : ''}`}
-          onClick={(e) => { e.preventDefault(); setActiveTab('kanban'); }}
+          className={`bottom-nav-item ${activeTab === 'cola' ? 'active' : ''}`}
+          onClick={(e) => { e.preventDefault(); setActiveTab('cola'); }}
         >
           <Truck size={20} />
           <span>Lista</span>
         </a>
         <a 
           href="#" 
-          className={`bottom-nav-item ${activeTab === 'report' || activeTab === 'manual_report' ? 'active' : ''}`}
-          onClick={(e) => { e.preventDefault(); setActiveTab(session?.role === 'operador' ? 'manual_report' : 'report'); }}
+          className={`bottom-nav-item ${activeTab === 'nuevo' ? 'active' : ''}`}
+          onClick={(e) => { e.preventDefault(); setActiveTab('nuevo'); }}
         >
-          <ClipboardList size={20} />
-          <span>Reporte</span>
+          <PlusCircle size={20} />
+          <span>Nuevo Reporte</span>
         </a>
+        {session?.role === 'admin' && (
+          <a 
+            href="#" 
+            className={`bottom-nav-item ${activeTab === 'usuarios' ? 'active' : ''}`}
+            onClick={(e) => { e.preventDefault(); setActiveTab('usuarios'); }}
+          >
+            <Users size={20} />
+            <span>Usuarios</span>
+          </a>
+        )}
         <a 
           href="#" 
           className={`bottom-nav-item ${activeTab === 'historial' ? 'active' : ''}`}
