@@ -130,6 +130,7 @@ function App() {
   const [nuevoUsuarioParams, setNuevoUsuarioParams] = useState({ nombre: '', username: '', password: 'con123', mina: 'PB', grupo: '1', role: 'supervisor', estado: 'Activo' });
   const [usuarioEditando, setUsuarioEditando] = useState(null);
   const [selectedReport, setSelectedReport] = useState(null); // Para el Modal de detalles técnicos
+  const [expandedCardId, setExpandedCardId] = useState(null); // Acordeón de Kanban
   const [camionEditando, setCamionEditando] = useState(null); // Para el Modal de edición rápida camión
   const [selectedDanosEdit, setSelectedDanosEdit] = useState({});
   const [observacionesEdit, setObservacionesEdit] = useState({});
@@ -1146,7 +1147,10 @@ function App() {
                           borderLeft: `4px solid ${camion.atencion === 'CRÍTICA' ? '#ef4444' : camion.atencion === 'ALTA' ? 'var(--secondary-yellow)' : '#10b981'}`
                         }}
                       >
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.4rem' }}>
+                        <div 
+                          onClick={() => setExpandedCardId(expandedCardId === camion.id ? null : camion.id)}
+                          style={{ cursor: 'pointer', display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.4rem', borderBottom: expandedCardId === camion.id ? '1px solid rgba(0,0,0,0.05)' : 'none', paddingBottom: expandedCardId === camion.id ? '0.5rem' : '0' }}
+                        >
                           <Truck size={18} color="var(--primary-red)" />
                           <strong style={{ fontSize: '1.25rem', color: 'var(--primary-black)', letterSpacing: '-0.5px' }}>{camion.flota}</strong>
                           <div style={{ marginLeft: 'auto', display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
@@ -1160,6 +1164,8 @@ function App() {
                             {camion.atencion === 'NORMAL' && <span><CheckCircle2 size={18} color="#10b981" strokeWidth={2} /></span>}
                           </div>
                         </div>
+                        {expandedCardId === camion.id && (
+                          <div className="fade-in">
                         <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>
                           Ingreso: {camion.time}
                         </div>
@@ -1269,6 +1275,8 @@ function App() {
                             ))}
                           </select>
                         </div>
+                          </div>
+                        )}
                       </div>
                     ))}
                     
