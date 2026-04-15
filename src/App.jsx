@@ -1130,8 +1130,7 @@ function App() {
                         style={{
                           borderLeft: `4px solid ${camion.atencion === 'CRÍTICA' ? '#ef4444' : camion.atencion === 'ALTA' ? 'var(--secondary-yellow)' : '#10b981'}`,
                           marginTop: shouldStack ? '-0.8rem' : '0',
-                          zIndex: expandedCardId === camion.id ? 1000 : index + 1,
-                          opacity: 1 - (index * 0.08)
+                          zIndex: expandedCardId === camion.id ? 1000 : index + 1
                         }}
                       >
                         <div
