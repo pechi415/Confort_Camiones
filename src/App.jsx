@@ -1206,12 +1206,6 @@ function App() {
                                 <div style={{ fontSize: '0.75rem', color: '#9f1239', lineHeight: '1.2' }}>{camion.motivo_garantia}</div>
                               </div>
 
-                  {/* Indicadores de Columnas (Móvil) */}
-                  <div className="kanban-indicators mobile-only">
-                    {columnas.map((_, i) => (
-                      <div key={i} className={`indicator-dot ${i === 0 ? 'active' : ''}`} />
-                    ))}
-                  </div>
                             )}
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                               <span style={{ fontSize: '0.75rem', fontWeight: 'bold', color: '#6b7280' }}>Prioridad:</span>
@@ -1297,6 +1291,13 @@ function App() {
                   </div>
                 )
               })}
+            </div>
+
+            {/* Indicadores de Columnas (Móvil) - Posición Correcta */}
+            <div className="kanban-indicators mobile-only" style={{ display: 'flex', justifyContent: 'center', gap: '0.5rem', marginTop: '1rem', marginBottom: '1rem' }}>
+              {columnasKanban.map((_, i) => (
+                <div key={i} className={`indicator-dot ${i === 0 ? 'active' : ''}`} />
+              ))}
             </div>
           </div>
         )}
@@ -2542,8 +2543,8 @@ function App() {
         </a>
         <a 
           href="#" 
-          className={`bottom-nav-item ${activeTab === 'history' ? 'active' : ''}`}
-          onClick={(e) => { e.preventDefault(); setActiveTab('history'); }}
+          className={`bottom-nav-item ${activeTab === 'historial' ? 'active' : ''}`}
+          onClick={(e) => { e.preventDefault(); setActiveTab('historial'); }}
         >
           <History size={20} />
           <span>Historial</span>
