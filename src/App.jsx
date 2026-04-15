@@ -2510,6 +2510,41 @@ function App() {
         </div>
       )}
 
+      {/* Navegación Inferior (Solo Móvil) */}
+      <nav className="bottom-nav mobile-only">
+        <a 
+          href="#" 
+          className={`bottom-nav-item ${activeTab === 'dashboard' ? 'active' : ''}`}
+          onClick={(e) => { e.preventDefault(); setActiveTab('dashboard'); }}
+        >
+          <LayoutDashboard size={20} />
+          <span>Dashboard</span>
+        </a>
+        <a 
+          href="#" 
+          className={`bottom-nav-item ${activeTab === 'kanban' ? 'active' : ''}`}
+          onClick={(e) => { e.preventDefault(); setActiveTab('kanban'); }}
+        >
+          <Truck size={20} />
+          <span>Lista</span>
+        </a>
+        <a 
+          href="#" 
+          className={`bottom-nav-item ${activeTab === 'report' || activeTab === 'manual_report' ? 'active' : ''}`}
+          onClick={(e) => { e.preventDefault(); setActiveTab(session?.role === 'operador' ? 'manual_report' : 'report'); }}
+        >
+          <ClipboardList size={20} />
+          <span>Reporte</span>
+        </a>
+        <a 
+          href="#" 
+          className={`bottom-nav-item ${activeTab === 'historial' ? 'active' : ''}`}
+          onClick={(e) => { e.preventDefault(); setActiveTab('historial'); }}
+        >
+          <History size={20} />
+          <span>Historial</span>
+        </a>
+      </nav>
     </div>
   );
 }
