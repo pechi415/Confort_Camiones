@@ -1045,7 +1045,7 @@ function App() {
                                   style={{ background: 'transparent', border: 'none', color: '#2563eb', cursor: 'pointer', padding: 0 }}
                                   title="Ver Diagnóstico Técnico"
                                 >
-                                  <MonitorCheck size={16} />
+                                  <FileText size={16} />
                                 </button>
                               </div>
                             </td>
@@ -1061,7 +1061,6 @@ function App() {
                             <td>{formatFechaCorta(camion?.creado_at || camion?.fecha_ingreso)}</td>
                             <td>
                               <div style={{ display: 'flex', justifyContent: 'center', gap: '0.6rem' }}>
-                                <button onClick={() => setSelectedReport(camion)} className="btn-action btn-action-edit" title="Ver Reporte"><FileText size={18} /></button>
                                 {(session?.role?.toLowerCase() === 'admin' || session?.role?.toLowerCase() === 'supervisor' || session?.rol?.toLowerCase() === 'admin' || session?.rol?.toLowerCase() === 'supervisor') && (
                                   <button onClick={() => prepararEdicion(camion)} className="btn-action btn-action-edit" title="Editar"><Edit3 size={18} /></button>
                                 )}
