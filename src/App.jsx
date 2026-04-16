@@ -1002,7 +1002,7 @@ function App() {
                 <table className="modern-table">
                   <thead>
                     <tr>
-                      <th>Flota (Camión)</th>
+                      <th>Camión</th>
                       <th>Mina / Grupo</th>
                       <th>Atención Requerida</th>
                       <th>Estado</th>
@@ -1013,7 +1013,7 @@ function App() {
                   <tbody>
                     {camionesAccessibles.filter(c => c.estado !== 'liberado').slice(0, 5).map(camion => (
                       <tr key={camion.id}>
-                        <td>
+                        <td data-label="Camión">
                           <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
                             <strong style={{ fontSize: '1.1rem' }}>{camion.flota}</strong>
                             <button
@@ -1329,7 +1329,7 @@ function App() {
 
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1.5rem', marginBottom: '1.5rem', padding: '1rem', background: 'rgba(255, 255, 255, 0.3)', backdropFilter: 'blur(10px)', WebkitBackdropFilter: 'blur(10px)', borderRadius: '8px', border: '1px solid rgba(255, 255, 255, 0.5)' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                <span style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--primary-black)', display: 'flex', alignItems: 'center', gap: '0.3rem' }}><Search size={16} strokeWidth={1.5} /> Flota:</span>
+                <span style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--primary-black)', display: 'flex', alignItems: 'center', gap: '0.3rem' }}><Search size={16} strokeWidth={1.5} /> Camión:</span>
                 <input
                   type="text"
                   className="input-field"
@@ -1369,7 +1369,7 @@ function App() {
               <table className="modern-table">
                 <thead>
                   <tr>
-                    <th>Flota</th>
+                    <th>Camión</th>
                     <th>Fallas Reparadas</th>
                     <th>Ingreso a Fila</th>
                     <th>Tiempo de Ciclo</th>
@@ -1382,7 +1382,7 @@ function App() {
                 <tbody>
                   {registrosFiltrados.length > 0 ? registrosFiltrados.map(registro => (
                     <tr key={registro.id}>
-                      <td data-label="Flota"><strong style={{ fontSize: '1.1rem', color: 'var(--primary-black)' }}>{registro.flota}</strong></td>
+                      <td data-label="Camión"><strong style={{ fontSize: '1.1rem', color: 'var(--primary-black)' }}>{registro.flota}</strong></td>
                       <td data-label="Fallas" style={{ fontSize: '0.9rem', color: 'var(--text-main)', maxWidth: '200px' }}>{limpiarFallasIA(registro.fallas)}</td>
                       <td data-label="Ingreso" style={{ fontSize: '0.85rem' }}>{registro.time}</td>
                       <td data-label="Ciclo" style={{ fontSize: '0.85rem' }}>Calculando...</td>
@@ -1735,7 +1735,7 @@ function App() {
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
               <div className="input-group">
-                <label className="input-label">Identificación de Flota</label>
+                <label className="input-label">Identificación del Camión</label>
                 <input
                   type="text"
                   className="input-field"
