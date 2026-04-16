@@ -578,13 +578,14 @@ h1, h2, h3, h4, h5, h6 {
     margin-bottom: 1rem;
   }
 
-  /* Historial Header Responsive Styles */
+  /* Historial Header Styles (Desktop First) */
   .history-header-container {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 1.5rem;
+    margin-bottom: 2rem;
     gap: 1.5rem;
+    width: 100%;
   }
 
   .history-header-actions {
@@ -594,11 +595,23 @@ h1, h2, h3, h4, h5, h6 {
     flex-shrink: 0;
   }
 
-  @media (max-width: 992px) {
+  /* El badge debe ser de ancho automático en PC */
+  .history-badge {
+    width: auto !important;
+    white-space: nowrap;
+  }
+
+  /* El botón de exportar debe ser de ancho automático en PC */
+  .history-export-btn {
+    width: auto !important;
+  }
+
+  /* Media Queries: Ajustes solo para móviles y tablets */
+  @media (max-width: 900px) {
     .history-header-container {
       flex-direction: column;
       align-items: flex-start;
-      gap: 1.2rem;
+      gap: 1rem;
     }
     
     .history-header-actions {
@@ -608,13 +621,8 @@ h1, h2, h3, h4, h5, h6 {
       gap: 0.8rem;
     }
 
-    .history-export-btn {
-      width: 100%;
-      padding: 0.8rem !important;
-    }
-
-    .history-badge {
-      width: 100%;
+    .history-badge, .history-export-btn {
+      width: 100% !important;
       justify-content: center;
     }
   }
