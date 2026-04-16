@@ -1422,27 +1422,38 @@ function App() {
                         </div>
                       </td>
                       <td data-label="Reporte">
-                        <button
-                          className="btn btn-secondary"
-                          style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem', border: '1px solid rgba(227, 25, 55, 0.4)', color: 'var(--primary-red)', background: 'rgba(255, 255, 255, 0.4)', backdropFilter: 'blur(5px)' }}
-                          onClick={() => generarPDF(registro)}
-                        >
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                            <FileText size={15} strokeWidth={1.5} /> Ver PDF
-                          </div>
-                        </button>
-                      </td>
-                      {session.role === 'admin' && (
-                        <td data-label="Acciones" style={{ textAlign: 'center' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', justifyContent: 'center' }}>
                           <button
-                            onClick={() => eliminarCamion(registro.id, registro.flota)}
-                            className="btn-action btn-action-delete"
-                            title="Eliminar Reporte Histórico"
+                            className="btn btn-secondary"
+                            style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem', border: '1px solid rgba(227, 25, 55, 0.4)', color: 'var(--primary-red)', background: 'rgba(255, 255, 255, 0.4)', backdropFilter: 'blur(5px)' }}
+                            onClick={() => generarPDF(registro)}
                           >
-                            <Trash2 size={18} />
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                              <FileText size={15} strokeWidth={1.5} /> Ver PDF
+                            </div>
                           </button>
-                        </td>
-                      )}
+                          
+                          {session.role === 'admin' && (
+                            <button
+                              onClick={() => eliminarCamion(registro.id, registro.flota)}
+                              style={{ 
+                                background: 'rgba(239, 68, 68, 0.1)', 
+                                border: '1px solid rgba(239, 68, 68, 0.2)', 
+                                color: '#ef4444', 
+                                padding: '0.4rem', 
+                                borderRadius: '8px',
+                                cursor: 'pointer',
+                                display: 'flex',
+                                alignItems: 'center',
+                                justifyContent: 'center'
+                              }}
+                              title="Eliminar Reporte Histórico"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          )}
+                        </div>
+                      </td>
                     </tr>
                   )) : (
                     <tr>

@@ -672,13 +672,7 @@ h1, h2, h3, h4, h5, h6 {
     display: none; /* No necesitamos el texto "Reporte" al lado del botón PDF grande */
   }
 
-  .modern-table td[data-label="Acciones"] {
-    background: #f9fafb;
-    margin: 1rem -1.5rem -1.5rem;
-    padding: 1rem;
-    border-radius: 0 0 20px 20px;
-    justify-content: center;
-  }
+
 
   .input-field {
     padding: 0.8rem 1rem; /* Better touch size */
