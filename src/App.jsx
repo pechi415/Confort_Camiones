@@ -907,26 +907,33 @@ function App() {
     const matchMina = filtroMina === '' || r.mina === filtroMina;
     if (!matchFlota || !matchMina) return false;
 
-    // Filtro por Mes Salida (Inteligente)
+    // Filtro por Mes Salida (Inteligente con Blindaje v1.9.35)
     if (!filtroMes.trim()) return true;
     
-    const terminos = filtroMes.toLowerCase().split(',').map(t => t.trim()).filter(Boolean);
-    const fechaObj = new Date(r.time);
-    const mesNum = (fechaObj.getMonth() + 1).toString().padStart(2, '0'); // "04"
-    const diaNum = fechaObj.getDate().toString().padStart(2, '0');
-    
-    // Mapa de nombres de meses en español
-    const nombresMeses = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
-    const mesNombre = nombresMeses[fechaObj.getMonth()];
-    const mesAbrev = mesNombre.substring(0, 3);
-    
-    // El registro coincide si alguno de los términos del usuario coincide con el mes (número, nombre o abreviatura)
-    return terminos.some(t => 
-      mesNum.includes(t) || 
-      mesNombre.includes(t) || 
-      mesAbrev.includes(t) ||
-      r.time.toLowerCase().includes(t) // Backwards compatibility
-    );
+    try {
+      const terminos = filtroMes.toLowerCase().split(',').map(t => t.trim()).filter(Boolean);
+      const fechaObj = r.time ? new Date(r.time) : null;
+      
+      // Si la fecha es inválida, solo buscamos por texto plano en r.time si existe
+      if (!fechaObj || isNaN(fechaObj.getTime())) {
+        return terminos.some(t => r.time && r.time.toLowerCase().includes(t));
+      }
+
+      const mesNum = (fechaObj.getMonth() + 1).toString().padStart(2, '0');
+      const nombresMeses = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+      const mesNombre = nombresMeses[fechaObj.getMonth()] || '';
+      const mesAbrev = mesNombre.substring(0, 3);
+      
+      return terminos.some(t => 
+        mesNum.includes(t) || 
+        (mesNombre && mesNombre.includes(t)) || 
+        (mesAbrev && mesAbrev.includes(t)) ||
+        (r.time && r.time.toLowerCase().includes(t))
+      );
+    } catch (e) {
+      console.error("Error filtrando fecha:", e);
+      return true; // En caso de error, mostramos el registro para no romper la vista
+    }
   }) : [];
 
   const conteoLiberados = session ? camionesAccessibles.filter(c => c.estado === 'liberado').length : 0;
