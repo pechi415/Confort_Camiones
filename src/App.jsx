@@ -1051,7 +1051,12 @@ function App() {
                             <td>
                               <div style={{ display: 'flex', justifyContent: 'center', gap: '0.6rem' }}>
                                 <button onClick={() => setSelectedReport(camion)} className="btn-action btn-action-edit" title="Ver Reporte"><FileText size={18} /></button>
-                                <button onClick={() => prepararEdicion(camion)} className="btn-action btn-action-edit" title="Editar"><Edit3 size={18} /></button>
+                                {(session?.role?.toLowerCase() === 'admin' || session?.role?.toLowerCase() === 'supervisor' || session?.rol?.toLowerCase() === 'admin' || session?.rol?.toLowerCase() === 'supervisor') && (
+                                  <button onClick={() => prepararEdicion(camion)} className="btn-action btn-action-edit" title="Editar"><Edit3 size={18} /></button>
+                                )}
+                                {(session?.role?.toLowerCase() === 'admin' || session?.rol?.toLowerCase() === 'admin') && (
+                                  <button onClick={() => eliminarCamion(camion.id, camion.flota)} className="btn-action btn-action-delete" title="Eliminar"><Trash2 size={18} /></button>
+                                )}
                               </div>
                             </td>
                           </tr>
