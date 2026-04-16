@@ -140,18 +140,24 @@ function App() {
   const [expandedHistoryId, setExpandedHistoryId] = useState(null);
   const [currentKanbanCol, setCurrentKanbanCol] = useState(0); 
 
-  // Blindaje de Fechas v1.9.16 (Anti-Crash Global)
+  // Blindaje de Fechas v1.9.23 (Máxima Compatibilidad)
   const formatFechaCorta = (dateStr) => {
     if (!dateStr) return '---';
     try {
+      // Intentamos conversión estándar
       const d = new Date(dateStr);
-      if (isNaN(d.getTime())) return '---';
-      const dia = String(d.getDate()).padStart(2, '0');
-      const mes = String(d.getMonth() + 1).padStart(2, '0');
-      const anio = String(d.getFullYear()).slice(-2);
-      return `${dia}/${mes}/${anio}`;
+      if (!isNaN(d.getTime())) {
+        const dia = String(d.getDate()).padStart(2, '0');
+        const mes = String(d.getMonth() + 1).padStart(2, '0');
+        const anio = String(d.getFullYear()).slice(-2);
+        return `${dia}/${mes}/${anio}`;
+      }
+      
+      // Fallback: Si no es fecha válida para JS pero el string tiene datos (ej: "16/04/2026")
+      // Retornamos los primeros 10 caracteres (asumiendo que es la fecha)
+      return dateStr.substring(0, 10);
     } catch (e) {
-      return '---';
+      return dateStr.substring(0, 10) || '---';
     }
   };
 
