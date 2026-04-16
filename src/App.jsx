@@ -148,7 +148,7 @@ function App() {
       if (!isNaN(d.getTime())) {
         const dia = String(d.getDate()).padStart(2, '0');
         const mes = String(d.getMonth() + 1).padStart(2, '0');
-        const anio = String(d.getFullYear()).slice(-2);
+        const anio = String(d.getFullYear());
         return `${dia}/${mes}/${anio}`;
       }
       // Limpiamos comas, puntos o espacios al final del recorte (ej: "16/04/2026, " -> "16/04/2026")
@@ -2291,7 +2291,7 @@ function App() {
                   </div>
                   <div>
                     <h3 style={{ margin: 0, color: 'var(--primary-black)' }}>Ficha Técnica - {selectedReport.flota}</h3>
-                    <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-muted)' }}>Mina {selectedReport.mina} - Grupo {selectedReport.grupo || 'N/A'}</p>
+                    <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-muted)' }}>Mina {selectedReport.mina} - Grupo {formatGrupo(selectedReport.grupo)}</p>
                   </div>
                 </div>
                 <button onClick={() => setSelectedReport(null)} style={{ background: 'transparent', border: 'none', color: '#9ca3af', cursor: 'pointer', fontSize: '1.5rem' }}>×</button>
@@ -2307,17 +2307,17 @@ function App() {
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
                 <div style={{ background: '#f0f9ff', padding: '1rem', borderRadius: '8px', border: '1px solid #bae6fd' }}>
                   <span style={{ display: 'block', fontSize: '0.7rem', color: '#0369a1', fontWeight: 'bold' }}>REPORTE POR (SUPERVISOR):</span>
-                  <span style={{ fontSize: '0.85rem', color: '#0c4a6e', fontWeight: 'bold' }}>{selectedReport.supervisor || 'N/A'}</span>
+                  <span style={{ fontSize: '0.85rem', color: '#0c4a6e', fontWeight: 'bold' }}>{(selectedReport.supervisor || 'N/A').split(', ').join(' | ')}</span>
                 </div>
                 <div style={{ background: '#f8fafc', padding: '1rem', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
                   <span style={{ display: 'block', fontSize: '0.7rem', color: '#64748b', fontWeight: 'bold' }}>OPERADOR PERMANENTE:</span>
-                  <span style={{ fontSize: '0.85rem', color: '#1e293b' }}>{selectedReport.operador || 'No asignado'}</span>
+                  <span style={{ fontSize: '0.85rem', color: '#1e293b' }}>{(selectedReport.operador || 'No asignado').split(', ').join(' | ')}</span>
                 </div>
               </div>
 
               <div style={{ background: '#fdf2f8', padding: '0.8rem', borderRadius: '8px', border: '1px solid #fbcfe8', marginBottom: '1.5rem', textAlign: 'center' }}>
                 <span style={{ fontSize: '0.7rem', color: '#be185d', fontWeight: 'bold', marginRight: '0.5rem' }}>FECHA DE REGISTRO:</span>
-                <span style={{ fontSize: '0.85rem', color: '#831843' }}>{selectedReport.time}</span>
+                <span style={{ fontSize: '0.85rem', color: '#831843' }}>{formatFechaCorta(selectedReport.time)}</span>
               </div>
 
               <button
