@@ -138,6 +138,17 @@ function App() {
   const [pendientesGarantia, setPendientesGarantia] = useState({});
   const [registrosLimit, setRegistrosLimit] = useState(20);
   const [expandedHistoryId, setExpandedHistoryId] = useState(null);
+  const [currentKanbanCol, setCurrentKanbanCol] = useState(0); 
+
+  // Formato corto v1.9.15
+  const formatFechaCorta = (dateStr) => {
+    if (!dateStr) return '---';
+    const d = new Date(dateStr);
+    const dia = String(d.getDate()).padStart(2, '0');
+    const mes = String(d.getMonth() + 1).padStart(2, '0');
+    const anio = String(d.getFullYear()).slice(-2);
+    return `${dia}/${mes}/${anio}`;
+  };
 
   // ---------- SISTEMA DE MENSAJERÍA PERSONALIZADA (ZERO BROWSER DIALOGS) ----------
   const [toasts, setToasts] = useState([]);
@@ -978,8 +989,8 @@ function App() {
           <div className="dashboard-view fade-in">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '1rem' }}>
               <h2 style={{ fontSize: '1.4rem', color: 'var(--primary-black)', margin: 0 }}><LayoutDashboard strokeWidth={1.5} size={24} style={{ marginBottom: '-0.3rem', color: '#2563eb' }} />  Resumen de Control</h2>
-              <span className="badge badge-liberado" style={{ fontSize: '0.9rem', padding: '0.6rem 1.2rem', display: 'flex', alignItems: 'center', gap: '0.4rem', border: '1px solid #10b981', background: 'rgba(16, 185, 129, 0.15)', color: '#059669', boxShadow: '0 2px 4px rgba(16, 185, 129, 0.1)' }}>
-                <Award size={16} strokeWidth={2} /> Camiones Entregados Satisfactoriamente: {conteoLiberados}
+              <span className="badge badge-liberado dashboard-kpi-badge" style={{ fontSize: '0.85rem', padding: '0.6rem 1.2rem', display: 'flex', alignItems: 'center', gap: '0.4rem', border: '1px solid #10b981', background: 'rgba(16, 185, 129, 0.15)', color: '#059669', boxShadow: '0 2px 4px rgba(16, 185, 129, 0.1)' }}>
+                <Award size={16} strokeWidth={2} /> <span>Entregados: <strong>{conteoLiberados}</strong></span>
               </span>
             </div>
             <div className="kpi-grid">
@@ -995,81 +1006,41 @@ function App() {
               ))}
             </div>
 
-            <div className="card">
-              <div className="card-header">
-                <h3>Top Prioridades Actuales</h3>
-                <button className="btn btn-primary" onClick={() => setActiveTab('cola')}>Ver Cola Completa</button>
+            <div className="card fade-in" style={{ background: 'rgba(255,255,255,0.4)', backdropFilter: 'blur(10px)', marginTop: '1.5rem' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
+                <h3 style={{ margin: 0, color: 'var(--primary-black)', display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                  <Zap size={22} color="var(--primary-red)" /> Top Prioridades en Taller
+                </h3>
+                <button className="btn btn-primary mobile-only" onClick={() => setActiveTab('cola')} style={{ padding: '0.4rem 0.8rem', fontSize: '0.75rem' }}>Ver Todos</button>
               </div>
-              <div className="table-container">
-                <table className="modern-table">
-                  <thead>
-                    <tr>
-                      <th>Camión</th>
-                      <th>Mina / Grupo</th>
-                      <th>Atención Requerida</th>
-                      <th>Estado</th>
-                      <th>Fecha Reporte</th>
-                      <th style={{ textAlign: 'center' }}>Acciones</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {camionesAccessibles.filter(c => c.estado !== 'liberado').slice(0, 5).map(camion => (
-                      <tr key={camion.id}>
-                        <td data-label="Camión">
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
-                            <strong style={{ fontSize: '1.1rem' }}>{camion.flota}</strong>
-                            <button
-                              onClick={() => setSelectedReport(camion)}
-                              style={{ background: 'transparent', border: 'none', color: '#3b82f6', cursor: 'pointer', display: 'flex', alignItems: 'center' }}
-                              title="Ver Reporte Técnico"
-                            >
-                              <FileText size={16} />
-                            </button>
-                          </div>
-                        </td>
-                        <td>
-                          {camion.mina} / {String(camion.grupo || '?').split(', ').map(g => g.startsWith('G') ? g : `G${g}`).join(', ')}
-                        </td>
-                        <td>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
-                            {camion.atencion === 'CRÍTICA' && <><Siren size={20} color="#ef4444" strokeWidth={2} /><strong>CRÍTICA</strong></>}
-                            {camion.atencion === 'ALTA' && <><AlertTriangle size={20} color="var(--secondary-yellow)" strokeWidth={2} /><strong>ALTA</strong></>}
-                            {camion.atencion === 'NORMAL' && <><CheckCircle2 size={20} color="#10b981" strokeWidth={2} /><strong>NORMAL</strong></>}
-                          </div>
-                        </td>
-                        <td><span className={`badge badge-${camion.estado}`}>{camion.estado.toUpperCase()}</span></td>
-                        <td>{camion.time}</td>
-                        <td>
-                          <div style={{ display: 'flex', justifyContent: 'center', gap: '0.6rem' }}>
-                            {(session?.role?.toLowerCase() === 'admin' || session?.role?.toLowerCase() === 'supervisor' || session?.rol?.toLowerCase() === 'admin' || session?.rol?.toLowerCase() === 'supervisor') && (
-                              <button
-                                onClick={() => prepararEdicion(camion)}
-                                className="btn-action btn-action-edit"
-                                title="Editar Ficha"
-                              >
-                                <Edit3 size={18} />
-                              </button>
-                            )}
-                            {(session?.role?.toLowerCase() === 'admin' || session?.rol?.toLowerCase() === 'admin') && (
-                              <button
-                                onClick={() => eliminarCamion(camion.id, camion.flota)}
-                                className="btn-action btn-action-delete"
-                                title="Eliminar Registro"
-                              >
-                                <Trash2 size={18} />
-                              </button>
-                            )}
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                    {camionesRegistrados.length === 0 && (
-                      <tr>
-                        <td colSpan="5" style={{ textAlign: 'center', color: '#6b7280', padding: '2rem' }}>No hay camiones priorizados actualmente.</td>
-                      </tr>
-                    )}
-                  </tbody>
-                </table>
+
+              <div className="priority-cards-container" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1rem' }}>
+                {camionesAccessibles.filter(c => c.estado !== 'liberado').slice(0, 6).map((camion) => (
+                  <div key={camion.id} className="kanban-card card-overlay" style={{ background: 'white', borderRadius: '12px', padding: '1rem', borderLeft: `6px solid ${camion.atencion === 'CRÍTICA' ? '#ef4444' : (camion.atencion === 'ALTA' ? 'var(--secondary-yellow)' : '#10b981')}` }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.8rem' }}>
+                      <span style={{ fontSize: '1.1rem', fontWeight: '800', color: 'var(--primary-black)' }}>CAMIÓN {camion.flota}</span>
+                      <span className={`badge badge-${camion.estado}`} style={{ fontSize: '0.65rem' }}>{camion.estado.toUpperCase()}</span>
+                    </div>
+                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <span>Mina/Grupo:</span>
+                        <strong style={{ color: 'var(--text-main)' }}>{camion.mina} / G{camion.grupo}</strong>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <span>Prioridad:</span>
+                        <strong style={{ color: camion.atencion === 'CRÍTICA' ? '#ef4444' : 'var(--text-main)' }}>{camion.atencion}</strong>
+                      </div>
+                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                        <span>Ingreso:</span>
+                        <strong style={{ color: 'var(--secondary-blue)' }}>{formatFechaCorta(camion.creado_at)}</strong>
+                      </div>
+                    </div>
+                    <div style={{ marginTop: '0.8rem', display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
+                      <button onClick={() => setSelectedReport(camion)} style={{ background: 'rgba(59, 130, 246, 0.1)', border: 'none', color: '#3b82f6', padding: '0.3rem', borderRadius: '6px' }}><FileText size={16} /></button>
+                      <button onClick={() => prepararEdicion(camion)} style={{ background: 'rgba(255,255,255,0.8)', border: '1px solid #e5e7eb', color: '#6b7280', padding: '0.3rem', borderRadius: '6px' }}><Edit3 size={16} /></button>
+                    </div>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
@@ -1099,12 +1070,8 @@ function App() {
               onScroll={(e) => {
                 const scrollLeft = e.target.scrollLeft;
                 const width = e.target.clientWidth;
-                const index = Math.round(scrollLeft / width);
-                const dots = document.querySelectorAll('.indicator-dot');
-                dots.forEach((dot, i) => {
-                  if (i === index) dot.classList.add('active');
-                  else dot.classList.remove('active');
-                });
+                const index = Math.round(scrollLeft / (width * 0.72)); // 72vw es el ancho de col en movil
+                if (index >= 0 && index <= 4) setCurrentKanbanCol(index);
               }}
               style={{
                 display: 'flex',
@@ -1112,7 +1079,8 @@ function App() {
                 overflowX: 'auto',
                 paddingBottom: '1rem',
                 flex: 1,
-                alignItems: 'flex-start'
+                alignItems: 'flex-start',
+                scrollSnapType: 'x mandatory'
               }}
             >
               {columnasKanban.map(col => {
@@ -1296,10 +1264,10 @@ function App() {
               })}
             </div>
 
-            {/* Indicadores de Columnas (Móvil) - Posición Correcta */}
-            <div className="kanban-indicators mobile-only" style={{ display: 'flex', justifyContent: 'center', gap: '0.5rem', marginTop: '1rem', marginBottom: '1rem' }}>
+            {/* Indicadores de Columnas (Móvil) - Sincronizados v1.9.15 */}
+            <div className="kanban-indicators mobile-only">
               {columnasKanban.map((_, i) => (
-                <div key={i} className={`indicator-dot ${i === 0 ? 'active' : ''}`} />
+                <div key={i} className={`indicator-dot ${currentKanbanCol === i ? 'active' : ''}`} />
               ))}
             </div>
           </div>
@@ -1405,7 +1373,7 @@ function App() {
                             {limpiarFallasIA(registro.fallas)}
                           </div>
                         </td>
-                        <td data-label="Ingreso" style={{ fontSize: '0.85rem' }}>{registro.time}</td>
+                        <td data-label="Ingreso" style={{ fontSize: '0.85rem' }}>{formatFechaCorta(registro.creado_at)}</td>
                         <td data-label="Ciclo" className="collapsible-col" style={{ fontSize: '0.85rem' }}>Calculando...</td>
                         <td data-label="Operador / Mina" className="collapsible-col" style={{ fontSize: '0.85rem' }}>
                           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
