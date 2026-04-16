@@ -907,49 +907,63 @@ function App() {
     const matchMina = filtroMina === '' || r.mina === filtroMina;
     if (!matchFlota || !matchMina) return false;
 
-    // Filtro por Mes Salida (Extractor Manual v1.9.36)
+    // Lógica de Filtrado de Alto Nivel v1.9.40 (Rangos e Inteligencia Mensual)
     if (!filtroMes.trim()) return true;
     
     try {
-      const terminos = filtroMes.toLowerCase().split(',').map(t => t.trim()).filter(Boolean);
       const timeStr = String(r.time || '');
-      
-      // Intentamos extraer el mes del string "13/04/2026" o ISO "2026-04-13"
-      let mesNum = "";
-      let mesIndex = -1; // 0-indexed
+      let mesIndex = -1; // 0-indexed (0=Ene, 11=Dic)
 
+      // Extractor de Mes Robusto (Soporte DD/MM/AAAA e ISO)
       if (timeStr.includes('/')) {
-        // Formato DD/MM/AAAA
         const partes = timeStr.split('/');
-        if (partes.length >= 2) {
-          mesNum = partes[1].padStart(2, '0');
-          mesIndex = parseInt(mesNum, 10) - 1;
-        }
+        if (partes.length >= 2) mesIndex = parseInt(partes[1], 10) - 1;
       } else if (timeStr.includes('-')) {
-        // Formato ISO o YYYY-MM-DD
         const partes = timeStr.split('-');
         if (partes.length >= 2) {
-          // Si el primer segmento es año (4 dígitos)
-          if (partes[0].length === 4) {
-            mesNum = partes[1].padStart(2, '0');
-          } else {
-            // Podría ser DD-MM-YYYY
-            mesNum = partes[1].padStart(2, '0');
-          }
-          mesIndex = parseInt(mesNum, 10) - 1;
+          mesIndex = partes[0].length === 4 ? parseInt(partes[1], 10) - 1 : parseInt(partes[1], 10) - 1;
         }
       }
 
-      const nombresMeses = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
-      const mesNombre = nombresMeses[mesIndex] || '';
-      const mesAbrev = mesNombre.substring(0, 3);
+      if (mesIndex === -1) return false;
+
+      // Ayudante para normalizar cualquier entrada a índice de mes
+      const getMesIndex = (str) => {
+        const s = str.toLowerCase().trim();
+        const mesesAbbr = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+        const mesesFull = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+        
+        // 1. Probar abreviatura (primeros 3 caracteres)
+        let idx = mesesAbbr.indexOf(s.substring(0, 3));
+        // 2. Probar nombre completo
+        if (idx === -1) idx = mesesFull.indexOf(s);
+        // 3. Probar número (solo si es un mes válido 1-12)
+        if (idx === -1 && /^\d+$/.test(s)) {
+          const n = parseInt(s, 10);
+          if (n >= 1 && n <= 12) idx = n - 1;
+        }
+        return idx;
+      };
+
+      const terminos = filtroMes.toLowerCase().split(',').map(t => t.trim()).filter(Boolean);
       
-      return terminos.some(t => 
-        (mesNum && mesNum.includes(t)) || 
-        (mesNombre && mesNombre.includes(t)) || 
-        (mesAbrev && mesAbrev.includes(t)) ||
-        timeStr.toLowerCase().includes(t)
-      );
+      return terminos.some(t => {
+        // Caso A: Rango (ej: ene-abr)
+        if (t.includes('-')) {
+          const puntos = t.split('-').map(p => p.trim());
+          if (puntos.length === 2) {
+            const start = getMesIndex(puntos[0]);
+            const end = getMesIndex(puntos[1]);
+            if (start !== -1 && end !== -1) {
+              return mesIndex >= start && mesIndex <= end;
+            }
+          }
+        }
+        
+        // Caso B: Mes Único (Nombre o Número)
+        const tIdx = getMesIndex(t);
+        return tIdx !== -1 && tIdx === mesIndex;
+      });
     } catch (e) {
       return true;
     }
