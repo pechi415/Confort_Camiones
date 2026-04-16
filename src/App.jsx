@@ -907,32 +907,51 @@ function App() {
     const matchMina = filtroMina === '' || r.mina === filtroMina;
     if (!matchFlota || !matchMina) return false;
 
-    // Filtro por Mes Salida (Inteligente con Blindaje v1.9.35)
+    // Filtro por Mes Salida (Extractor Manual v1.9.36)
     if (!filtroMes.trim()) return true;
     
     try {
       const terminos = filtroMes.toLowerCase().split(',').map(t => t.trim()).filter(Boolean);
-      const fechaObj = r.time ? new Date(r.time) : null;
+      const timeStr = String(r.time || '');
       
-      // Si la fecha es inválida, solo buscamos por texto plano en r.time si existe
-      if (!fechaObj || isNaN(fechaObj.getTime())) {
-        return terminos.some(t => r.time && r.time.toLowerCase().includes(t));
+      // Intentamos extraer el mes del string "13/04/2026" o ISO "2026-04-13"
+      let mesNum = "";
+      let mesIndex = -1; // 0-indexed
+
+      if (timeStr.includes('/')) {
+        // Formato DD/MM/AAAA
+        const partes = timeStr.split('/');
+        if (partes.length >= 2) {
+          mesNum = partes[1].padStart(2, '0');
+          mesIndex = parseInt(mesNum, 10) - 1;
+        }
+      } else if (timeStr.includes('-')) {
+        // Formato ISO o YYYY-MM-DD
+        const partes = timeStr.split('-');
+        if (partes.length >= 2) {
+          // Si el primer segmento es año (4 dígitos)
+          if (partes[0].length === 4) {
+            mesNum = partes[1].padStart(2, '0');
+          } else {
+            // Podría ser DD-MM-YYYY
+            mesNum = partes[1].padStart(2, '0');
+          }
+          mesIndex = parseInt(mesNum, 10) - 1;
+        }
       }
 
-      const mesNum = (fechaObj.getMonth() + 1).toString().padStart(2, '0');
       const nombresMeses = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
-      const mesNombre = nombresMeses[fechaObj.getMonth()] || '';
+      const mesNombre = nombresMeses[mesIndex] || '';
       const mesAbrev = mesNombre.substring(0, 3);
       
       return terminos.some(t => 
-        mesNum.includes(t) || 
+        (mesNum && mesNum.includes(t)) || 
         (mesNombre && mesNombre.includes(t)) || 
         (mesAbrev && mesAbrev.includes(t)) ||
-        (r.time && r.time.toLowerCase().includes(t))
+        timeStr.toLowerCase().includes(t)
       );
     } catch (e) {
-      console.error("Error filtrando fecha:", e);
-      return true; // En caso de error, mostramos el registro para no romper la vista
+      return true;
     }
   }) : [];
 
