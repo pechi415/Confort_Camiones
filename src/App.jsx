@@ -1037,7 +1037,18 @@ function App() {
                       <tbody>
                         {(camionesAccessibles || []).filter(c => c && c.estado !== 'liberado').slice(0, 6).map((camion) => (
                           <tr key={camion?.id || Math.random()}>
-                            <td><strong style={{ fontSize: '1.1rem' }}>{camion?.flota || 'S/N'}</strong></td>
+                            <td>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                                <strong style={{ fontSize: '1.10rem' }}>{camion?.flota || 'S/N'}</strong>
+                                <button
+                                  onClick={() => setSelectedReport(camion)}
+                                  style={{ background: 'transparent', border: 'none', color: '#2563eb', cursor: 'pointer', padding: 0 }}
+                                  title="Ver Diagnóstico Técnico"
+                                >
+                                  <MonitorCheck size={16} />
+                                </button>
+                              </div>
+                            </td>
                             <td>{camion?.mina || '--'} / G{camion?.grupo || '--'}</td>
                             <td>
                               <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
@@ -1088,8 +1099,8 @@ function App() {
                           </div>
                         </div>
                         <div style={{ marginTop: '0.8rem', display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
-                          <button onClick={() => setSelectedReport(camion)} style={{ background: 'rgba(59, 130, 246, 0.1)', border: 'none', color: '#3b82f6', padding: '0.3rem', borderRadius: '6px' }}><FileText size={16} /></button>
-                          <button onClick={() => prepararEdicion(camion)} style={{ background: 'rgba(255,255,255,0.8)', border: '1px solid #e5e7eb', color: '#6b7280', padding: '0.3rem', borderRadius: '6px' }}><Edit3 size={16} /></button>
+                          <button onClick={() => setSelectedReport(camion)} style={{ background: 'rgba(59, 130, 246, 0.1)', border: 'none', color: '#3b82f6', padding: '0.3rem', borderRadius: '6px' }} title="Diagnóstico"><MonitorCheck size={16} /></button>
+                          <button onClick={() => prepararEdicion(camion)} style={{ background: 'rgba(255,255,255,0.8)', border: '1px solid #e5e7eb', color: '#6b7280', padding: '0.3rem', borderRadius: '6px' }} title="Editar"><Edit3 size={16} /></button>
                         </div>
                       </div>
                     ))}
