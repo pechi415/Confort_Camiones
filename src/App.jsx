@@ -140,11 +140,10 @@ function App() {
   const [expandedHistoryId, setExpandedHistoryId] = useState(null);
   const [currentKanbanCol, setCurrentKanbanCol] = useState(0); 
 
-  // Blindaje de Fechas v1.9.23 (Máxima Compatibilidad)
+  // Blindaje de Fechas v1.9.24 (Limpieza Universal de Comas)
   const formatFechaCorta = (dateStr) => {
     if (!dateStr) return '---';
     try {
-      // Intentamos conversión estándar
       const d = new Date(dateStr);
       if (!isNaN(d.getTime())) {
         const dia = String(d.getDate()).padStart(2, '0');
@@ -152,12 +151,10 @@ function App() {
         const anio = String(d.getFullYear()).slice(-2);
         return `${dia}/${mes}/${anio}`;
       }
-      
-      // Fallback: Si no es fecha válida para JS pero el string tiene datos (ej: "16/04/2026")
-      // Retornamos los primeros 10 caracteres (asumiendo que es la fecha)
-      return dateStr.substring(0, 10);
+      // Limpiamos comas, puntos o espacios al final del recorte (ej: "16/04/2026, " -> "16/04/2026")
+      return dateStr.substring(0, 10).replace(/[,.\s]+$/, '');
     } catch (e) {
-      return dateStr.substring(0, 10) || '---';
+      return dateStr.substring(0, 10).replace(/[,.\s]+$/, '') || '---';
     }
   };
 
@@ -1209,7 +1206,7 @@ function App() {
                         {isExpanded && (
                           <div className="fade-in">
                             <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>
-                              Ingreso: {camion.time}
+                              Ingreso: {formatFechaCorta(camion.time || camion.creado_at)}
                             </div>
                             {/* Botón de Diagnóstico para Móviles / Limpieza Visual */}
                             <button
@@ -1443,7 +1440,7 @@ function App() {
                             {limpiarFallasIA(registro.fallas)}
                           </div>
                         </td>
-                        <td data-label="Ingreso" style={{ fontSize: '0.85rem' }}>{formatFechaCorta(registro.creado_at)}</td>
+                        <td data-label="Ingreso" style={{ fontSize: '0.85rem' }}>{formatFechaCorta(registro.time || registro.creado_at)}</td>
                         <td data-label="Ciclo" className="collapsible-col" style={{ fontSize: '0.85rem' }}>Calculando...</td>
                         <td data-label="Operador / Mina" className="collapsible-col" style={{ fontSize: '0.85rem' }}>
                           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
