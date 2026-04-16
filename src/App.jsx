@@ -1414,8 +1414,8 @@ function App() {
               <table className="modern-table">
                 <thead>
                   <tr>
-                    <th style={{ width: '80px' }}>Camión</th>
-                    <th style={{ minWidth: '140px', maxWidth: '200px' }}>Fallas Reparadas</th>
+                    <th style={{ width: '80px', whiteSpace: 'nowrap' }}>Camión</th>
+                    <th style={{ width: '130px', minWidth: '130px', maxWidth: '130px' }}>Fallas Reparadas</th>
                     <th style={{ whiteSpace: 'nowrap' }}>Ingreso a Fila</th>
                     <th style={{ whiteSpace: 'nowrap' }}>Tiempo de Ciclo</th>
                     <th style={{ whiteSpace: 'nowrap' }}>Operador / Mina</th>
@@ -1443,39 +1443,35 @@ function App() {
                             <strong style={{ fontSize: '1.1rem', color: 'var(--primary-black)', marginLeft: 'auto' }}>{registro.flota}</strong>
                           </div>
                         </td>
-                        <td data-label="Fallas" className="collapsible-col" style={{ fontSize: '0.82rem', color: 'var(--text-main)', lineHeight: '1.2' }}>
-                          <div style={{ width: '100%', whiteSpace: 'normal', wordBreak: 'break-word', opacity: 0.9 }}>
+                        <td data-label="Fallas" className="collapsible-col" style={{ fontSize: '0.8rem', color: 'var(--text-main)', lineHeight: '1.1', width: '130px', minWidth: '130px', maxWidth: '130px' }}>
+                          <div style={{ width: '100%', whiteSpace: 'normal', wordBreak: 'break-word', opacity: 0.85 }}>
                             {limpiarFallasIA(registro.fallas)}
                           </div>
                         </td>
                         <td data-label="Ingreso" style={{ fontSize: '0.85rem' }}>{formatFechaCorta(registro.time || registro.creado_at)}</td>
                         <td data-label="Ciclo" className="collapsible-col" style={{ fontSize: '0.85rem' }}>Calculando...</td>
-                        <td data-label="Operador / Mina" className="collapsible-col" style={{ fontSize: '0.85rem', whiteSpace: 'nowrap' }}>
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
+                        <td data-label="Operador / Mina" className="collapsible-col" style={{ fontSize: '0.85rem' }}>
+                          <div style={{ display: 'flex', flexWrap: 'wrap', gap: '0.4rem', alignItems: 'center' }}>
+                            <div style={{ background: 'var(--primary-black)', color: 'white', padding: '0.2rem 0.5rem', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 'bold' }}>{registro.mina || 'PB'}</div>
                             {(registro.operador || 'N/A').split(', ').map((op, idx) => {
                               const parts = op.split(': ');
                               const grupoLabel = parts.length > 1 ? parts[0] : '';
                               const nombreOp = parts.length > 1 ? parts[1] : parts[0];
                               return (
                                 <div key={idx} style={{
-                                  background: 'rgba(99, 102, 241, 0.05)',
-                                  padding: '0.3rem 0.5rem',
+                                  background: 'rgba(99, 102, 241, 0.08)',
+                                  padding: '0.2rem 0.5rem',
                                   borderRadius: '6px',
                                   color: 'var(--primary-black)',
                                   fontWeight: '600',
-                                  fontSize: '0.8rem',
-                                  display: 'flex',
-                                  alignItems: 'center',
-                                  gap: '0.4rem',
-                                  whiteSpace: 'nowrap'
+                                  fontSize: '0.78rem',
+                                  whiteSpace: 'nowrap',
+                                  border: '1px solid rgba(99, 102, 241, 0.1)'
                                 }}>
-                                  {grupoLabel && <span style={{ color: 'var(--secondary-blue)', fontWeight: 'bold' }}>{grupoLabel}:</span>} {nombreOp}
+                                  {grupoLabel && <span style={{ color: 'var(--secondary-blue)' }}>{grupoLabel}:</span>} {nombreOp}
                                 </div>
                               );
                             })}
-                            <div style={{ fontSize: '0.72rem', fontWeight: 'bold', color: 'var(--text-muted)', textAlign: 'center', opacity: 0.8 }}>
-                               {registro.mina || 'PB'}
-                            </div>
                           </div>
                         </td>
                         <td data-label="Aprobado">
@@ -1493,10 +1489,10 @@ function App() {
                           <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', justifyContent: 'center' }}>
                             <button
                               className="btn btn-secondary"
-                              style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem', border: '1px solid rgba(227, 25, 55, 0.4)', color: 'var(--primary-red)', background: 'rgba(255, 255, 255, 0.4)', backdropFilter: 'blur(5px)' }}
+                              style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem', border: '1px solid rgba(227, 25, 55, 0.4)', color: 'var(--primary-red)', background: 'rgba(255, 255, 255, 0.4)', backdropFilter: 'blur(5px)', whiteSpace: 'nowrap', minWidth: '100px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                               onClick={(e) => { e.stopPropagation(); generarPDF(registro); }}
                             >
-                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', whiteSpace: 'nowrap' }}>
                                 <FileText size={15} strokeWidth={1.5} /> Ver PDF
                               </div>
                             </button>
