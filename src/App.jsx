@@ -969,7 +969,7 @@ function App() {
       <main className="main-content">
         <header className="page-header">
           <h1 className="page-title">
-            {activeTab === 'dashboard' && 'Panel de Control - Confort v1.9.25'}
+            {activeTab === 'dashboard' && 'Panel de Control - Confort'}
             {activeTab === 'nuevo' && 'Nuevo Reporte'}
             {activeTab === 'cola' && 'Cola de Priorización Taller'}
             {activeTab === 'historial' && 'Historial de Mantenimientos'}
