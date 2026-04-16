@@ -1019,33 +1019,77 @@ function App() {
                 <button className="btn btn-primary mobile-only" onClick={() => setActiveTab('cola')} style={{ padding: '0.4rem 0.8rem', fontSize: '0.75rem' }}>Ver Todos</button>
               </div>
 
-              <div className="priority-cards-container" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1rem' }}>
-                {(camionesAccessibles || []).filter(c => c && c.estado !== 'liberado').slice(0, 6).map((camion) => (
-                  <div key={camion?.id || Math.random()} className="kanban-card card-overlay" style={{ background: 'white', borderRadius: '12px', padding: '1rem', borderLeft: `6px solid ${camion?.atencion === 'CRÍTICA' ? '#ef4444' : (camion?.atencion === 'ALTA' ? 'var(--secondary-yellow)' : '#10b981')}` }}>
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.8rem' }}>
-                      <span style={{ fontSize: '1.1rem', fontWeight: '800', color: 'var(--primary-black)' }}>CAMIÓN {camion?.flota || 'S/N'}</span>
-                      <span className={`badge badge-${camion?.estado || 'default'}`} style={{ fontSize: '0.65rem' }}>{(camion?.estado || 'N/A').toUpperCase()}</span>
-                    </div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
-                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <span>Mina/Grupo:</span>
-                        <strong style={{ color: 'var(--text-main)' }}>{camion?.mina || '--'} / G{camion?.grupo || '--'}</strong>
-                      </div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <span>Prioridad:</span>
-                        <strong style={{ color: camion?.atencion === 'CRÍTICA' ? '#ef4444' : 'var(--text-main)' }}>{camion?.atencion || 'NORMAL'}</strong>
-                      </div>
-                      <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                        <span>Ingreso:</span>
-                        <strong style={{ color: 'var(--secondary-blue)' }}>{formatFechaCorta(camion?.creado_at || camion?.fecha_ingreso)}</strong>
-                      </div>
-                    </div>
-                    <div style={{ marginTop: '0.8rem', display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
-                      <button onClick={() => setSelectedReport(camion)} style={{ background: 'rgba(59, 130, 246, 0.1)', border: 'none', color: '#3b82f6', padding: '0.3rem', borderRadius: '6px' }}><FileText size={16} /></button>
-                      <button onClick={() => prepararEdicion(camion)} style={{ background: 'rgba(255,255,255,0.8)', border: '1px solid #e5e7eb', color: '#6b7280', padding: '0.3rem', borderRadius: '6px' }}><Edit3 size={16} /></button>
-                    </div>
+              <div className="priority-view-container">
+                {/* Vista exclusiva para PC: Tabla Moderna */}
+                {window.innerWidth > 768 ? (
+                  <div className="table-responsive">
+                    <table className="modern-table">
+                      <thead>
+                        <tr>
+                          <th>Camión</th>
+                          <th>Mina / Grupo</th>
+                          <th>Atención Requerida</th>
+                          <th>Estado</th>
+                          <th>Fecha Reporte</th>
+                          <th style={{ textAlign: 'center' }}>Acciones</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {(camionesAccessibles || []).filter(c => c && c.estado !== 'liberado').slice(0, 6).map((camion) => (
+                          <tr key={camion?.id || Math.random()}>
+                            <td><strong style={{ fontSize: '1.1rem' }}>{camion?.flota || 'S/N'}</strong></td>
+                            <td>{camion?.mina || '--'} / G{camion?.grupo || '--'}</td>
+                            <td>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
+                                {camion?.atencion === 'CRÍTICA' && <><Siren size={20} color="#ef4444" strokeWidth={2} /><strong>CRÍTICA</strong></>}
+                                {camion?.atencion === 'ALTA' && <><AlertTriangle size={20} color="var(--secondary-yellow)" strokeWidth={2} /><strong>ALTA</strong></>}
+                                {camion?.atencion === 'NORMAL' && <><CheckCircle2 size={20} color="#10b981" strokeWidth={2} /><strong>NORMAL</strong></>}
+                              </div>
+                            </td>
+                            <td><span className={`badge badge-${camion?.estado || 'default'}`}>{(camion?.estado || 'N/A').toUpperCase()}</span></td>
+                            <td>{formatFechaCorta(camion?.creado_at || camion?.fecha_ingreso)}</td>
+                            <td>
+                              <div style={{ display: 'flex', justifyContent: 'center', gap: '0.6rem' }}>
+                                <button onClick={() => setSelectedReport(camion)} className="btn-action btn-action-edit" title="Ver Reporte"><FileText size={18} /></button>
+                                <button onClick={() => prepararEdicion(camion)} className="btn-action btn-action-edit" title="Editar"><Edit3 size={18} /></button>
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
                   </div>
-                ))}
+                ) : (
+                  /* Vista exclusiva para Móvil: Tarjetas Modernas */
+                  <div className="priority-cards-container" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1rem' }}>
+                    {(camionesAccessibles || []).filter(c => c && c.estado !== 'liberado').slice(0, 6).map((camion) => (
+                      <div key={camion?.id || Math.random()} className="kanban-card card-overlay" style={{ background: 'white', borderRadius: '12px', padding: '1rem', borderLeft: `6px solid ${camion?.atencion === 'CRÍTICA' ? '#ef4444' : (camion?.atencion === 'ALTA' ? 'var(--secondary-yellow)' : '#10b981')}` }}>
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.8rem' }}>
+                          <span style={{ fontSize: '1.1rem', fontWeight: '800', color: 'var(--primary-black)' }}>CAMIÓN {camion?.flota || 'S/N'}</span>
+                          <span className={`badge badge-${camion?.estado || 'default'}`} style={{ fontSize: '0.65rem' }}>{(camion?.estado || 'N/A').toUpperCase()}</span>
+                        </div>
+                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                            <span>Mina/Grupo:</span>
+                            <strong style={{ color: 'var(--text-main)' }}>{camion?.mina || '--'} / G{camion?.grupo || '--'}</strong>
+                          </div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                            <span>Prioridad:</span>
+                            <strong style={{ color: camion?.atencion === 'CRÍTICA' ? '#ef4444' : 'var(--text-main)' }}>{camion?.atencion || 'NORMAL'}</strong>
+                          </div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                            <span>Ingreso:</span>
+                            <strong style={{ color: 'var(--secondary-blue)' }}>{formatFechaCorta(camion?.creado_at || camion?.fecha_ingreso)}</strong>
+                          </div>
+                        </div>
+                        <div style={{ marginTop: '0.8rem', display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
+                          <button onClick={() => setSelectedReport(camion)} style={{ background: 'rgba(59, 130, 246, 0.1)', border: 'none', color: '#3b82f6', padding: '0.3rem', borderRadius: '6px' }}><FileText size={16} /></button>
+                          <button onClick={() => prepararEdicion(camion)} style={{ background: 'rgba(255,255,255,0.8)', border: '1px solid #e5e7eb', color: '#6b7280', padding: '0.3rem', borderRadius: '6px' }}><Edit3 size={16} /></button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
               </div>
             </div>
           </div>
