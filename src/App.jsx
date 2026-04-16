@@ -138,7 +138,6 @@ function App() {
   const [pendientesGarantia, setPendientesGarantia] = useState({});
   const [registrosLimit, setRegistrosLimit] = useState(20);
   const [expandedHistoryId, setExpandedHistoryId] = useState(null);
-  const [showBackToTop, setShowBackToTop] = useState(false);
 
   // ---------- SISTEMA DE MENSAJERÍA PERSONALIZADA (ZERO BROWSER DIALOGS) ----------
   const [toasts, setToasts] = useState([]);
@@ -164,16 +163,6 @@ function App() {
       setToasts(prev => prev.filter(t => t.id !== id));
     }, 4000);
   };
-
-  // Efecto para botón "Back to Top"
-  useEffect(() => {
-    const handleScroll = () => {
-      if (window.scrollY > 400) setShowBackToTop(true);
-      else setShowBackToTop(false);
-    };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
 
   const showConfirm = (opts) => {
     setModalConfig({
@@ -2638,23 +2627,41 @@ function App() {
         )}
       </nav>
 
-      {/* Botón Flotante Volver Arriba (Liquid Glass) */}
-      {showBackToTop && (
-        <button
-          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-          className="back-to-top-btn"
-          style={{
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center'
-          }}
-        >
-          <ArrowUp size={24} strokeWidth={2.5} color="white" />
-        </button>
-      )}
+      {/* Componente Aislado para el Botón de Subir (v1.9.13) */}
+      <BackToTopButton />
     </div>
   );
 }
+
+// COMPONENTE INDEPENDIENTE PARA EVITAR RE-RENDERIZADOS GLOBALES AL HACER SCROLL
+const BackToTopButton = () => {
+  const [visible, setVisible] = useState(false);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 400) setVisible(true);
+      else setVisible(false);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  if (!visible) return null;
+
+  return (
+    <button
+      onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+      className="back-to-top-btn"
+      style={{
+        display: 'flex',
+        alignItems: 'center',
+        justifyContent: 'center'
+      }}
+    >
+      <ArrowUp size={24} strokeWidth={2.5} color="white" />
+    </button>
+  );
+};
 
 export default App;
 
