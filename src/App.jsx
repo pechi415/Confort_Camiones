@@ -2626,42 +2626,9 @@ function App() {
           </a>
         )}
       </nav>
-
-      {/* Componente Aislado para el Botón de Subir (v1.9.13) */}
-      <BackToTopButton />
     </div>
   );
 }
-
-// COMPONENTE INDEPENDIENTE PARA EVITAR RE-RENDERIZADOS GLOBALES AL HACER SCROLL
-const BackToTopButton = () => {
-  const [visible, setVisible] = useState(false);
-
-  useEffect(() => {
-    const handleScroll = () => {
-      if (window.scrollY > 400) setVisible(true);
-      else setVisible(false);
-    };
-    window.addEventListener('scroll', handleScroll);
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
-
-  if (!visible) return null;
-
-  return (
-    <button
-      onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-      className="back-to-top-btn"
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center'
-      }}
-    >
-      <ArrowUp size={24} strokeWidth={2.5} color="white" />
-    </button>
-  );
-};
 
 export default App;
 

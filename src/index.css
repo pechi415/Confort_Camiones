@@ -649,96 +649,54 @@ h1, h2, h3, h4, h5, h6 {
   }
 }
 
-/* Estabilización de Altura y Scroll */
-html, body, #root, .app-container {
-  height: auto !important;
-  min-height: 100vh !important;
+/* Estabilización de Altura y Scroll Estándar */
+html, body, #root {
+  height: 100%;
+  overflow-x: hidden;
+}
+
+.app-container {
+  display: flex;
+  min-height: 100vh;
 }
 
 .main-content {
   flex: 1;
-  display: flex;
-  flex-direction: column;
-  overflow: visible !important;
+  padding: 2rem 3rem;
+  overflow-y: auto;
+}
+
+@media (max-width: 768px) {
+  .main-content {
+    padding: 1rem 1.2rem;
+    overflow-y: visible; /* Permitir scroll de ventana en móviles si es necesario */
+  }
+  
+  .app-container {
+    padding-bottom: 80px;
+  }
 }
 
 .card {
-  height: auto !important;
-  overflow: visible !important;
+  background: rgba(255, 255, 255, 0.7);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid rgba(255, 255, 255, 0.4);
+  border-radius: 16px;
+  padding: 1.5rem;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  margin-bottom: 1.5rem;
 }
 
-/* Animaciones Globales */
-@keyframes slideDown {
-  from { transform: translateY(-100%); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
+/* Restaurar Fondo Fijo Premium */
+body {
+  background: 
+    radial-gradient(circle at 10% 20%, rgba(37, 99, 235, 0.4) 0%, transparent 50%),
+    radial-gradient(circle at 90% 80%, rgba(227, 25, 55, 0.3) 0%, transparent 50%),
+    linear-gradient(135deg, #eef2ff 0%, #fdf2f8 50%, #fee2e2 100%);
+  background-attachment: fixed;
 }
 
-@keyframes modalPop {
-  from { transform: scale(0.95); opacity: 0; }
-  to { transform: scale(1); opacity: 1; }
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(-5px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-@keyframes slideUp {
-  from { transform: translateY(20px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
-}
-
-/* Historial Row & Collapsible Logic */
-@media (max-width: 768px) {
-  /* INTERRUPTOR MAESTRO DE RENDIMIENTO MÓVIL */
-  * {
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
-  }
-
-  body {
-    background: #f5f7fa !important; /* Fondo sólido para máximo rendimiento */
-    background-attachment: scroll !important;
-  }
-
-  .history-header-actions {
-    width: 100%;
-    flex-direction: column;
-    align-items: stretch;
-    gap: 0.8rem;
-  }
-
-  .history-badge, .history-export-btn {
-    width: 100% !important;
-    justify-content: center;
-  }
-}
-
-/* Botón Volver Arriba Liquid Glass */
-.back-to-top-btn {
-  position: fixed;
-  bottom: 90px;
-  right: 20px;
-  width: 50px;
-  height: 50px;
-  border-radius: 50%;
-  background: rgba(239, 68, 68, 0.4);
-  backdrop-filter: blur(12px);
-  -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  color: white;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  z-index: 1000;
-  box-shadow: 0 8px 32px rgba(239, 68, 68, 0.2), inset 0 0 10px rgba(255,255,255,0.2);
-  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
-  animation: slideUp 0.4s ease-out;
-}
-
-.back-to-top-btn:active {
-  transform: scale(0.9);
-}
 
 @media (max-width: 768px) {
   .input-field {
