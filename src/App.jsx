@@ -1360,7 +1360,7 @@ function App() {
               </div>
               <div className="history-header-actions">
                 <span className="badge badge-liberado history-badge" style={{ fontSize: '0.85rem', padding: '0.5rem 1rem', display: 'flex', alignItems: 'center', gap: '0.4rem', border: '1px solid #10b981', background: 'rgba(16, 185, 129, 0.15)', color: '#059669', boxShadow: '0 2px 4px rgba(16, 185, 129, 0.1)' }}>
-                  <Award size={16} strokeWidth={2} /> <span>Camiones Registrados: <strong>{conteoLiberados}</strong></span>
+                  <Award size={16} strokeWidth={2} /> <span>Camiones Entregados: <strong>{conteoLiberados}</strong></span>
                 </span>
                 <button
                   className="btn btn-primary history-export-btn"
@@ -1414,14 +1414,14 @@ function App() {
               <table className="modern-table">
                 <thead>
                   <tr>
-                    <th>Camión</th>
-                    <th>Fallas Reparadas</th>
-                    <th>Ingreso a Fila</th>
-                    <th>Tiempo de Ciclo</th>
-                    <th>Operador Permanente / Mina</th>
-                    <th>Aprobado Por</th>
-                    <th>Reporte</th>
-                    {session.role === 'admin' && <th className="desktop-only" style={{ textAlign: 'center' }}>Acciones</th>}
+                    <th style={{ width: '80px' }}>Camión</th>
+                    <th style={{ minWidth: '180px', maxWidth: '300px' }}>Fallas Reparadas</th>
+                    <th style={{ whiteSpace: 'nowrap' }}>Ingreso a Fila</th>
+                    <th style={{ whiteSpace: 'nowrap' }}>Tiempo de Ciclo</th>
+                    <th style={{ whiteSpace: 'nowrap' }}>Operador / Mina</th>
+                    <th style={{ whiteSpace: 'nowrap' }}>Aprobado</th>
+                    <th style={{ whiteSpace: 'nowrap', textAlign: 'center' }}>Reporte</th>
+                    {session.role === 'admin' && <th className="desktop-only" style={{ textAlign: 'center', width: '80px' }}>Acciones</th>}
                   </tr>
                 </thead>
                 <tbody>
@@ -1450,8 +1450,8 @@ function App() {
                         </td>
                         <td data-label="Ingreso" style={{ fontSize: '0.85rem' }}>{formatFechaCorta(registro.time || registro.creado_at)}</td>
                         <td data-label="Ciclo" className="collapsible-col" style={{ fontSize: '0.85rem' }}>Calculando...</td>
-                        <td data-label="Operador / Mina" className="collapsible-col" style={{ fontSize: '0.85rem' }}>
-                          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                        <td data-label="Operador / Mina" className="collapsible-col" style={{ fontSize: '0.85rem', whiteSpace: 'nowrap' }}>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.3rem' }}>
                             {(registro.operador || 'N/A').split(', ').map((op, idx) => {
                               const parts = op.split(': ');
                               const grupoLabel = parts.length > 1 ? parts[0] : '';
@@ -1459,21 +1459,22 @@ function App() {
                               return (
                                 <div key={idx} style={{
                                   background: 'rgba(99, 102, 241, 0.05)',
-                                  padding: '0.4rem 0.6rem',
-                                  borderRadius: '8px',
+                                  padding: '0.3rem 0.5rem',
+                                  borderRadius: '6px',
                                   color: 'var(--primary-black)',
                                   fontWeight: '600',
-                                  fontSize: '0.85rem',
+                                  fontSize: '0.8rem',
                                   display: 'flex',
                                   alignItems: 'center',
-                                  gap: '0.5rem'
+                                  gap: '0.4rem',
+                                  whiteSpace: 'nowrap'
                                 }}>
                                   {grupoLabel && <span style={{ color: 'var(--secondary-blue)', fontWeight: 'bold' }}>{grupoLabel}:</span>} {nombreOp}
                                 </div>
                               );
                             })}
-                            <div style={{ fontSize: '0.75rem', fontWeight: 'bold', color: 'var(--text-muted)', borderTop: '1px solid rgba(0,0,0,0.05)', paddingTop: '0.3rem' }}>
-                               {registro.mina || 'PB'} / {formatGrupo(registro.grupo)}
+                            <div style={{ fontSize: '0.72rem', fontWeight: 'bold', color: 'var(--text-muted)', textAlign: 'center', opacity: 0.8 }}>
+                               {registro.mina || 'PB'}
                             </div>
                           </div>
                         </td>
