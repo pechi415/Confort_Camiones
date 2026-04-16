@@ -472,7 +472,8 @@ h1, h2, h3, h4, h5, h6 {
 @media (max-width: 768px) {
   .app-container {
     flex-direction: column;
-    padding-bottom: 70px; /* Space for Bottom Nav */
+    min-height: 100vh;
+    padding-bottom: 120px; /* Margen de seguridad aumentado para evitar cortes */
   }
 
   .sidebar {
@@ -481,7 +482,7 @@ h1, h2, h3, h4, h5, h6 {
 
   .main-content {
     padding: 1rem 1.2rem;
-    overflow-x: hidden;
+    overflow: visible !important; /* Permitir que el scroll sea manejado por la ventana principal */
   }
 
   .page-header {

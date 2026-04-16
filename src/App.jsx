@@ -2643,8 +2643,13 @@ function App() {
         <button
           onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
           className="back-to-top-btn"
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center'
+          }}
         >
-          <ArrowUp size={24} strokeWidth={2.5} />
+          <ArrowUp size={24} strokeWidth={2.5} color="white" />
         </button>
       )}
     </div>
