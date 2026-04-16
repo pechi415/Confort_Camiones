@@ -741,10 +741,11 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 /* Estilos para Acordeón de Historial Móvil */
+/* Optimización de Estabilidad en Móvil */
 @media (max-width: 768px) {
   .history-row {
     cursor: pointer;
-    transition: all 0.3s ease;
+    transition: background-color 0.2s ease;
   }
 
   .history-row.expanded {
@@ -752,13 +753,26 @@ h1, h2, h3, h4, h5, h6 {
   }
 
   .collapsible-col {
-    display: none !important; /* Oculto por defecto en móvil */
+    display: none !important; 
+    opacity: 0;
   }
 
   .history-row.expanded .collapsible-col {
-    display: flex !important; /* Visible al expandir */
-    animation: slideDown 0.3s ease-out;
+    display: flex !important; 
+    opacity: 1;
+    animation: fadeIn 0.3s ease-in;
   }
+
+  /* Reducir carga gráfica para evitar pantalla en blanco en algunos móviles */
+  .btn-secondary {
+    backdrop-filter: blur(4px) !important; /* Menos blur = más estable */
+    -webkit-backdrop-filter: blur(4px) !important;
+  }
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 @keyframes slideUp {

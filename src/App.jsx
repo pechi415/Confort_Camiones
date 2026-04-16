@@ -1389,7 +1389,7 @@ function App() {
                     <th>Operador Permanente / Mina</th>
                     <th>Aprobado Por</th>
                     <th>Reporte</th>
-                    {session.role === 'admin' && <th style={{ textAlign: 'center' }}>Acciones</th>}
+                    {session.role === 'admin' && <th className="desktop-only" style={{ textAlign: 'center' }}>Acciones</th>}
                   </tr>
                 </thead>
                 <tbody>
@@ -1400,7 +1400,6 @@ function App() {
                         key={registro.id} 
                         className={`history-row ${isExpanded ? 'expanded' : ''}`}
                         onClick={() => {
-                          // Solo activar acordeón en dispositivos móviles (detectado por ancho de ventana)
                           if (window.innerWidth <= 768) {
                             setExpandedHistoryId(isExpanded ? null : registro.id);
                           }
@@ -1468,7 +1467,8 @@ function App() {
                               </div>
                             </button>
                             
-                            {session.role === 'admin' && (
+                            {/* Botón Eliminar solo en móvil para reporte (compacto) */}
+                            {session.role === 'admin' && window.innerWidth <= 768 && (
                               <button
                                 onClick={(e) => { e.stopPropagation(); eliminarCamion(registro.id, registro.flota); }}
                                 style={{ 
@@ -1489,6 +1489,19 @@ function App() {
                             )}
                           </div>
                         </td>
+                        {/* Nueva columna Acciones solo para PC (Administradores) */}
+                        {session.role === 'admin' && (
+                          <td className="desktop-only" style={{ textAlign: 'center' }}>
+                             <button
+                                onClick={(e) => { e.stopPropagation(); eliminarCamion(registro.id, registro.flota); }}
+                                className="btn-action btn-action-delete"
+                                style={{ margin: '0 auto' }}
+                                title="Eliminar Reporte"
+                              >
+                                <Trash2 size={18} />
+                              </button>
+                          </td>
+                        )}
                       </tr>
                     );
                   }) : (
