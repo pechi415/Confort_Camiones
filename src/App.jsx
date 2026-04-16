@@ -1319,23 +1319,23 @@ function App() {
         {/* Historial View */}
         {activeTab === 'historial' && (
           <div className="card fade-in">
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-              <div>
+            <div className="history-header-container">
+              <div className="history-title-area">
                 <h2 style={{ marginBottom: '0.2rem', color: 'var(--primary-black)', display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
                   <ClipboardList size={22} strokeWidth={2} style={{ color: 'var(--secondary-blue)' }} /> Historial de Mantenimientos
                 </h2>
                 <p style={{ color: 'var(--text-muted)', margin: 0, fontSize: '0.9rem' }}>Registro histórico de camiones de confort completamente solucionados.</p>
               </div>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                <span className="badge badge-liberado" style={{ fontSize: '0.9rem', padding: '0.6rem 1.2rem', display: 'flex', alignItems: 'center', gap: '0.4rem', border: '1px solid #10b981', background: 'rgba(16, 185, 129, 0.15)', color: '#059669', boxShadow: '0 2px 4px rgba(16, 185, 129, 0.1)' }}>
-                  <Award size={16} strokeWidth={2} /> Camiones Registrados: {conteoLiberados}
+              <div className="history-header-actions">
+                <span className="badge badge-liberado history-badge" style={{ fontSize: '0.85rem', padding: '0.5rem 1rem', display: 'flex', alignItems: 'center', gap: '0.4rem', border: '1px solid #10b981', background: 'rgba(16, 185, 129, 0.15)', color: '#059669', boxShadow: '0 2px 4px rgba(16, 185, 129, 0.1)' }}>
+                  <Award size={16} strokeWidth={2} /> <span>Camiones Registrados: <strong>{conteoLiberados}</strong></span>
                 </span>
                 <button
-                  className="btn btn-primary"
-                  style={{ backgroundColor: 'rgba(16, 185, 129, 0.7)', borderColor: 'rgba(255,255,255,0.4)', backdropFilter: 'blur(10px)', boxShadow: '0 4px 15px rgba(16, 185, 129, 0.2)' }}
+                  className="btn btn-primary history-export-btn"
+                  style={{ backgroundColor: 'rgba(16, 185, 129, 0.8)', borderColor: 'rgba(255,255,255,0.4)', backdropFilter: 'blur(10px)', boxShadow: '0 4px 15px rgba(16, 185, 129, 0.2)', display: 'flex', alignItems: 'center', gap: '0.5rem', justifyContent: 'center' }}
                   onClick={exportarAExcel}
                 >
-                  <FileSpreadsheet size={16} strokeWidth={2} /> Exportar a Excel
+                  <FileSpreadsheet size={18} strokeWidth={2} /> Exportar a Excel
                 </button>
               </div>
             </div>
