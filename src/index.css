@@ -516,9 +516,9 @@ h1, h2, h3, h4, h5, h6 {
     left: 0;
     right: 0;
     height: 75px;
-    background: rgba(20, 20, 20, 0.35); /* Más transparente como se solicitó */
-    backdrop-filter: blur(30px) saturate(180%); /* Mayor desenfoque para compensar */
-    -webkit-backdrop-filter: blur(30px) saturate(180%);
+    background: rgba(20, 20, 20, 0.5); /* Color sólido translúcido en móvil */
+    backdrop-filter: none !important; /* Desactivado en móvil por estabilidad */
+    -webkit-backdrop-filter: none !important;
     border-top: 1px solid rgba(255, 255, 255, 0.15);
     display: flex;
     justify-content: space-around;
@@ -528,12 +528,22 @@ h1, h2, h3, h4, h5, h6 {
     box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.2);
   }
 
+  /* Desactivar blur global en móvil para modo blindaje v1.9.16 */
+  * {
+    backdrop-filter: none !important;
+    -webkit-backdrop-filter: none !important;
+  }
+
+  .glass-card, .card, .kanban-card, .modal-pop {
+    background: rgba(255, 255, 255, 0.92) !important; /* Más opaco para compensar falta de blur */
+  }
+
   /* Efecto de Sobreposición (Stacking) solicitado */
   .stacked-card {
     margin-top: -15px !important;
     position: relative;
     z-index: 1;
-    box-shadow: 0 -4px 15px rgba(0,0,0,0.1) !important;
+    box-shadow: 0 -4px 15px rgba(0,0,0,0.08) !important;
   }
 
   .stacked-card:first-child {

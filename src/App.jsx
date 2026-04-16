@@ -140,14 +140,19 @@ function App() {
   const [expandedHistoryId, setExpandedHistoryId] = useState(null);
   const [currentKanbanCol, setCurrentKanbanCol] = useState(0); 
 
-  // Formato corto v1.9.15
+  // Blindaje de Fechas v1.9.16 (Anti-Crash Global)
   const formatFechaCorta = (dateStr) => {
     if (!dateStr) return '---';
-    const d = new Date(dateStr);
-    const dia = String(d.getDate()).padStart(2, '0');
-    const mes = String(d.getMonth() + 1).padStart(2, '0');
-    const anio = String(d.getFullYear()).slice(-2);
-    return `${dia}/${mes}/${anio}`;
+    try {
+      const d = new Date(dateStr);
+      if (isNaN(d.getTime())) return '---';
+      const dia = String(d.getDate()).padStart(2, '0');
+      const mes = String(d.getMonth() + 1).padStart(2, '0');
+      const anio = String(d.getFullYear()).slice(-2);
+      return `${dia}/${mes}/${anio}`;
+    } catch (e) {
+      return '---';
+    }
   };
 
   // ---------- SISTEMA DE MENSAJERÍA PERSONALIZADA (ZERO BROWSER DIALOGS) ----------
@@ -1015,24 +1020,24 @@ function App() {
               </div>
 
               <div className="priority-cards-container" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1rem' }}>
-                {camionesAccessibles.filter(c => c.estado !== 'liberado').slice(0, 6).map((camion) => (
-                  <div key={camion.id} className="kanban-card card-overlay" style={{ background: 'white', borderRadius: '12px', padding: '1rem', borderLeft: `6px solid ${camion.atencion === 'CRÍTICA' ? '#ef4444' : (camion.atencion === 'ALTA' ? 'var(--secondary-yellow)' : '#10b981')}` }}>
+                {(camionesAccessibles || []).filter(c => c && c.estado !== 'liberado').slice(0, 6).map((camion) => (
+                  <div key={camion?.id || Math.random()} className="kanban-card card-overlay" style={{ background: 'white', borderRadius: '12px', padding: '1rem', borderLeft: `6px solid ${camion?.atencion === 'CRÍTICA' ? '#ef4444' : (camion?.atencion === 'ALTA' ? 'var(--secondary-yellow)' : '#10b981')}` }}>
                     <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.8rem' }}>
-                      <span style={{ fontSize: '1.1rem', fontWeight: '800', color: 'var(--primary-black)' }}>CAMIÓN {camion.flota}</span>
-                      <span className={`badge badge-${camion.estado}`} style={{ fontSize: '0.65rem' }}>{camion.estado.toUpperCase()}</span>
+                      <span style={{ fontSize: '1.1rem', fontWeight: '800', color: 'var(--primary-black)' }}>CAMIÓN {camion?.flota || 'S/N'}</span>
+                      <span className={`badge badge-${camion?.estado || 'default'}`} style={{ fontSize: '0.65rem' }}>{(camion?.estado || 'N/A').toUpperCase()}</span>
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
                       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                         <span>Mina/Grupo:</span>
-                        <strong style={{ color: 'var(--text-main)' }}>{camion.mina} / G{camion.grupo}</strong>
+                        <strong style={{ color: 'var(--text-main)' }}>{camion?.mina || '--'} / G{camion?.grupo || '--'}</strong>
                       </div>
                       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                         <span>Prioridad:</span>
-                        <strong style={{ color: camion.atencion === 'CRÍTICA' ? '#ef4444' : 'var(--text-main)' }}>{camion.atencion}</strong>
+                        <strong style={{ color: camion?.atencion === 'CRÍTICA' ? '#ef4444' : 'var(--text-main)' }}>{camion?.atencion || 'NORMAL'}</strong>
                       </div>
                       <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                         <span>Ingreso:</span>
-                        <strong style={{ color: 'var(--secondary-blue)' }}>{formatFechaCorta(camion.creado_at)}</strong>
+                        <strong style={{ color: 'var(--secondary-blue)' }}>{formatFechaCorta(camion?.creado_at || camion?.fecha_ingreso)}</strong>
                       </div>
                     </div>
                     <div style={{ marginTop: '0.8rem', display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
