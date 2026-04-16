@@ -969,7 +969,7 @@ function App() {
       <main className="main-content">
         <header className="page-header">
           <h1 className="page-title">
-            {activeTab === 'dashboard' && 'Panel de Control - Confort'}
+            {activeTab === 'dashboard' && 'Panel de Control - Confort v1.9.25'}
             {activeTab === 'nuevo' && 'Nuevo Reporte'}
             {activeTab === 'cola' && 'Cola de Priorización Taller'}
             {activeTab === 'historial' && 'Historial de Mantenimientos'}
@@ -977,8 +977,8 @@ function App() {
           <div className="user-profile">
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
               <div style={{ textAlign: 'right' }}>
-                <div style={{ fontWeight: '700' }}>{session.nombre}</div>
-                <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Mina {session.mina}</div>
+                <div style={{ fontWeight: '700' }}>{session?.nombre || 'Usuario'}</div>
+                <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Mina {session?.mina || 'N/A'}</div>
               </div>
               <div style={{
                 width: '40px', height: '40px',
@@ -986,7 +986,7 @@ function App() {
                 color: 'white', display: 'flex', alignItems: 'center',
                 justifyContent: 'center', fontWeight: 'bold'
               }}>
-                {session.nombre.charAt(0).toUpperCase()}
+                {(session?.nombre || 'U').charAt(0).toUpperCase()}
               </div>
             </div>
           </div>
