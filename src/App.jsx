@@ -1415,7 +1415,7 @@ function App() {
                 <thead>
                   <tr>
                     <th style={{ width: '80px' }}>Camión</th>
-                    <th style={{ minWidth: '180px', maxWidth: '300px' }}>Fallas Reparadas</th>
+                    <th style={{ minWidth: '140px', maxWidth: '200px' }}>Fallas Reparadas</th>
                     <th style={{ whiteSpace: 'nowrap' }}>Ingreso a Fila</th>
                     <th style={{ whiteSpace: 'nowrap' }}>Tiempo de Ciclo</th>
                     <th style={{ whiteSpace: 'nowrap' }}>Operador / Mina</th>
@@ -1443,8 +1443,8 @@ function App() {
                             <strong style={{ fontSize: '1.1rem', color: 'var(--primary-black)', marginLeft: 'auto' }}>{registro.flota}</strong>
                           </div>
                         </td>
-                        <td data-label="Fallas" className="collapsible-col" style={{ fontSize: '0.9rem', color: 'var(--text-main)' }}>
-                          <div style={{ width: '100%', whiteSpace: 'normal', wordBreak: 'break-word' }}>
+                        <td data-label="Fallas" className="collapsible-col" style={{ fontSize: '0.82rem', color: 'var(--text-main)', lineHeight: '1.2' }}>
+                          <div style={{ width: '100%', whiteSpace: 'normal', wordBreak: 'break-word', opacity: 0.9 }}>
                             {limpiarFallasIA(registro.fallas)}
                           </div>
                         </td>
