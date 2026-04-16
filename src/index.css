@@ -797,7 +797,8 @@ body {
 
   /* Items que deben ocupar todo el ancho por ser texto largo */
   .modern-table td[data-label="Fallas"],
-  .modern-table td[data-label="Operador / Mina"],
+  .modern-table td[data-label="Operador"],
+  .modern-table td[data-label="Mina"],
   .modern-table td[data-label="Aprobado"] {
     flex-direction: column;
     align-items: flex-start;
@@ -806,7 +807,8 @@ body {
   }
 
   .modern-table td[data-label="Fallas"] > *,
-  .modern-table td[data-label="Operador / Mina"] > * {
+  .modern-table td[data-label="Operador"] > *,
+  .modern-table td[data-label="Mina"] > * {
     width: 100%;
     margin-left: 0;
   }
@@ -829,6 +831,7 @@ body {
 
   .modern-table td[data-label="Reporte"]::before,
   .modern-table td[data-label="Camión"]::before,
+  .modern-table td[data-label="Mina"]::before,
   .modern-table td[data-label="Aprobado"]::before {
     display: none; /* Etiquetas personalizadas manualmente en App.jsx para alineación */
   }
@@ -945,6 +948,76 @@ body {
 
 .modal-pop {
   animation: modalPop 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+/* ==========================================================================
+   OPTIMIZACIONES MÓVILES V1.9.42 (DRUMMOND PREMIUM)
+   ========================================================================== */
+
+@media (max-width: 768px) {
+  .input-field {
+    font-size: 16px !important; /* Previene el auto-zoom en iOS */
+    padding: 0.8rem 1rem;
+  }
+}
+
+/* Floating Navigation - Back to Top Liquid Glass */
+.back-to-top-btn {
+  position: fixed;
+  bottom: 95px; /* Por encima de la bottom-nav */
+  right: 20px;
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: rgba(227, 25, 55, 0.45);
+  backdrop-filter: blur(12px) saturate(180%);
+  -webkit-backdrop-filter: blur(12px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: white;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  z-index: 4000;
+  box-shadow: 0 8px 32px rgba(227, 25, 55, 0.25);
+  transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  animation: slideUp 0.4s ease-out;
+}
+
+.back-to-top-btn:hover {
+  transform: translateY(-5px);
+  background: rgba(227, 25, 55, 0.7);
+  box-shadow: 0 12px 40px rgba(227, 25, 55, 0.35);
+}
+
+.back-to-top-btn:active {
+  transform: scale(0.9);
+}
+
+/* Blindaje de Borrado - Animaciones de Confirmación */
+.btn-action-confirm-desktop {
+  background: var(--primary-red) !important;
+  color: white !important;
+  border-radius: 8px !important;
+  box-shadow: 0 4px 12px rgba(227, 25, 55, 0.4) !important;
+  animation: pulseConfirm 0.5s infinite alternate;
+}
+
+.btn-action-confirm {
+  animation: pulseConfirm 0.5s infinite alternate;
+}
+
+@keyframes pulseConfirm {
+  from { transform: scale(1); }
+  to { transform: scale(1.08); }
+}
+
+/* Mejoras de Ergonomía en Tarjetas Móviles */
+@media (max-width: 768px) {
+  .history-row.expanded {
+    border-color: var(--primary-red);
+    box-shadow: 0 8px 24px rgba(227, 25, 55, 0.08) !important;
+  }
 }
 
 

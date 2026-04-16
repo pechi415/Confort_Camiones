@@ -137,7 +137,27 @@ function App() {
   const [camionInGarantia, setCamionInGarantia] = useState(null); // Para el Modal de Motivo de Garantía
   const [pendientesGarantia, setPendientesGarantia] = useState({});
   const [registrosLimit, setRegistrosLimit] = useState(20);
-  const [expandedHistoryId, setExpandedHistoryId] = useState(null);
+  const [confirmDeleteId, setConfirmDeleteId] = useState(null);
+  const [showBackToTop, setShowBackToTop] = useState(false);
+
+  // Manejador de Doble Toque Táctico (Protección v1.9.43)
+  const handleSafeDelete = (id, action) => {
+    if (confirmDeleteId === id) {
+      action();
+      setConfirmDeleteId(null);
+    } else {
+      setConfirmDeleteId(id);
+      setTimeout(() => setConfirmDeleteId(null), 4000); // 4 segundos para confirmar
+    }
+  };
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowBackToTop(window.scrollY > 400);
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
   const [currentKanbanCol, setCurrentKanbanCol] = useState(0); 
 
   // Blindaje de Fechas v1.9.24 (Limpieza Universal de Comas)
@@ -1568,41 +1588,61 @@ function App() {
                               </div>
                             </button>
                             
-                            {/* Botón Eliminar solo en móvil para reporte (compacto) */}
-                            {session.role === 'admin' && window.innerWidth <= 768 && (
+                            {/* Botón Eliminar Protegido para Móviles (v1.9.43) */}
+                            {session.role === 'admin' && (
                               <button
-                                onClick={(e) => { e.stopPropagation(); eliminarCamion(registro.id, registro.flota); }}
+                                className={`mobile-only ${confirmDeleteId === registro.id ? 'btn-action-confirm' : ''}`}
+                                onClick={(e) => { 
+                                  e.stopPropagation(); 
+                                  handleSafeDelete(registro.id, () => eliminarCamion(registro.id, registro.flota)); 
+                                }}
                                 style={{ 
-                                  background: 'rgba(239, 68, 68, 0.1)', 
+                                  background: confirmDeleteId === registro.id ? 'var(--primary-red)' : 'rgba(239, 68, 68, 0.1)', 
                                   border: '1px solid rgba(239, 68, 68, 0.2)', 
-                                  color: '#ef4444', 
+                                  color: confirmDeleteId === registro.id ? 'white' : '#ef4444', 
                                   padding: '0.4rem', 
                                   borderRadius: '8px',
                                   cursor: 'pointer',
                                   display: 'flex',
                                   alignItems: 'center',
-                                  justifyContent: 'center'
+                                  justifyContent: 'center',
+                                  transition: 'all 0.3s ease',
+                                  minWidth: confirmDeleteId === registro.id ? '100px' : '40px'
                                 }}
-                                title="Eliminar Reporte Histórico"
+                                title="Eliminar Reporte"
                               >
-                                <Trash2 size={16} />
+                                {confirmDeleteId === registro.id ? (
+                                  <span style={{ fontSize: '0.65rem', fontWeight: '800' }}>¿BORRAR?</span>
+                                ) : (
+                                  <Trash2 size={16} />
+                                )}
                               </button>
                             )}
                           </div>
                         </td>
-                        {/* Nueva columna Acciones solo para PC (Administradores) */}
-                        {session.role === 'admin' && (
-                          <td className="desktop-only" style={{ textAlign: 'center' }}>
-                             <button
-                                onClick={(e) => { e.stopPropagation(); eliminarCamion(registro.id, registro.flota); }}
-                                className="btn-action btn-action-delete"
-                                style={{ margin: '0 auto' }}
-                                title="Eliminar Reporte"
-                              >
-                                <Trash2 size={18} />
-                              </button>
-                          </td>
-                        )}
+                         {session.role === 'admin' && (
+                           <td className="desktop-only" style={{ textAlign: 'center' }}>
+                              <button
+                                 onClick={(e) => { 
+                                   e.stopPropagation(); 
+                                   handleSafeDelete(registro.id, () => eliminarCamion(registro.id, registro.flota)); 
+                                 }}
+                                 className={`btn-action ${confirmDeleteId === registro.id ? 'btn-action-confirm-desktop' : 'btn-action-delete'}`}
+                                 style={{ 
+                                   margin: '0 auto',
+                                   width: confirmDeleteId === registro.id ? 'auto' : '36px',
+                                   padding: confirmDeleteId === registro.id ? '0.5rem 1rem' : '0'
+                                 }}
+                                 title="Eliminar Reporte"
+                               >
+                                 {confirmDeleteId === registro.id ? (
+                                   <span style={{ fontSize: '0.7rem', fontWeight: 'bold' }}>✓ CONFIRMAR</span>
+                                 ) : (
+                                   <Trash2 size={18} />
+                                 )}
+                               </button>
+                           </td>
+                         )}
                       </tr>
                     );
                   }) : (
@@ -1899,6 +1939,7 @@ function App() {
               <PlusCircle size={22} strokeWidth={2} style={{ color: 'var(--primary-red)' }} /> Nuevo Reporte
             </h2>
 
+            <div className="form-section-divider"><span className="form-section-title">Datos del Camión</span></div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
               <div className="input-group">
                 <label className="input-label">Identificación del Camión</label>
@@ -1916,6 +1957,7 @@ function App() {
                   </span>
                 )}
               </div>
+            <div className="form-section-divider"><span className="form-section-title">Operador Asignado</span></div>
               <div className="input-group">
                 <label className="input-label">Operador Permanente</label>
                 <input
@@ -1966,6 +2008,7 @@ function App() {
               </div>
             </div>
 
+            <div className="form-section-divider"><span className="form-section-title">Checklist de Fallas</span></div>
             <div style={{ background: '#f9fafb', padding: '1.5rem', borderRadius: '8px', border: '1px solid var(--border-color)', marginBottom: '2rem' }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
                 <h3 style={{ margin: 0, fontSize: '1.1rem' }}>Fallas Mecánicas (Falta de Confort)</h3>
@@ -2738,6 +2781,50 @@ function App() {
           </a>
         )}
       </nav>
+      {/* Botón Volver Arriba Liquid Glass v1.9.42 */}
+      {showBackToTop && (
+        <button 
+          className="back-to-top-btn"
+          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          aria-label="Volver arriba"
+        >
+          <ChevronUp size={24} />
+        </button>
+      )}
+
+      {/* Estilos dinámicos para el plan móvil v1.9.42 */}
+      <style>{`
+        .btn-action-confirm {
+          background: var(--primary-red) !important;
+          color: white !important;
+          border-radius: 8px !important;
+          box-shadow: 0 4px 12px rgba(227, 25, 55, 0.4) !important;
+          animation: pulseConfirm 0.5s infinite alternate;
+        }
+        @keyframes pulseConfirm {
+          from { transform: scale(1); }
+          to { transform: scale(1.05); }
+        }
+        .form-section-divider {
+          height: 1px;
+          background: linear-gradient(90deg, transparent, rgba(0,0,0,0.05), transparent);
+          margin: 2.5rem 0;
+          position: relative;
+        }
+        .form-section-title {
+          position: absolute;
+          top: -10px;
+          left: 50%;
+          transform: translateX(-50%);
+          background: white;
+          padding: 0 1rem;
+          font-size: 0.7rem;
+          text-transform: uppercase;
+          letter-spacing: 2px;
+          color: var(--text-muted);
+          font-weight: 800;
+        }
+      `}</style>
     </div>
   );
 }
