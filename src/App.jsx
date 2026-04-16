@@ -898,11 +898,35 @@ function App() {
 
 
   // Blindaje de Seguridad: Solo calcular si hay sesión activa
+  // Lógica de Filtrado Inteligente v1.9.34 (Soporte Meses y Multi-búsqueda)
   const registrosFiltrados = session ? camionesAccessibles.filter(r => {
-    return r.estado === 'liberado' &&
-      r.flota.includes(filtroFlota) &&
-      (filtroMina === '' || r.mina === filtroMina) &&
-      r.time.toLowerCase().includes(filtroMes.toLowerCase());
+    if (r.estado !== 'liberado') return false;
+    
+    // Filtro por Flota y Mina
+    const matchFlota = r.flota.includes(filtroFlota);
+    const matchMina = filtroMina === '' || r.mina === filtroMina;
+    if (!matchFlota || !matchMina) return false;
+
+    // Filtro por Mes Salida (Inteligente)
+    if (!filtroMes.trim()) return true;
+    
+    const terminos = filtroMes.toLowerCase().split(',').map(t => t.trim()).filter(Boolean);
+    const fechaObj = new Date(r.time);
+    const mesNum = (fechaObj.getMonth() + 1).toString().padStart(2, '0'); // "04"
+    const diaNum = fechaObj.getDate().toString().padStart(2, '0');
+    
+    // Mapa de nombres de meses en español
+    const nombresMeses = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+    const mesNombre = nombresMeses[fechaObj.getMonth()];
+    const mesAbrev = mesNombre.substring(0, 3);
+    
+    // El registro coincide si alguno de los términos del usuario coincide con el mes (número, nombre o abreviatura)
+    return terminos.some(t => 
+      mesNum.includes(t) || 
+      mesNombre.includes(t) || 
+      mesAbrev.includes(t) ||
+      r.time.toLowerCase().includes(t) // Backwards compatibility
+    );
   }) : [];
 
   const conteoLiberados = session ? camionesAccessibles.filter(c => c.estado === 'liberado').length : 0;
