@@ -1415,10 +1415,11 @@ function App() {
                 <thead>
                   <tr>
                     <th style={{ width: '80px', whiteSpace: 'nowrap' }}>Camión</th>
-                    <th style={{ minWidth: '160px', width: '180px' }}>Fallas Reparadas</th>
+                    <th style={{ minWidth: '220px', width: '280px' }}>Fallas Reparadas</th>
                     <th style={{ whiteSpace: 'nowrap' }}>Ingreso a Fila</th>
                     <th style={{ whiteSpace: 'nowrap' }}>Tiempo de Ciclo</th>
-                    <th style={{ whiteSpace: 'nowrap' }}>Operador / Mina</th>
+                    <th style={{ whiteSpace: 'nowrap' }}>Operador</th>
+                    <th style={{ whiteSpace: 'nowrap', textAlign: 'center' }}>Mina</th>
                     <th style={{ whiteSpace: 'nowrap' }}>Aprobado</th>
                     <th style={{ whiteSpace: 'nowrap', textAlign: 'center' }}>Reporte</th>
                     {session.role === 'admin' && <th className="desktop-only" style={{ textAlign: 'center', width: '80px' }}>Acciones</th>}
@@ -1443,14 +1444,14 @@ function App() {
                             <strong style={{ fontSize: '1.1rem', color: 'var(--primary-black)', marginLeft: 'auto' }}>{registro.flota}</strong>
                           </div>
                         </td>
-                        <td data-label="Fallas" className="collapsible-col" style={{ fontSize: '0.85rem', color: 'var(--text-main)', lineHeight: '1.2', minWidth: '160px' }}>
+                        <td data-label="Fallas" className="collapsible-col" style={{ fontSize: '0.88rem', color: 'var(--text-main)', lineHeight: '1.3', minWidth: '220px' }}>
                           <div style={{ width: '100%', whiteSpace: 'normal', wordBreak: 'break-word' }}>
                             {limpiarFallasIA(registro.fallas)}
                           </div>
                         </td>
                         <td data-label="Ingreso" style={{ fontSize: '0.85rem' }}>{formatFechaCorta(registro.time || registro.creado_at)}</td>
                         <td data-label="Ciclo" className="collapsible-col" style={{ fontSize: '0.85rem' }}>Calculando...</td>
-                        <td data-label="Operador / Mina" className="collapsible-col" style={{ fontSize: '0.85rem', whiteSpace: 'nowrap' }}>
+                        <td data-label="Operador" className="collapsible-col" style={{ fontSize: '0.85rem', whiteSpace: 'nowrap' }}>
                           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
                             {(registro.operador || 'N/A').split(', ').map((op, idx) => {
                               const parts = op.split(': ');
@@ -1473,10 +1474,12 @@ function App() {
                                 </div>
                               );
                             })}
-                            <div style={{ fontSize: '0.75rem', fontWeight: 'bold', color: 'var(--text-muted)', textAlign: 'center', opacity: 0.8, marginTop: '0.2rem' }}>
-                               {registro.mina || 'PB'}
-                            </div>
                           </div>
+                        </td>
+                        <td data-label="Mina" style={{ textAlign: 'center' }}>
+                           <div style={{ background: 'var(--primary-black)', color: 'white', padding: '0.3rem 0.6rem', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 'bold', display: 'inline-block' }}>
+                              {registro.mina || 'PB'}
+                           </div>
                         </td>
                         <td data-label="Aprobado">
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
