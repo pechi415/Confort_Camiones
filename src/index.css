@@ -703,6 +703,32 @@ h1, h2, h3, h4, h5, h6 {
   to { transform: scale(1); opacity: 1; }
 }
 
+/* Estilos para Acordeón de Historial Móvil */
+@media (max-width: 768px) {
+  .history-row {
+    cursor: pointer;
+    transition: all 0.3s ease;
+  }
+
+  .history-row.expanded {
+    background-color: rgba(239, 68, 68, 0.02);
+  }
+
+  .collapsible-col {
+    display: none !important; /* Oculto por defecto en móvil */
+  }
+
+  .history-row.expanded .collapsible-col {
+    display: flex !important; /* Visible al expandir */
+    animation: slideDown 0.3s ease-out;
+  }
+}
+
+@keyframes slideUp {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+
 .toast-animation {
   animation: slideDown 0.4s cubic-bezier(0.16, 1, 0.3, 1);
 }

@@ -136,6 +136,9 @@ function App() {
   const [observacionesEdit, setObservacionesEdit] = useState({});
   const [camionInGarantia, setCamionInGarantia] = useState(null); // Para el Modal de Motivo de Garantía
   const [pendientesGarantia, setPendientesGarantia] = useState({});
+  const [registrosLimit, setRegistrosLimit] = useState(20);
+  const [expandedHistoryId, setExpandedHistoryId] = useState(null);
+  const [showBackToTop, setShowBackToTop] = useState(false);
 
   // ---------- SISTEMA DE MENSAJERÍA PERSONALIZADA (ZERO BROWSER DIALOGS) ----------
   const [toasts, setToasts] = useState([]);
@@ -161,6 +164,16 @@ function App() {
       setToasts(prev => prev.filter(t => t.id !== id));
     }, 4000);
   };
+
+  // Efecto para botón "Back to Top"
+  useEffect(() => {
+    const handleScroll = () => {
+      if (window.scrollY > 400) setShowBackToTop(true);
+      else setShowBackToTop(false);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
 
   const showConfirm = (opts) => {
     setModalConfig({
@@ -1380,92 +1393,126 @@ function App() {
                   </tr>
                 </thead>
                 <tbody>
-                  {registrosFiltrados.length > 0 ? registrosFiltrados.map(registro => (
-                    <tr key={registro.id}>
-                      <td data-label="Camión"><strong style={{ fontSize: '1.1rem', color: 'var(--primary-black)' }}>{registro.flota}</strong></td>
-                      <td data-label="Fallas" style={{ fontSize: '0.9rem', color: 'var(--text-main)' }}>
-                        <div style={{ width: '100%', whiteSpace: 'normal', wordBreak: 'break-word' }}>
-                          {limpiarFallasIA(registro.fallas)}
-                        </div>
-                      </td>
-                      <td data-label="Ingreso" style={{ fontSize: '0.85rem' }}>{registro.time}</td>
-                      <td data-label="Ciclo" style={{ fontSize: '0.85rem' }}>Calculando...</td>
-                      <td data-label="Operador / Mina" style={{ fontSize: '0.85rem' }}>
-                        <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-                          {(registro.operador || 'N/A').split(', ').map((op, idx) => {
-                            // Transformamos "G1: Carlos Perez" en "CARLOS PEREZ G1 / mina"
-                            const parts = op.split(': ');
-                            const grupoLabel = parts.length > 1 ? parts[0] : '';
-                            const nombreOp = parts.length > 1 ? parts[1] : parts[0];
-                            return (
-                              <div key={idx} style={{
-                                background: 'rgba(99, 102, 241, 0.05)',
-                                padding: '0.4rem 0.6rem',
-                                borderRadius: '8px',
-                                color: 'var(--primary-black)',
-                                fontWeight: '600',
-                                fontSize: '0.85rem',
-                                display: 'flex',
-                                alignItems: 'center',
-                                gap: '0.4rem',
-                                borderLeft: '3px solid var(--secondary-blue)'
-                              }}>
-                                <Truck size={14} style={{ color: 'var(--secondary-blue)' }} />
-                                <span>{nombreOp.toUpperCase()} {grupoLabel} / {String(registro.mina || '').toUpperCase()}</span>
-                              </div>
-                            );
-                          })}
-                        </div>
-                      </td>
-                      <td data-label="Aprobado">
-                        <div style={{ display: 'flex', gap: '0.3rem' }}>
-                          {registro.aprobado_g1 && <span className="badge" style={{ background: '#dcfce7', color: '#166534', fontSize: '0.7rem', padding: '0.2rem 0.5rem' }}>G1</span>}
-                          {registro.aprobado_g2 && <span className="badge" style={{ background: '#dcfce7', color: '#166534', fontSize: '0.7rem', padding: '0.2rem 0.5rem' }}>G2</span>}
-                          {registro.aprobado_g3 && <span className="badge" style={{ background: '#dcfce7', color: '#166534', fontSize: '0.7rem', padding: '0.2rem 0.5rem' }}>G3</span>}
-                          {(!registro.aprobado_g1 && !registro.aprobado_g2 && !registro.aprobado_g3) && <span style={{ color: '#9ca3af', fontSize: '0.75rem' }}>Sin V.B</span>}
-                        </div>
-                      </td>
-                      <td data-label="Reporte">
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', justifyContent: 'center' }}>
-                          <button
-                            className="btn btn-secondary"
-                            style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem', border: '1px solid rgba(227, 25, 55, 0.4)', color: 'var(--primary-red)', background: 'rgba(255, 255, 255, 0.4)', backdropFilter: 'blur(5px)' }}
-                            onClick={() => generarPDF(registro)}
-                          >
-                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                              <FileText size={15} strokeWidth={1.5} /> Ver PDF
+                  {registrosFiltrados.length > 0 ? registrosFiltrados.slice(0, registrosLimit).map(registro => {
+                    const isExpanded = expandedHistoryId === registro.id;
+                    return (
+                      <tr 
+                        key={registro.id} 
+                        className={`history-row ${isExpanded ? 'expanded' : ''}`}
+                        onClick={() => {
+                          // Solo activar acordeón en dispositivos móviles (detectado por ancho de ventana)
+                          if (window.innerWidth <= 768) {
+                            setExpandedHistoryId(isExpanded ? null : registro.id);
+                          }
+                        }}
+                      >
+                        <td data-label="Camión">
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                            <strong style={{ fontSize: '1.1rem', color: 'var(--primary-black)' }}>{registro.flota}</strong>
+                            <div className="mobile-only" style={{ color: 'var(--text-muted)' }}>
+                              {isExpanded ? <Info size={18} /> : <SearchCheck size={18} />}
                             </div>
-                          </button>
-                          
-                          {session.role === 'admin' && (
+                          </div>
+                        </td>
+                        <td data-label="Fallas" className="collapsible-col" style={{ fontSize: '0.9rem', color: 'var(--text-main)' }}>
+                          <div style={{ width: '100%', whiteSpace: 'normal', wordBreak: 'break-word' }}>
+                            {limpiarFallasIA(registro.fallas)}
+                          </div>
+                        </td>
+                        <td data-label="Ingreso" style={{ fontSize: '0.85rem' }}>{registro.time}</td>
+                        <td data-label="Ciclo" className="collapsible-col" style={{ fontSize: '0.85rem' }}>Calculando...</td>
+                        <td data-label="Operador / Mina" className="collapsible-col" style={{ fontSize: '0.85rem' }}>
+                          <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                            {(registro.operador || 'N/A').split(', ').map((op, idx) => {
+                              const parts = op.split(': ');
+                              const grupoLabel = parts.length > 1 ? parts[0] : '';
+                              const nombreOp = parts.length > 1 ? parts[1] : parts[0];
+                              return (
+                                <div key={idx} style={{
+                                  background: 'rgba(99, 102, 241, 0.05)',
+                                  padding: '0.4rem 0.6rem',
+                                  borderRadius: '8px',
+                                  color: 'var(--primary-black)',
+                                  fontWeight: '600',
+                                  fontSize: '0.85rem',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  gap: '0.4rem',
+                                  borderLeft: '3px solid var(--secondary-blue)'
+                                }}>
+                                  <Truck size={14} style={{ color: 'var(--secondary-blue)' }} />
+                                  <span>{nombreOp.toUpperCase()} {grupoLabel} / {String(registro.mina || '').toUpperCase()}</span>
+                                </div>
+                              );
+                            })}
+                          </div>
+                        </td>
+                        <td data-label="Aprobado">
+                          <div style={{ display: 'flex', gap: '0.3rem' }}>
+                            {registro.aprobado_g1 && <span className="badge" style={{ background: '#dcfce7', color: '#166534', fontSize: '0.7rem', padding: '0.2rem 0.5rem' }}>G1</span>}
+                            {registro.aprobado_g2 && <span className="badge" style={{ background: '#dcfce7', color: '#166534', fontSize: '0.7rem', padding: '0.2rem 0.5rem' }}>G2</span>}
+                            {registro.aprobado_g3 && <span className="badge" style={{ background: '#dcfce7', color: '#166534', fontSize: '0.7rem', padding: '0.2rem 0.5rem' }}>G3</span>}
+                            {(!registro.aprobado_g1 && !registro.aprobado_g2 && !registro.aprobado_g3) && <span style={{ color: '#9ca3af', fontSize: '0.75rem' }}>Sin V.B</span>}
+                          </div>
+                        </td>
+                        <td data-label="Reporte" className="collapsible-col">
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', justifyContent: 'center' }}>
                             <button
-                              onClick={() => eliminarCamion(registro.id, registro.flota)}
-                              style={{ 
-                                background: 'rgba(239, 68, 68, 0.1)', 
-                                border: '1px solid rgba(239, 68, 68, 0.2)', 
-                                color: '#ef4444', 
-                                padding: '0.4rem', 
-                                borderRadius: '8px',
-                                cursor: 'pointer',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center'
-                              }}
-                              title="Eliminar Reporte Histórico"
+                              className="btn btn-secondary"
+                              style={{ padding: '0.4rem 0.8rem', fontSize: '0.8rem', border: '1px solid rgba(227, 25, 55, 0.4)', color: 'var(--primary-red)', background: 'rgba(255, 255, 255, 0.4)', backdropFilter: 'blur(5px)' }}
+                              onClick={(e) => { e.stopPropagation(); generarPDF(registro); }}
                             >
-                              <Trash2 size={16} />
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                                <FileText size={15} strokeWidth={1.5} /> Ver PDF
+                              </div>
                             </button>
-                          )}
-                        </div>
-                      </td>
-                    </tr>
-                  )) : (
+                            
+                            {session.role === 'admin' && (
+                              <button
+                                onClick={(e) => { e.stopPropagation(); eliminarCamion(registro.id, registro.flota); }}
+                                style={{ 
+                                  background: 'rgba(239, 68, 68, 0.1)', 
+                                  border: '1px solid rgba(239, 68, 68, 0.2)', 
+                                  color: '#ef4444', 
+                                  padding: '0.4rem', 
+                                  borderRadius: '8px',
+                                  cursor: 'pointer',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center'
+                                }}
+                                title="Eliminar Reporte Histórico"
+                              >
+                                <Trash2 size={16} />
+                              </button>
+                            )}
+                          </div>
+                        </td>
+                      </tr>
+                    );
+                  }) : (
                     <tr>
-                      <td colSpan={session.role === 'admin' ? "7" : "6"} style={{ textAlign: 'center', padding: '2rem', color: '#9ca3af' }}>No hay registros que coincidan con estos filtros.</td>
+                      <td colSpan="8" style={{ textAlign: 'center', color: '#6b7280', padding: '3rem' }}>No hay registros que coincidan con los filtros.</td>
                     </tr>
                   )}
                 </tbody>
               </table>
+
+              {/* Botón Cargar Más */}
+              {registrosFiltrados.length > registrosLimit && (
+                <div style={{ textAlign: 'center', padding: '2rem 0' }}>
+                  <button 
+                    className="btn btn-secondary"
+                    onClick={() => setRegistrosLimit(prev => prev + 20)}
+                    style={{ background: 'white', borderColor: 'var(--primary-red)', color: 'var(--primary-red)', padding: '0.8rem 2rem', display: 'flex', alignItems: 'center', gap: '0.5rem', margin: '0 auto' }}
+                  >
+                    <RefreshCcw size={18} /> Cargar más registros antiguos
+                  </button>
+                  <p style={{ marginTop: '0.8rem', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                    Mostrando {registrosLimit} de {registrosFiltrados.length} registros totales.
+                  </p>
+                </div>
+              )}
             </div>
           </div>
         )}
@@ -2576,6 +2623,33 @@ function App() {
           </a>
         )}
       </nav>
+
+      {/* Botón Flotante Volver Arriba */}
+      {showBackToTop && (
+        <button
+          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          style={{
+            position: 'fixed',
+            bottom: '90px',
+            right: '20px',
+            width: '45px',
+            height: '45px',
+            borderRadius: '50%',
+            backgroundColor: 'var(--primary-red)',
+            color: 'white',
+            border: 'none',
+            boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
+            cursor: 'pointer',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            zIndex: 1000,
+            animation: 'slideUp 0.3s ease'
+          }}
+        >
+          <RefreshCcw size={20} style={{ transform: 'rotate(90deg)' }} />
+        </button>
+      )}
     </div>
   );
 }
