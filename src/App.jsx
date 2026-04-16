@@ -1383,7 +1383,11 @@ function App() {
                   {registrosFiltrados.length > 0 ? registrosFiltrados.map(registro => (
                     <tr key={registro.id}>
                       <td data-label="Camión"><strong style={{ fontSize: '1.1rem', color: 'var(--primary-black)' }}>{registro.flota}</strong></td>
-                      <td data-label="Fallas" style={{ fontSize: '0.9rem', color: 'var(--text-main)', maxWidth: '200px' }}>{limpiarFallasIA(registro.fallas)}</td>
+                      <td data-label="Fallas" style={{ fontSize: '0.9rem', color: 'var(--text-main)' }}>
+                        <div style={{ width: '100%', whiteSpace: 'normal', wordBreak: 'break-word' }}>
+                          {limpiarFallasIA(registro.fallas)}
+                        </div>
+                      </td>
                       <td data-label="Ingreso" style={{ fontSize: '0.85rem' }}>{registro.time}</td>
                       <td data-label="Ciclo" style={{ fontSize: '0.85rem' }}>Calculando...</td>
                       <td data-label="Operador / Mina" style={{ fontSize: '0.85rem' }}>
