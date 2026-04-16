@@ -1058,7 +1058,7 @@ function App() {
                               </div>
                             </td>
                             <td><span className={`badge badge-${camion?.estado || 'default'}`}>{(camion?.estado || 'N/A').toUpperCase()}</span></td>
-                            <td>{formatFechaCorta(camion?.creado_at || camion?.fecha_ingreso)}</td>
+                            <td>{formatFechaCorta(camion?.time || camion?.creado_at)}</td>
                             <td>
                               <div style={{ display: 'flex', justifyContent: 'center', gap: '0.6rem' }}>
                                 {(session?.role?.toLowerCase() === 'admin' || session?.role?.toLowerCase() === 'supervisor' || session?.rol?.toLowerCase() === 'admin' || session?.rol?.toLowerCase() === 'supervisor') && (
@@ -1094,7 +1094,7 @@ function App() {
                           </div>
                           <div style={{ display: 'flex', justifyContent: 'space-between' }}>
                             <span>Ingreso:</span>
-                            <strong style={{ color: 'var(--secondary-blue)' }}>{formatFechaCorta(camion?.creado_at || camion?.fecha_ingreso)}</strong>
+                            <strong style={{ color: 'var(--secondary-blue)' }}>{formatFechaCorta(camion?.time || camion?.creado_at)}</strong>
                           </div>
                         </div>
                         <div style={{ marginTop: '0.8rem', display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
