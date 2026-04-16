@@ -668,8 +668,45 @@ h1, h2, h3, h4, h5, h6 {
     margin-top: 0.5rem;
   }
 
-  .modern-table td[data-label="Reporte"]::before {
-    display: none; /* No necesitamos el texto "Reporte" al lado del botón PDF grande */
+  .modern-table td[data-label="Reporte"]::before,
+  .modern-table td[data-label="Camión"]::before,
+  .modern-table td[data-label="Aprobado"]::before {
+    display: none; /* Etiquetas personalizadas manualmente en App.jsx para alineación */
+  }
+
+  /* Botón Volver Arriba Liquid Glass */
+  .back-to-top-btn {
+    position: fixed;
+    bottom: 90px;
+    right: 20px;
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    
+    /* Efecto Liquid Glass */
+    background: rgba(239, 68, 68, 0.4); /* Rojo translúcido */
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: white;
+    
+    display: flex;
+    align-items: center;
+    justifyContent: center;
+    cursor: pointer;
+    z-index: 1000;
+    box-shadow: 0 8px 32px rgba(239, 68, 68, 0.2), inset 0 0 10px rgba(255,255,255,0.2);
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    animation: slideUp 0.4s ease-out;
+  }
+
+  .back-to-top-btn:active {
+    transform: scale(0.9);
+    background: rgba(239, 68, 68, 0.6);
+  }
+
+  .back-to-top-btn svg {
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
   }
 
 

@@ -1407,11 +1407,9 @@ function App() {
                         }}
                       >
                         <td data-label="Camión">
-                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
-                            <strong style={{ fontSize: '1.1rem', color: 'var(--primary-black)' }}>{registro.flota}</strong>
-                            <div className="mobile-only" style={{ color: 'var(--text-muted)' }}>
-                              {isExpanded ? <Info size={18} /> : <SearchCheck size={18} />}
-                            </div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%', gap: '1rem' }}>
+                            <span className="mobile-only" style={{ fontWeight: '700', fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Camión</span>
+                            <strong style={{ fontSize: '1.1rem', color: 'var(--primary-black)', marginLeft: 'auto' }}>{registro.flota}</strong>
                           </div>
                         </td>
                         <td data-label="Fallas" className="collapsible-col" style={{ fontSize: '0.9rem', color: 'var(--text-main)' }}>
@@ -1448,11 +1446,14 @@ function App() {
                           </div>
                         </td>
                         <td data-label="Aprobado">
-                          <div style={{ display: 'flex', gap: '0.3rem' }}>
-                            {registro.aprobado_g1 && <span className="badge" style={{ background: '#dcfce7', color: '#166534', fontSize: '0.7rem', padding: '0.2rem 0.5rem' }}>G1</span>}
-                            {registro.aprobado_g2 && <span className="badge" style={{ background: '#dcfce7', color: '#166534', fontSize: '0.7rem', padding: '0.2rem 0.5rem' }}>G2</span>}
-                            {registro.aprobado_g3 && <span className="badge" style={{ background: '#dcfce7', color: '#166534', fontSize: '0.7rem', padding: '0.2rem 0.5rem' }}>G3</span>}
-                            {(!registro.aprobado_g1 && !registro.aprobado_g2 && !registro.aprobado_g3) && <span style={{ color: '#9ca3af', fontSize: '0.75rem' }}>Sin V.B</span>}
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                            <span className="mobile-only" style={{ fontWeight: '700', fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Aprobado</span>
+                            <div style={{ display: 'flex', gap: '0.3rem' }}>
+                              {registro.aprobado_g1 && <span className="badge" style={{ background: '#dcfce7', color: '#166534', fontSize: '0.7rem', padding: '0.2rem 0.5rem' }}>G1</span>}
+                              {registro.aprobado_g2 && <span className="badge" style={{ background: '#dcfce7', color: '#166534', fontSize: '0.7rem', padding: '0.2rem 0.5rem' }}>G2</span>}
+                              {registro.aprobado_g3 && <span className="badge" style={{ background: '#dcfce7', color: '#166534', fontSize: '0.7rem', padding: '0.2rem 0.5rem' }}>G3</span>}
+                              {(!registro.aprobado_g1 && !registro.aprobado_g2 && !registro.aprobado_g3) && <span style={{ color: '#9ca3af', fontSize: '0.75rem' }}>Sin V.B</span>}
+                            </div>
                           </div>
                         </td>
                         <td data-label="Reporte" className="collapsible-col">
@@ -2624,30 +2625,13 @@ function App() {
         )}
       </nav>
 
-      {/* Botón Flotante Volver Arriba */}
+      {/* Botón Flotante Volver Arriba (Liquid Glass) */}
       {showBackToTop && (
         <button
           onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-          style={{
-            position: 'fixed',
-            bottom: '90px',
-            right: '20px',
-            width: '45px',
-            height: '45px',
-            borderRadius: '50%',
-            backgroundColor: 'var(--primary-red)',
-            color: 'white',
-            border: 'none',
-            boxShadow: '0 4px 12px rgba(0,0,0,0.2)',
-            cursor: 'pointer',
-            display: 'flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            zIndex: 1000,
-            animation: 'slideUp 0.3s ease'
-          }}
+          className="back-to-top-btn"
         >
-          <RefreshCcw size={20} style={{ transform: 'rotate(90deg)' }} />
+          <ArrowUp size={24} strokeWidth={2.5} />
         </button>
       )}
     </div>
