@@ -1168,7 +1168,17 @@ function App() {
                                   <button onClick={() => prepararEdicion(camion)} className="btn-action btn-action-edit" title="Editar"><Edit3 size={18} /></button>
                                 )}
                                 {(session?.role?.toLowerCase() === 'admin' || session?.rol?.toLowerCase() === 'admin') && (
-                                  <button onClick={() => eliminarCamion(camion.id, camion.flota)} className="btn-action btn-action-delete" title="Eliminar"><Trash2 size={18} /></button>
+                                  <button 
+                                    onClick={(e) => { e.stopPropagation(); handleSafeDelete(camion.id, () => eliminarCamion(camion.id, camion.flota)); }} 
+                                    className={`btn-action ${confirmDeleteId === camion.id ? 'btn-action-confirm-desktop' : 'btn-action-delete'}`}
+                                    style={{ 
+                                      width: confirmDeleteId === camion.id ? 'auto' : '36px',
+                                      padding: confirmDeleteId === camion.id ? '0.5rem 1rem' : '0'
+                                    }}
+                                    title="Eliminar"
+                                  >
+                                    {confirmDeleteId === camion.id ? <span style={{ fontSize: '0.7rem', fontWeight: 'bold' }}>✓ CONFIRMAR</span> : <Trash2 size={18} />}
+                                  </button>
                                 )}
                               </div>
                             </td>
@@ -1202,7 +1212,26 @@ function App() {
                         </div>
                         <div style={{ marginTop: '0.8rem', display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
                           <button onClick={() => setSelectedReport(camion)} style={{ background: 'rgba(59, 130, 246, 0.1)', border: 'none', color: '#3b82f6', padding: '0.3rem', borderRadius: '6px' }} title="Diagnóstico"><MonitorCheck size={16} /></button>
-                          <button onClick={() => prepararEdicion(camion)} style={{ background: 'rgba(255,255,255,0.8)', border: '1px solid #e5e7eb', color: '#6b7280', padding: '0.3rem', borderRadius: '6px' }} title="Editar"><Edit3 size={16} /></button>
+                          {(session?.role?.toLowerCase() === 'admin' || session?.role?.toLowerCase() === 'supervisor' || session?.rol?.toLowerCase() === 'admin' || session?.rol?.toLowerCase() === 'supervisor') && (
+                            <button onClick={() => prepararEdicion(camion)} style={{ background: 'rgba(255,255,255,0.8)', border: '1px solid #e5e7eb', color: '#6b7280', padding: '0.3rem', borderRadius: '6px' }} title="Editar"><Edit3 size={16} /></button>
+                          )}
+                          {(session?.role?.toLowerCase() === 'admin' || session?.rol?.toLowerCase() === 'admin') && (
+                            <button 
+                              onClick={(e) => { e.stopPropagation(); handleSafeDelete(camion.id, () => eliminarCamion(camion.id, camion.flota)); }} 
+                              style={{ 
+                                background: confirmDeleteId === camion.id ? 'var(--primary-red)' : 'rgba(239, 68, 68, 0.1)', 
+                                border: confirmDeleteId === camion.id ? 'none' : '1px solid rgba(239, 68, 68, 0.2)',
+                                color: confirmDeleteId === camion.id ? 'white' : '#ef4444', 
+                                padding: '0.3rem', 
+                                borderRadius: '6px',
+                                minWidth: confirmDeleteId === camion.id ? '80px' : '32px',
+                                transition: 'all 0.3s ease'
+                              }} 
+                              title="Eliminar"
+                            >
+                              {confirmDeleteId === camion.id ? <span style={{ fontSize: '0.6rem', fontWeight: '900' }}>¿BORRAR?</span> : <Trash2 size={16} />}
+                            </button>
+                          )}
                         </div>
                       </div>
                     ))}
