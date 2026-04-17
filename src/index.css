@@ -1020,4 +1020,27 @@ body {
   }
 }
 
+/* Divisores Estéticos de Secciones (v1.9.49) */
+.form-section-divider {
+  height: 1px;
+  background: linear-gradient(90deg, transparent, rgba(0,0,0,0.08), transparent);
+  margin: 2.5rem 0;
+  position: relative;
+}
+
+.form-section-title {
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: white;
+  padding: 0 1rem;
+  font-size: 0.72rem;
+  text-transform: uppercase;
+  letter-spacing: 2px;
+  color: var(--text-muted);
+  font-weight: 800;
+  white-space: nowrap;
+}
+
 

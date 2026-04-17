@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './index.css';
-import { LayoutDashboard, Zap, FileText, Blocks, ClipboardList, ShieldAlert, MonitorCheck, PlusCircle, Trash2, Edit3, Settings, Shield, Unlock, LockKeyhole, Lock, RefreshCcw, Users, AlertTriangle, CheckCircle2, Wrench, Activity, Truck, Search, Hourglass, SearchCheck, Award, FileSpreadsheet, MapPin, Calendar, Siren, AlertCircle, Info, History } from 'lucide-react';
+import { LayoutDashboard, Zap, FileText, Blocks, ClipboardList, ShieldAlert, MonitorCheck, PlusCircle, Trash2, Edit3, Settings, Shield, Unlock, LockKeyhole, Lock, RefreshCcw, Users, AlertTriangle, CheckCircle2, Wrench, Activity, Truck, Search, Hourglass, SearchCheck, Award, FileSpreadsheet, MapPin, Calendar, Siren, AlertCircle, Info, History, ChevronUp } from 'lucide-react';
 
 import { supabase } from './supabaseClient';
 import { jsPDF } from 'jspdf';
@@ -137,8 +137,8 @@ function App() {
   const [camionInGarantia, setCamionInGarantia] = useState(null); // Para el Modal de Motivo de Garantía
   const [pendientesGarantia, setPendientesGarantia] = useState({});
   const [registrosLimit, setRegistrosLimit] = useState(20);
+  const [expandedHistoryId, setExpandedHistoryId] = useState(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState(null);
-  const [showBackToTop, setShowBackToTop] = useState(false);
 
   // Manejador de Doble Toque Táctico (Protección v1.9.43)
   const handleSafeDelete = (id, action) => {
@@ -150,14 +150,6 @@ function App() {
       setTimeout(() => setConfirmDeleteId(null), 4000); // 4 segundos para confirmar
     }
   };
-
-  useEffect(() => {
-    const handleScroll = () => {
-      setShowBackToTop(window.scrollY > 400);
-    };
-    window.addEventListener('scroll', handleScroll, { passive: true });
-    return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
   const [currentKanbanCol, setCurrentKanbanCol] = useState(0); 
 
   // Blindaje de Fechas v1.9.24 (Limpieza Universal de Comas)
@@ -919,19 +911,29 @@ function App() {
 
   // Blindaje de Seguridad: Solo calcular si hay sesión activa
   // Lógica de Filtrado Inteligente v1.9.34 (Soporte Meses y Multi-búsqueda)
-  const registrosFiltrados = session ? camionesAccessibles.filter(r => {
+  const registrosFiltrados = (session && Array.isArray(camionesAccessibles)) ? camionesAccessibles.filter(r => {
+    // Solo mostramos los que ya están en el historial (liberados)
     if (r.estado !== 'liberado') return false;
     
-    // Filtro por Flota y Mina
-    const matchFlota = r.flota.includes(filtroFlota);
-    const matchMina = filtroMina === '' || r.mina === filtroMina;
-    if (!matchFlota || !matchMina) return false;
-
-    // Lógica de Filtrado de Alto Nivel v1.9.40 (Rangos e Inteligencia Mensual)
-    if (!filtroMes.trim()) return true;
-    
     try {
-      const timeStr = String(r.time || '');
+      // Blindaje de Datos (v1.9.51): Conversión segura a String
+      const fFlota = String(r.flota || '').toLowerCase();
+      const fMina = String(r.mina || '').toLowerCase();
+      const fBusquedaFlota = String(filtroFlota || '').toLowerCase();
+      const fBusquedaMina = String(filtroMina || '').toLowerCase();
+
+      // Filtro por Flota y Mina
+      const matchFlota = fFlota.includes(fBusquedaFlota);
+      const matchMina = !fBusquedaMina || fMina === fBusquedaMina;
+      if (!matchFlota || !matchMina) return false;
+
+      // Lógica de Filtrado de Alto Nivel v1.9.40 (Rangos e Inteligencia Mensual)
+      const busquedaMes = String(filtroMes || '').trim().toLowerCase();
+      if (!busquedaMes) return true;
+      
+      const timeStr = String(r.time || r.creado_at || '');
+      if (!timeStr) return false;
+
       let mesIndex = -1; // 0-indexed (0=Ene, 11=Dic)
 
       // Extractor de Mes Robusto (Soporte DD/MM/AAAA e ISO)
@@ -941,6 +943,7 @@ function App() {
       } else if (timeStr.includes('-')) {
         const partes = timeStr.split('-');
         if (partes.length >= 2) {
+          // Detectar si es YYYY-MM-DD o DD-MM-YYYY
           mesIndex = partes[0].length === 4 ? parseInt(partes[1], 10) - 1 : parseInt(partes[1], 10) - 1;
         }
       }
@@ -949,15 +952,13 @@ function App() {
 
       // Ayudante para normalizar cualquier entrada a índice de mes
       const getMesIndex = (str) => {
-        const s = str.toLowerCase().trim();
+        const s = String(str || '').toLowerCase().trim();
+        if (!s) return -1;
         const mesesAbbr = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
         const mesesFull = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
         
-        // 1. Probar abreviatura (primeros 3 caracteres)
         let idx = mesesAbbr.indexOf(s.substring(0, 3));
-        // 2. Probar nombre completo
         if (idx === -1) idx = mesesFull.indexOf(s);
-        // 3. Probar número (solo si es un mes válido 1-12)
         if (idx === -1 && /^\d+$/.test(s)) {
           const n = parseInt(s, 10);
           if (n >= 1 && n <= 12) idx = n - 1;
@@ -965,10 +966,9 @@ function App() {
         return idx;
       };
 
-      const terminos = filtroMes.toLowerCase().split(',').map(t => t.trim()).filter(Boolean);
+      const terminos = busquedaMes.split(',').map(t => t.trim()).filter(Boolean);
       
       return terminos.some(t => {
-        // Caso A: Rango (ej: ene-abr)
         if (t.includes('-')) {
           const puntos = t.split('-').map(p => p.trim());
           if (puntos.length === 2) {
@@ -979,13 +979,12 @@ function App() {
             }
           }
         }
-        
-        // Caso B: Mes Único (Nombre o Número)
         const tIdx = getMesIndex(t);
         return tIdx !== -1 && tIdx === mesIndex;
       });
-    } catch (e) {
-      return true;
+    } catch (err) {
+      console.error("Error en filtro de historial:", err);
+      return true; // En caso de duda, mostrar para evitar pantalla en blanco
     }
   }) : [];
 
@@ -2781,50 +2780,6 @@ function App() {
           </a>
         )}
       </nav>
-      {/* Botón Volver Arriba Liquid Glass v1.9.42 */}
-      {showBackToTop && (
-        <button 
-          className="back-to-top-btn"
-          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-          aria-label="Volver arriba"
-        >
-          <ChevronUp size={24} />
-        </button>
-      )}
-
-      {/* Estilos dinámicos para el plan móvil v1.9.42 */}
-      <style>{`
-        .btn-action-confirm {
-          background: var(--primary-red) !important;
-          color: white !important;
-          border-radius: 8px !important;
-          box-shadow: 0 4px 12px rgba(227, 25, 55, 0.4) !important;
-          animation: pulseConfirm 0.5s infinite alternate;
-        }
-        @keyframes pulseConfirm {
-          from { transform: scale(1); }
-          to { transform: scale(1.05); }
-        }
-        .form-section-divider {
-          height: 1px;
-          background: linear-gradient(90deg, transparent, rgba(0,0,0,0.05), transparent);
-          margin: 2.5rem 0;
-          position: relative;
-        }
-        .form-section-title {
-          position: absolute;
-          top: -10px;
-          left: 50%;
-          transform: translateX(-50%);
-          background: white;
-          padding: 0 1rem;
-          font-size: 0.7rem;
-          text-transform: uppercase;
-          letter-spacing: 2px;
-          color: var(--text-muted);
-          font-weight: 800;
-        }
-      `}</style>
     </div>
   );
 }
