@@ -690,24 +690,18 @@ function App() {
       addToast("⏳ Generando acta de trazabilidad...", "info");
       const doc = new jsPDF();
 
-      doc.setFillColor(0, 0, 0);
-      doc.rect(0, 0, 210, 40, 'F');
-
-      // Añadir Logotipo Corporativo (v1.8.0)
-      try {
-        doc.addImage(LOGO_DRUMMOND, 'PNG', 15, 12, 65, 18);
-      } catch (e) {
-        console.error("Error al cargar logo:", e);
-      }
-
       // === CABECERA PREMIUM (v1.9.96) ===
       doc.setFillColor(248, 250, 252); // Fondo muy claro para badge
       doc.roundedRect(140, 10, 60, 25, 3, 3, 'F');
       doc.setDrawColor(226, 232, 240);
       doc.roundedRect(140, 10, 60, 25, 3, 3, 'D');
 
-      if (logo_base64) {
-        doc.addImage(logo_base64, 'PNG', 15, 10, 25, 25);
+      try {
+        if (typeof LOGO_DRUMMOND !== 'undefined') {
+          doc.addImage(LOGO_DRUMMOND, 'PNG', 15, 10, 25, 25);
+        }
+      } catch (e) {
+        console.error("Error al cargar logo:", e);
       }
 
       doc.setTextColor(31, 41, 55);
