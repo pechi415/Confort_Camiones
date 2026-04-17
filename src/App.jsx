@@ -700,25 +700,43 @@ function App() {
         console.error("Error al cargar logo:", e);
       }
 
-      doc.setTextColor(255, 255, 255);
-      doc.setFontSize(20);
+      // === CABECERA PREMIUM (v1.9.96) ===
+      doc.setFillColor(248, 250, 252); // Fondo muy claro para badge
+      doc.roundedRect(140, 10, 60, 25, 3, 3, 'F');
+      doc.setDrawColor(226, 232, 240);
+      doc.roundedRect(140, 10, 60, 25, 3, 3, 'D');
+
+      if (logo_base64) {
+        doc.addImage(logo_base64, 'PNG', 15, 10, 25, 25);
+      }
+
+      doc.setTextColor(31, 41, 55);
+      doc.setFontSize(16);
       doc.setFont("helvetica", "bold");
-      doc.text("CAMIONES", 200, 20, { align: 'right' });
-
-      doc.setFontSize(10);
-      doc.text("REPORTE TÉCNICO DE TRAZABILIDAD - PROGRAMA CONFORT", 200, 30, { align: 'right' });
-      doc.setFontSize(8);
-      doc.text("DEBUG V1.9.75 - NEGRO", 200, 36, { align: 'right' });
-
-      doc.setTextColor(0, 0, 0);
-      doc.setFontSize(14);
-      doc.setFont("helvetica", "bold");
-      doc.text(`Identificación del Camión: ${registro.flota}`, 20, 55);
-
-      doc.setFontSize(10);
+      doc.text("ACTA DE TRAZABILIDAD", 50, 20);
+      doc.setFontSize(9);
       doc.setFont("helvetica", "normal");
-      doc.text(`Mina: ${registro.mina === 'PB' ? 'Pribbenow' : 'El Descanso'}`, 20, 65);
-      doc.text(`Fecha: ${new Date().toLocaleDateString()}`, 140, 55);
+      doc.text("SISTEMA DE MANTENIMIENTO CONFORT CAMIONES", 50, 27);
+
+      // Info Badge (Derecha)
+      doc.setFontSize(9);
+      doc.setFont("helvetica", "bold");
+      doc.text("MINA:", 145, 18);
+      doc.setFont("helvetica", "normal");
+      doc.text(`${registro.mina === 'PB' ? 'Pribbenow' : 'El Descanso'}`, 160, 18);
+      
+      doc.setFont("helvetica", "bold");
+      doc.text("CAMIÓN:", 145, 26);
+      doc.setFont("helvetica", "normal");
+      doc.text(`${registro.flota}`, 165, 26);
+
+      // Cuerpo del Reporte
+      doc.setTextColor(0, 0, 0);
+      doc.setFontSize(11);
+      doc.setFont("helvetica", "bold");
+      doc.text(`Identificación del Camión: ${registro.flota}`, 20, 50);
+      doc.setFont("helvetica", "normal");
+      doc.text(`Fecha de Emisión: ${new Date().toLocaleDateString()}`, 140, 50);
 
       doc.setFont("helvetica", "bold");
       doc.text(`Personal que reporta el estado (Operadores Permanentes):`, 20, 75);
@@ -778,12 +796,27 @@ function App() {
       // Buscamos el nombre que coincida con el grupo del supervisor logeado
       const opNameFiltered = opNames.find(n => n.includes(grupoPrefix))?.replace(grupoPrefix, '').trim() || 'N/A';
 
-      const signY = doc.lastAutoTable.finalY + 40;
-      doc.line(20, signY, 80, signY);
+      // === BLOQUE DE FIRMAS DUAL (v1.9.96) ===
+      const signY = doc.lastAutoTable.finalY + 35;
+      
+      // Firma Operador (Izquierda)
+      doc.setDrawColor(0);
+      doc.line(20, signY, 85, signY);
+      doc.setFontSize(10);
       doc.setFont("helvetica", "bold");
       doc.text(`${opNameFiltered}`, 20, signY + 5);
       doc.setFont("helvetica", "normal");
-      doc.text(`Operador Grupo ${session.grupo || '1'}`, 20, signY + 12);
+      doc.setFontSize(9);
+      doc.text(`Operador de Camión`, 20, signY + 10);
+      doc.text(`Grupo ${session.grupo || '1'}`, 20, signY + 15);
+
+      // Firma Supervisor (Derecha)
+      doc.line(120, signY, 185, signY);
+      doc.setFont("helvetica", "bold");
+      doc.text(`${session.name || 'Supervisor'}`, 120, signY + 5);
+      doc.setFont("helvetica", "normal");
+      doc.text(`Supervisor de Camiones`, 120, signY + 10);
+      doc.text(`Drummond Ltd.`, 120, signY + 15);
 
       doc.setFontSize(8);
       doc.setTextColor(150);
