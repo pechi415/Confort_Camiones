@@ -1599,21 +1599,20 @@ function App() {
                           </div>
                         </td>
                         <td data-label="Mina" style={{ textAlign: 'center' }}>
-                           <div style={{ 
-                             background: registro.mina === 'ED' ? '#374151' : '#1e3a8a', 
-                             color: 'white', 
-                             padding: '0.2rem 0.6rem', 
-                             borderRadius: '50px', 
-                             fontSize: '0.65rem', 
-                             fontWeight: '800', 
-                             display: 'inline-flex',
-                             alignItems: 'center',
-                             letterSpacing: '0.05em',
-                             boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-                             border: '1px solid rgba(255,255,255,0.1)'
-                           }}>
-                              {registro.mina === 'ED' ? 'MINA ED' : 'MINA PB'}
-                           </div>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                            <div style={{ 
+                              background: 'var(--primary-black)', 
+                              color: 'white', 
+                              padding: '0.25rem 0.8rem', 
+                              borderRadius: '4px', 
+                              fontSize: '0.8rem', 
+                              fontWeight: '900',
+                              boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
+                            }}>
+                              {registro.mina || 'PB'}
+                            </div>
+                            <span className="mobile-only" style={{ fontWeight: '700', fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Mina</span>
+                          </div>
                         </td>
                         <td data-label="Aprobado">
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
