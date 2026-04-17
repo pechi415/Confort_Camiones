@@ -34,10 +34,7 @@
 
 body {
   font-family: 'Outfit', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-  background: 
-    radial-gradient(circle at 10% 20%, rgba(37, 99, 235, 0.4) 0%, transparent 50%),
-    radial-gradient(circle at 90% 80%, rgba(227, 25, 55, 0.3) 0%, transparent 50%),
-    linear-gradient(135deg, #eef2ff 0%, #fdf2f8 50%, #fee2e2 100%);
+  background: #f5f7fa;
   background-attachment: fixed;
   color: var(--text-main);
   -webkit-font-smoothing: antialiased;
