@@ -793,7 +793,12 @@ function App() {
       doc.setFont("helvetica", "bold");
       doc.text(`Personal que reporta el estado (Operadores Permanentes):`, 20, 45);
       doc.setFont("helvetica", "normal");
-      const operText = (registro.operador || 'N/A').replace(/, /g, ' | ');
+      
+      // Filtrar para mostrar solo al reportero original en la cabecera (v1.9.115)
+      const originalGrupoPrefix = `G${registro.grupo || '1'}:`;
+      const allOps = (registro.operador || 'N/A').split(', ');
+      const operText = allOps.find(n => n.includes(originalGrupoPrefix)) || allOps[0] || 'N/A';
+      
       const operSplit = doc.splitTextToSize(operText, 170);
       doc.text(operSplit, 20, 52);
 
@@ -802,7 +807,9 @@ function App() {
       doc.text(`Gestor del reporte (Supervisor de Camiones):`, 20, supLabelY);
 
       doc.setFont("helvetica", "normal");
-      const supText = (registro.supervisor || 'N/A').replace(/, /g, ' | ');
+      const allSups = (registro.supervisor || 'N/A').split(', ');
+      const supText = allSups.find(n => n.includes(originalGrupoPrefix)) || allSups[0] || 'N/A';
+      
       const supSplit = doc.splitTextToSize(supText, 170);
       const supDataY = supLabelY + 7;
       doc.text(supSplit, 20, supDataY);
