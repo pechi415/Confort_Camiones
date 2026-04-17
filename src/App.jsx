@@ -2000,7 +2000,7 @@ function App() {
             <div className="form-section-divider"><span className="form-section-title">Operador Asignado</span></div>
             <div className="form-grid-2">
               <div className="input-group">
-                <label className="input-label">Operador Permanente</label>
+                <label className="input-label">Nombre del Operador</label>
                 <input
                   type="text"
                   className="input-field"
