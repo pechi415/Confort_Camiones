@@ -516,9 +516,9 @@ h1, h2, h3, h4, h5, h6 {
     left: 0;
     right: 0;
     height: 75px;
-    background: rgba(20, 20, 20, 0.5); /* Color sólido translúcido en móvil */
-    backdrop-filter: none !important; /* Desactivado en móvil por estabilidad */
-    -webkit-backdrop-filter: none !important;
+    background: rgba(45, 45, 45, 0.45); /* Base translúcida */
+    backdrop-filter: blur(12px) saturate(160%) !important; 
+    -webkit-backdrop-filter: blur(12px) saturate(160%) !important;
     border-top: 1px solid rgba(255, 255, 255, 0.15);
     display: flex;
     justify-content: space-around;
@@ -528,12 +528,12 @@ h1, h2, h3, h4, h5, h6 {
     box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.2);
   }
 
-  /* Desactivar blur global en móvil para modo blindaje v1.9.16 */
-  * {
-    backdrop-filter: none !important;
-    -webkit-backdrop-filter: none !important;
+  /* Re-activación de blur selectivo v1.9.56 */
+  .glass-card, .card, .kanban-card, .modal-pop {
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    background: rgba(255, 255, 255, 0.88) !important;
   }
-
   .glass-card, .card, .kanban-card, .modal-pop {
     background: rgba(255, 255, 255, 0.92) !important; /* Más opaco para compensar falta de blur */
   }
