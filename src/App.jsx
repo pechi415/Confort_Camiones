@@ -620,7 +620,7 @@ function App() {
       addToast("⏳ Generando acta de trazabilidad...", "info");
       const doc = new jsPDF();
 
-      doc.setFillColor(31, 41, 55);
+      doc.setFillColor(0, 0, 0);
       doc.rect(0, 0, 210, 40, 'F');
 
       // Añadir Logotipo Corporativo (v1.8.0)
