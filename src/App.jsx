@@ -67,12 +67,27 @@ const limpiarFallasIA = (fallasStr) => {
       }
   }
 
-  // Deduplicación final (v1.9.77)
+  // Deduplicación e Inteligencia IA de Comentarios (v1.9.85)
   return result.reduce((acc, current) => {
     const x = acc.find(item => item.falla.toLowerCase().trim() === current.falla.toLowerCase().trim());
     if (!x) return acc.concat([current]);
-    if (current.obs !== '-' && (x.obs === '-' || !x.obs.includes(current.obs))) {
-      x.obs = x.obs === '-' ? current.obs : `${x.obs} | ${current.obs}`;
+    
+    // Si la falla ya existe, comparamos los comentarios con IA
+    if (current.obs !== '-' && x.obs !== '-') {
+      const similitud = calcularSimilitudIA(x.obs, current.obs);
+      // Si la similitud es alta (>40%) o uno contiene al otro, nos quedamos con el más largo
+      if (similitud > 0.4 || x.obs.toLowerCase().includes(current.obs.toLowerCase()) || current.obs.toLowerCase().includes(x.obs.toLowerCase())) {
+        if (current.obs.length > x.obs.length) {
+          x.obs = current.obs;
+        }
+      } else {
+        // Si son realmente temas distintos, los unimos
+        if (!x.obs.includes(current.obs)) {
+          x.obs = `${x.obs} | ${current.obs}`;
+        }
+      }
+    } else if (current.obs !== '-' && x.obs === '-') {
+      x.obs = current.obs;
     }
     return acc;
   }, []);
