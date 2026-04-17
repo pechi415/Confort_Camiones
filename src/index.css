@@ -598,9 +598,30 @@ h1, h2, h3, h4, h5, h6 {
 
   .kanban-column {
     min-width: 72vw; /* Más estrechas para que se vea la siguiente */
+  }
+
+  .kanban-title-stack {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+  }
+}
+
+@media (min-width: 769px) {
+  .kanban-title-stack {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+  }
+}
+
+@media (max-width: 768px) {
+  .kanban-column {
     max-width: 72vw;
     height: calc(100vh - 250px);
   }
+}
 
   .kanban-indicators {
     display: flex;

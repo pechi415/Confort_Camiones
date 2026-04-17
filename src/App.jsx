@@ -1245,9 +1245,9 @@ function App() {
         {/* Kanban Board View */}
         {activeTab === 'cola' && (
           <div className="fade-in" style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.5rem' }}>
-              <h2 style={{ color: 'var(--primary-black)', margin: 0 }}>🔧 Pila de Mantenimiento (Control Taller)</h2>
-              <span style={{ fontSize: '0.9rem', color: 'var(--text-muted)' }}>Arrastra los camiones para avanzar su estado</span>
+            <div className="kanban-title-stack" style={{ marginBottom: '1.5rem' }}>
+              <h2 style={{ color: 'var(--primary-black)', margin: '0 0 0.4rem 0', lineHeight: '1.2' }}>🔧 Pila de Mantenimiento (Control Taller)</h2>
+              <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', display: 'block' }}>Arrastra los camiones para avanzar su estado</span>
             </div>
 
             <div className="kanban-headers fade-in" style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
