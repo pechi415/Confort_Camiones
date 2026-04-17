@@ -711,10 +711,10 @@ function App() {
       doc.setTextColor(31, 41, 55);
       doc.setFontSize(14);
       doc.setFont("helvetica", "bold");
-      doc.text("ACTA DE TRAZABILIDAD", 55, 20);
+      doc.text("ACTA DE TRAZABILIDAD", 65, 20);
       doc.setFontSize(8);
       doc.setFont("helvetica", "normal");
-      doc.text("CONFORT CAMIONES", 55, 26);
+      doc.text("CONFORT CAMIONES", 65, 26);
 
       // Info Badge Compacto
       doc.setFontSize(7);
