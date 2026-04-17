@@ -699,8 +699,10 @@ function App() {
       doc.roundedRect(160, 10, 35, 16, 3, 3, 'D');
 
       try {
-        if (typeof LOGO_DRUMMOND !== 'undefined') {
-          doc.addImage(LOGO_DRUMMOND, 'PNG', 15, 10, 25, 20);
+        if (typeof LOGO_DRUMMOND !== 'undefined' && LOGO_DRUMMOND) {
+          // v1.9.101 Blindaje de Logo: Aseguramos prefijo para jsPDF
+          const logoData = LOGO_DRUMMOND.startsWith('data:') ? LOGO_DRUMMOND : `data:image/png;base64,${LOGO_DRUMMOND}`;
+          doc.addImage(logoData, 'PNG', 15, 10, 25, 20);
         }
       } catch (e) {
         console.error("Error al cargar logo:", e);
@@ -730,16 +732,16 @@ function App() {
       doc.setTextColor(0, 0, 0);
       doc.setFontSize(10);
       doc.setFont("helvetica", "normal");
-      doc.text(`Fecha de Emisión: ${new Date().toLocaleDateString()}`, 145, 45);
+      doc.text(`Fecha de Emisión: ${new Date().toLocaleDateString()}`, 145, 32); // Subido de 45 a 32
 
       doc.setFont("helvetica", "bold");
-      doc.text(`Personal que reporta el estado (Operadores Permanentes):`, 20, 75);
+      doc.text(`Personal que reporta el estado (Operadores Permanentes):`, 20, 45); // Subido de 75 a 45
       doc.setFont("helvetica", "normal");
       const operText = (registro.operador || 'N/A').replace(/, /g, ' | ');
       const operSplit = doc.splitTextToSize(operText, 170);
-      doc.text(operSplit, 20, 82);
+      doc.text(operSplit, 20, 52); // Ajustado relativo a 45 (+7)
 
-      const supLabelY = 82 + (operSplit.length * 5) + 2;
+      const supLabelY = 52 + (operSplit.length * 5) + 2;
       doc.setFont("helvetica", "bold");
       doc.text(`Gestor del reporte (Supervisor de Camiones):`, 20, supLabelY);
 
@@ -749,7 +751,7 @@ function App() {
       const supDataY = supLabelY + 7;
       doc.text(supSplit, 20, supDataY);
 
-      const tableY = Math.max(105, supDataY + (supSplit.length * 5) + 5);
+      const tableY = Math.max(85, supDataY + (supSplit.length * 5) + 5); // Subido de 105 a 85 para compactar
 
       // Fix Universal para jspdf-autotable en Vite (v1.7.0)
       const tableFunc = typeof autoTable === 'function' ? autoTable : autoTable.default;
