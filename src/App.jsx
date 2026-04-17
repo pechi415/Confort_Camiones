@@ -55,9 +55,28 @@ const limpiarFallasIA = (fallasStr) => {
       const closeParen = text.lastIndexOf(')');
       
       if (openParen !== -1 && closeParen !== -1 && closeParen > openParen) {
+          const rawObs = text.substring(openParen + 1, closeParen).trim();
+          // v1.9.86 Limpieza recursiva de observaciones internas (para datos históricos)
+          const obsParts = rawObs.split(/\s*[|/]\s*/).filter(Boolean);
+          const cleanObsParts = [];
+          
+          obsParts.forEach(part => {
+              const duplicate = cleanObsParts.find(existing => 
+                  calcularSimilitudIA(existing, part) > 0.4 || 
+                  existing.toLowerCase().trim().includes(part.toLowerCase().trim()) || 
+                  part.toLowerCase().trim().includes(existing.toLowerCase().trim())
+              );
+              if (!duplicate) {
+                  cleanObsParts.push(part);
+              } else if (part.length > duplicate.length) {
+                  const idx = cleanObsParts.indexOf(duplicate);
+                  cleanObsParts[idx] = part;
+              }
+          });
+
           result.push({
               falla: text.substring(0, openParen).trim(),
-              obs: text.substring(openParen + 1, closeParen).trim()
+              obs: cleanObsParts.join(' | ') || '-'
           });
       } else {
           result.push({
