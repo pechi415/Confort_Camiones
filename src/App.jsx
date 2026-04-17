@@ -1600,6 +1600,7 @@ function App() {
                         </td>
                         <td data-label="Mina" style={{ textAlign: 'center' }}>
                           <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', width: '100%' }}>
+                            <span className="mobile-only" style={{ fontWeight: '700', fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Mina</span>
                             <div style={{ 
                               background: 'var(--primary-black)', 
                               color: 'white', 
@@ -1611,7 +1612,6 @@ function App() {
                             }}>
                               {registro.mina || 'PB'}
                             </div>
-                            <span className="mobile-only" style={{ fontWeight: '700', fontSize: '0.75rem', color: 'var(--text-muted)', textTransform: 'uppercase' }}>Mina</span>
                           </div>
                         </td>
                         <td data-label="Aprobado">
