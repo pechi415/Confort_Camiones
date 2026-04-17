@@ -7,49 +7,7 @@ import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
 
-// Motor de Inteligencia Algorítmica Humana (v1.9.95)
-function calcularSimilitudIA(s1, s2) {
-  if (!s1 || !s2) return 0;
-  
-  // Normalización Humana: Quitar conectores, intensificadores y unificar términos técnicos
-  const normalizar = (str) => {
-    return str.toLowerCase()
-      .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // Quitar acentos
-      .replace(/\s+/g, ' ')
-      .trim()
-      // Eliminar palabras de relleno e intensidad
-      .split(' ')
-      .filter(w => !['muy', 'demasiado', 'bastante', 'mucho', 'un', 'poco', 'del', 'de', 'la', 'el', 'en', 'con'].includes(w))
-      // Unificar términos técnicos comunes
-      .map(w => {
-        if (['golpea', 'golpeando', 'golpeteo'].includes(w)) return 'golpe';
-        if (['suena', 'sonido', 'ruido'].includes(w)) return 'ruido';
-        if (['cabina', 'izquierdo', 'izq'].includes(w)) return 'izquierda';
-        if (['rigidaz', 'rigida', 'dura'].includes(w)) return 'rigidez';
-        return w;
-      })
-      .join(' ');
-  };
-
-  const n1 = normalizar(s1);
-  const n2 = normalizar(s2);
-
-  if (n1 === n2) return 1;
-  if (n1.includes(n2) || n2.includes(n1)) return 0.9; // Alta similitud por contención
-
-  // Si no hay coincidencia exacta, usamos bigramas sobre el texto normalizado
-  const getBigrams = (str) => {
-    const bigrams = new Set();
-    for (let i = 0; i < str.length - 1; i++) bigrams.add(str.substring(i, i + 2));
-    return bigrams;
-  };
-  const b1 = getBigrams(n1);
-  const b2 = getBigrams(n2);
-  if (b1.size === 0 || b2.size === 0) return 0;
-  let intersection = 0;
-  for (const b of b1) if (b2.has(b)) intersection++;
-  return (2 * intersection) / (b1.size + b2.size);
-}
+const LOGO_DRUMMOND = "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";
 
 // Motor de Limpieza Retroactiva (Aplica IA a datos existentes de la nube)
 const limpiarFallasIA = (fallasStr) => {
@@ -690,47 +648,45 @@ function App() {
       addToast("⏳ Generando acta de trazabilidad...", "info");
       const doc = new jsPDF();
 
-      // === CABECERA PREMIUM (v1.9.96) ===
-      doc.setFillColor(248, 250, 252); // Fondo muy claro para badge
-      doc.roundedRect(140, 10, 60, 25, 3, 3, 'F');
+      // === CABECERA PREMIUM MINIMALISTA (v1.9.97) ===
+      doc.setFillColor(248, 250, 252);
+      doc.roundedRect(155, 10, 40, 20, 3, 3, 'F'); // Badge reducido
       doc.setDrawColor(226, 232, 240);
-      doc.roundedRect(140, 10, 60, 25, 3, 3, 'D');
+      doc.roundedRect(155, 10, 40, 20, 3, 3, 'D');
 
       try {
         if (typeof LOGO_DRUMMOND !== 'undefined') {
-          doc.addImage(LOGO_DRUMMOND, 'PNG', 15, 10, 25, 25);
+          doc.addImage(LOGO_DRUMMOND, 'PNG', 15, 10, 25, 20);
         }
       } catch (e) {
         console.error("Error al cargar logo:", e);
       }
 
       doc.setTextColor(31, 41, 55);
-      doc.setFontSize(16);
+      doc.setFontSize(14);
       doc.setFont("helvetica", "bold");
-      doc.text("ACTA DE TRAZABILIDAD", 50, 20);
-      doc.setFontSize(9);
+      doc.text("ACTA DE TRAZABILIDAD", 45, 20);
+      doc.setFontSize(8);
       doc.setFont("helvetica", "normal");
-      doc.text("SISTEMA DE MANTENIMIENTO CONFORT CAMIONES", 50, 27);
+      doc.text("CONFORT CAMIONES", 45, 26);
 
-      // Info Badge (Derecha)
-      doc.setFontSize(9);
+      // Info Badge Compacto
+      doc.setFontSize(8);
       doc.setFont("helvetica", "bold");
-      doc.text("MINA:", 145, 18);
+      doc.text("MINA:", 159, 17);
       doc.setFont("helvetica", "normal");
-      doc.text(`${registro.mina === 'PB' ? 'Pribbenow' : 'El Descanso'}`, 160, 18);
+      doc.text(`${registro.mina === 'PB' ? 'PB' : 'ED'}`, 172, 17);
       
       doc.setFont("helvetica", "bold");
-      doc.text("CAMIÓN:", 145, 26);
+      doc.text("CAMIÓN:", 159, 23);
       doc.setFont("helvetica", "normal");
-      doc.text(`${registro.flota}`, 165, 26);
+      doc.text(`${registro.flota}`, 175, 23);
 
       // Cuerpo del Reporte
       doc.setTextColor(0, 0, 0);
-      doc.setFontSize(11);
-      doc.setFont("helvetica", "bold");
-      doc.text(`Identificación del Camión: ${registro.flota}`, 20, 50);
+      doc.setFontSize(10);
       doc.setFont("helvetica", "normal");
-      doc.text(`Fecha de Emisión: ${new Date().toLocaleDateString()}`, 140, 50);
+      doc.text(`Fecha de Emisión: ${new Date().toLocaleDateString()}`, 145, 45);
 
       doc.setFont("helvetica", "bold");
       doc.text(`Personal que reporta el estado (Operadores Permanentes):`, 20, 75);
