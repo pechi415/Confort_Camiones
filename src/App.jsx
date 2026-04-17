@@ -1605,8 +1605,8 @@ function App() {
                               background: 'var(--primary-black)', 
                               color: 'white', 
                               padding: '0.25rem 0.8rem', 
-                              borderRadius: '4px', 
-                              fontSize: '0.8rem', 
+                              borderRadius: '50px', 
+                              fontSize: '0.75rem', 
                               fontWeight: '900',
                               boxShadow: '0 2px 4px rgba(0,0,0,0.2)'
                             }}>
