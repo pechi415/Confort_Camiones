@@ -1978,7 +1978,7 @@ function App() {
             </h2>
 
             <div className="form-section-divider"><span className="form-section-title">Datos del Camión</span></div>
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1.5rem', marginBottom: '1.5rem' }}>
+            <div className="form-grid-2">
               <div className="input-group">
                 <label className="input-label">Identificación del Camión</label>
                 <input
@@ -1995,7 +1995,10 @@ function App() {
                   </span>
                 )}
               </div>
+            </div>
+
             <div className="form-section-divider"><span className="form-section-title">Operador Asignado</span></div>
+            <div className="form-grid-2">
               <div className="input-group">
                 <label className="input-label">Operador Permanente</label>
                 <input
@@ -2005,6 +2008,44 @@ function App() {
                   value={operador}
                   onChange={(e) => setOperador(e.target.value)}
                 />
+              </div>
+              <div className="input-group">
+                <label className="input-label">Ubicación (Mina)</label>
+                <select
+                  className="input-field"
+                  value={mina}
+                  onChange={(e) => setMina(e.target.value)}
+                  disabled={session.role !== 'admin'}
+                  style={{
+                    backgroundColor: session.role !== 'admin' ? '#f3f4f6' : 'rgba(255,255,255,0.8)',
+                    cursor: session.role !== 'admin' ? 'not-allowed' : 'default',
+                    color: session.role !== 'admin' ? '#6b7280' : 'inherit'
+                  }}
+                >
+                  <option value="PB">Mina Pribbenow (PB)</option>
+                  <option value="ED">Mina El Descanso (ED)</option>
+                </select>
+              </div>
+            </div>
+
+            <div style={{ display: 'grid', gridTemplateColumns: window.innerWidth > 768 ? '1fr 1fr' : '1fr', gap: '1.5rem', marginBottom: '2rem' }}>
+              <div className="input-group" style={{ display: window.innerWidth > 768 ? 'block' : 'block' }}>
+                <label className="input-label">Grupo</label>
+                <select
+                  className="input-field"
+                  value={grupo}
+                  onChange={(e) => setGrupo(e.target.value)}
+                  disabled={session.role !== 'admin'}
+                  style={{
+                    backgroundColor: session.role !== 'admin' ? '#f3f4f6' : 'rgba(255,255,255,0.8)',
+                    cursor: session.role !== 'admin' ? 'not-allowed' : 'default',
+                    color: session.role !== 'admin' ? '#6b7280' : 'inherit'
+                  }}
+                >
+                  <option value="1">Grupo 1</option>
+                  <option value="2">Grupo 2</option>
+                  <option value="3">Grupo 3</option>
+                </select>
               </div>
             </div>
 
