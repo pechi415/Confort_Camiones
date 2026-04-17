@@ -7,12 +7,37 @@ import { jsPDF } from 'jspdf';
 import autoTable from 'jspdf-autotable';
 import * as XLSX from 'xlsx';
 
-// Motor de Inteligencia Algorítmica (Fuzzy Logic) para Deduplicación de Reportes
+// Motor de Inteligencia Algorítmica Humana (v1.9.95)
 function calcularSimilitudIA(s1, s2) {
   if (!s1 || !s2) return 0;
-  const n1 = s1.toLowerCase().replace(/\s+/g, '');
-  const n2 = s2.toLowerCase().replace(/\s+/g, '');
+  
+  // Normalización Humana: Quitar conectores, intensificadores y unificar términos técnicos
+  const normalizar = (str) => {
+    return str.toLowerCase()
+      .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // Quitar acentos
+      .replace(/\s+/g, ' ')
+      .trim()
+      // Eliminar palabras de relleno e intensidad
+      .split(' ')
+      .filter(w => !['muy', 'demasiado', 'bastante', 'mucho', 'un', 'poco', 'del', 'de', 'la', 'el', 'en', 'con'].includes(w))
+      // Unificar términos técnicos comunes
+      .map(w => {
+        if (['golpea', 'golpeando', 'golpeteo'].includes(w)) return 'golpe';
+        if (['suena', 'sonido', 'ruido'].includes(w)) return 'ruido';
+        if (['cabina', 'izquierdo', 'izq'].includes(w)) return 'izquierda';
+        if (['rigidaz', 'rigida', 'dura'].includes(w)) return 'rigidez';
+        return w;
+      })
+      .join(' ');
+  };
+
+  const n1 = normalizar(s1);
+  const n2 = normalizar(s2);
+
   if (n1 === n2) return 1;
+  if (n1.includes(n2) || n2.includes(n1)) return 0.9; // Alta similitud por contención
+
+  // Si no hay coincidencia exacta, usamos bigramas sobre el texto normalizado
   const getBigrams = (str) => {
     const bigrams = new Set();
     for (let i = 0; i < str.length - 1; i++) bigrams.add(str.substring(i, i + 2));
@@ -20,6 +45,7 @@ function calcularSimilitudIA(s1, s2) {
   };
   const b1 = getBigrams(n1);
   const b2 = getBigrams(n2);
+  if (b1.size === 0 || b2.size === 0) return 0;
   let intersection = 0;
   for (const b of b1) if (b2.has(b)) intersection++;
   return (2 * intersection) / (b1.size + b2.size);
@@ -86,21 +112,20 @@ const limpiarFallasIA = (fallasStr) => {
       }
   }
 
-  // Deduplicación e Inteligencia IA de Comentarios (v1.9.85)
+  // Deduplicación e Inteligencia IA Humana de Comentarios (v1.9.95)
   return result.reduce((acc, current) => {
     const x = acc.find(item => item.falla.toLowerCase().trim() === current.falla.toLowerCase().trim());
     if (!x) return acc.concat([current]);
     
-    // Si la falla ya existe, comparamos los comentarios con IA
     if (current.obs !== '-' && x.obs !== '-') {
       const similitud = calcularSimilitudIA(x.obs, current.obs);
-      // Si la similitud es alta (>40%) o uno contiene al otro, nos quedamos con el más largo
-      if (similitud > 0.4 || x.obs.toLowerCase().includes(current.obs.toLowerCase()) || current.obs.toLowerCase().includes(x.obs.toLowerCase())) {
+      // Umbral ajustado para la nueva normalización semántica
+      if (similitud > 0.45) {
+        // Nos quedamos con el más detallado (el más largo)
         if (current.obs.length > x.obs.length) {
           x.obs = current.obs;
         }
       } else {
-        // Si son realmente temas distintos, los unimos
         if (!x.obs.includes(current.obs)) {
           x.obs = `${x.obs} | ${current.obs}`;
         }
