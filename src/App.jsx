@@ -302,13 +302,13 @@ function App() {
   };
 
   const handleModalConfirm = () => {
-    if (modalConfig.type === 'prompt') {
+    if (modalConfig.type === 'prompt' && modalConfig.expectedValue) {
       if (modalConfig.inputValue !== modalConfig.expectedValue) {
         addToast("❌ El número ingresado no coincide.", "error");
         return;
       }
     }
-    if (modalConfig.onConfirm) modalConfig.onConfirm();
+    if (modalConfig.onConfirm) modalConfig.onConfirm(modalConfig.inputValue);
     setModalConfig(prev => ({ ...prev, isOpen: false }));
   };
 
@@ -687,7 +687,63 @@ function App() {
     }
   };
 
-  const generarPDF = (registro) => {
+  const generarPDF = async (registro) => {
+    try {
+      const grupoActual = session.grupo || '1';
+      const grupoPrefix = `G${grupoActual}:`;
+      const opNames = (registro.operador || '').split(', ');
+      
+      // Verificamos si el grupo actual ya tiene un operador registrado
+      const yaTieneOperador = opNames.some(n => n.includes(grupoPrefix));
+
+      if (!yaTieneOperador) {
+        // ACTIVACIÓN DE RECEPCIÓN MULTIGRUPO
+        showConfirm({
+          type: 'prompt',
+          title: `Recepción de Camión (Grupo ${grupoActual})`,
+          message: `El Camión ${registro.flota} está siendo recibido por un grupo distinto al reporte original.\n\nPor favor, ingrese el nombre del Operador que RECIBE el camión en el Grupo ${grupoActual}:`,
+          placeholder: 'Nombre del Operador Receptor...',
+          confirmText: 'Registrar y Generar PDF',
+          onConfirm: async (nombreIngresado) => {
+            if (!nombreIngresado || nombreIngresado.trim().length < 3) {
+              return addToast("❌ Nombre de operador inválido.", "error");
+            }
+            
+            try {
+              addToast("💾 Guardando trazabilidad de recepción...", "info");
+              const nuevoOpInfo = `${grupoPrefix} ${nombreIngresado.trim()}`;
+              const nuevoSupInfo = `${grupoPrefix} ${session.nombre || 'Supervisor'}`;
+              
+              const updateData = {
+                operador: registro.operador ? `${registro.operador}, ${nuevoOpInfo}` : nuevoOpInfo,
+                supervisor: registro.supervisor ? `${registro.supervisor}, ${nuevoSupInfo}` : nuevoSupInfo
+              };
+
+              // Persistencia en Supabase
+              const { error } = await supabase.from('camiones').update(updateData).eq('id', registro.id);
+              if (error) throw error;
+
+              // Actualización de estado local para que el PDF salga con la data nueva
+              const registroActualizado = { ...registro, ...updateData };
+              setCamionesRegistrados(prev => prev.map(c => c.id === registro.id ? registroActualizado : c));
+              
+              // Proceder a renderizar el PDF con el registro actualizado
+              renderizarPDF(registroActualizado);
+            } catch (err) {
+              addToast("❌ Error al guardar datos de recepción: " + err.message, "error");
+            }
+          }
+        });
+      } else {
+        // Si el grupo ya participó, generamos el PDF directamente
+        renderizarPDF(registro);
+      }
+    } catch (err) {
+      addToast("❌ Error al iniciar generación de PDF: " + err.message, "error");
+    }
+  };
+
+  const renderizarPDF = (registro) => {
     try {
       addToast("⏳ Generando acta de trazabilidad...", "info");
       const doc = new jsPDF();
@@ -732,14 +788,14 @@ function App() {
       doc.setTextColor(0, 0, 0);
       doc.setFontSize(10);
       doc.setFont("helvetica", "normal");
-      doc.text(`Fecha de Emisión: ${new Date().toLocaleDateString()}`, 145, 32); // Subido de 45 a 32
+      doc.text(`Fecha de Emisión: ${new Date().toLocaleDateString()}`, 145, 32);
 
       doc.setFont("helvetica", "bold");
-      doc.text(`Personal que reporta el estado (Operadores Permanentes):`, 20, 45); // Subido de 75 a 45
+      doc.text(`Personal que reporta el estado (Operadores Permanentes):`, 20, 45);
       doc.setFont("helvetica", "normal");
       const operText = (registro.operador || 'N/A').replace(/, /g, ' | ');
       const operSplit = doc.splitTextToSize(operText, 170);
-      doc.text(operSplit, 20, 52); // Ajustado relativo a 45 (+7)
+      doc.text(operSplit, 20, 52);
 
       const supLabelY = 52 + (operSplit.length * 5) + 2;
       doc.setFont("helvetica", "bold");
@@ -751,12 +807,9 @@ function App() {
       const supDataY = supLabelY + 7;
       doc.text(supSplit, 20, supDataY);
 
-      const tableY = Math.max(85, supDataY + (supSplit.length * 5) + 5); // Subido de 105 a 85 para compactar
+      const tableY = Math.max(85, supDataY + (supSplit.length * 5) + 5);
 
-      // Fix Universal para jspdf-autotable en Vite (v1.7.0)
       const tableFunc = typeof autoTable === 'function' ? autoTable : autoTable.default;
-
-      // Preparar datos de fallas con comentarios estructurados (v1.9.77)
       const itemsFallas = limpiarFallasIA(registro.fallas);
       const bodyFallas = itemsFallas.map(item => [item.falla, item.obs]);
 
@@ -778,24 +831,21 @@ function App() {
         startY: finalY + 10,
         head: [['Grupo de Turno', 'Visto Bueno (VB)', 'Estado']],
         body: [
-          ['Grupo 1', registro.aprobado_g1 ? 'CONFIRMADO' : 'N/A', registro.aprobado_g1 ? 'Aceptado a Satisfacción' : 'Sin intervención'],
-          ['Grupo 2', registro.aprobado_g2 ? 'CONFIRMADO' : 'N/A', registro.aprobado_g2 ? 'Aceptado a Satisfacción' : 'Sin intervención'],
-          ['Grupo 3', registro.aprobado_g3 ? 'CONFIRMADO' : 'N/A', registro.aprobado_g3 ? 'Aceptado a Satisfacción' : 'Sin intervención'],
+          ['Grupo 1', registro.aprobado_g1 ? 'CONFIRMADO' : 'N/A', registro.aprobado_g1 ? 'Aceptada a Satisfacción' : 'Sin intervención'],
+          ['Grupo 2', registro.aprobado_g2 ? 'CONFIRMADO' : 'N/A', registro.aprobado_g2 ? 'Aceptada a Satisfacción' : 'Sin intervención'],
+          ['Grupo 3', registro.aprobado_g3 ? 'CONFIRMADO' : 'N/A', registro.aprobado_g3 ? 'Aceptada a Satisfacción' : 'Sin intervención'],
         ],
         theme: 'grid',
         headStyles: { fillColor: [0, 0, 0], textColor: [255, 255, 255] }
       });
 
-      // Lógica de Firma Filtrada (v1.8.4)
-      const grupoPrefix = `G${session.grupo || '1'}:`;
+      const grupoActual = session.grupo || '1';
+      const grupoPrefix = `G${grupoActual}:`;
       const opNames = (registro.operador || '').split(', ');
-      // Buscamos el nombre que coincida con el grupo del supervisor logeado
       const opNameFiltered = opNames.find(n => n.includes(grupoPrefix))?.replace(grupoPrefix, '').trim() || 'N/A';
 
-      // === BLOQUE DE FIRMAS DUAL (v1.9.96) ===
       const signY = doc.lastAutoTable.finalY + 35;
       
-      // Firma Operador (Izquierda)
       doc.setDrawColor(0);
       doc.line(20, signY, 85, signY);
       doc.setFontSize(10);
@@ -803,10 +853,9 @@ function App() {
       doc.text(`${opNameFiltered}`, 20, signY + 5);
       doc.setFont("helvetica", "normal");
       doc.setFontSize(9);
-      doc.text(`Operador de Camión`, 20, signY + 10);
-      doc.text(`Grupo ${session.grupo || '1'}`, 20, signY + 15);
+      doc.text("Operador de Camion", 20, signY + 10);
+      doc.text(`Grupo ${grupoActual}`, 20, signY + 15);
 
-      // Firma Supervisor (Derecha)
       doc.line(120, signY, 185, signY);
       doc.setFont("helvetica", "bold");
       doc.text(`${session.nombre || 'Supervisor'}`, 120, signY + 5);
@@ -818,12 +867,10 @@ function App() {
       doc.setTextColor(150);
       doc.text(`Documento generado digitalmente por Drummond Confort System`, 105, 285, { align: 'center' });
 
-      const dPdf = new Date();
-      const fechaNombre = `${String(dPdf.getDate()).padStart(2, '0')}-${String(dPdf.getMonth() + 1).padStart(2, '0')}-${dPdf.getFullYear()}`;
-      doc.save(`Acta_Trazabilidad_${registro.flota}_${fechaNombre}.pdf`);
+      doc.save(`Acta_Trazabilidad_${registro.flota}_${new Date().toISOString().split('T')[0]}.pdf`);
       addToast(`✅ PDF del camión ${registro.flota} generado.`);
     } catch (err) {
-      addToast("❌ Error al generar PDF: " + err.message, "error");
+      addToast("❌ Error al producir PDF: " + err.message, "error");
     }
   };
 
