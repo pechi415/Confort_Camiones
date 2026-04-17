@@ -139,6 +139,7 @@ function App() {
   const [registrosLimit, setRegistrosLimit] = useState(20);
   const [expandedHistoryId, setExpandedHistoryId] = useState(null);
   const [confirmDeleteId, setConfirmDeleteId] = useState(null);
+  const [showBackToTop, setShowBackToTop] = useState(false);
 
   // Manejador de Doble Toque Táctico (Protección v1.9.43)
   const handleSafeDelete = (id, action) => {
@@ -150,6 +151,14 @@ function App() {
       setTimeout(() => setConfirmDeleteId(null), 4000); // 4 segundos para confirmar
     }
   };
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setShowBackToTop(window.scrollY > 400);
+    };
+    window.addEventListener('scroll', handleScroll, { passive: true });
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
   const [currentKanbanCol, setCurrentKanbanCol] = useState(0); 
 
   // Blindaje de Fechas v1.9.24 (Limpieza Universal de Comas)
@@ -2780,6 +2789,16 @@ function App() {
           </a>
         )}
       </nav>
+      {/* Botón Volver Arriba Seguro v1.9.52 */}
+      {showBackToTop && (
+        <button 
+          className="back-to-top-btn"
+          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          aria-label="Volver arriba"
+        >
+          <ChevronUp size={24} />
+        </button>
+      )}
     </div>
   );
 }
