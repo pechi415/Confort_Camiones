@@ -1266,8 +1266,9 @@ function App() {
               onScroll={(e) => {
                 const scrollLeft = e.target.scrollLeft;
                 const width = e.target.clientWidth;
-                const index = Math.round(scrollLeft / (width * 0.72)); // 72vw es el ancho de col en movil
-                if (index >= 0 && index <= 4) setCurrentKanbanCol(index);
+                // Calculamos el índice basado en el ancho de la columna 72vw + gap
+                const index = Math.round(scrollLeft / (width * 0.75)); 
+                if (index >= 0 && index <= 5) setCurrentKanbanCol(index);
               }}
               style={{
                 display: 'flex',
