@@ -29,29 +29,24 @@ function calcularSimilitudIA(s1, s2) {
 const limpiarFallasIA = (fallasStr) => {
   if (!fallasStr) return [];
   
-  // v1.9.77 Motor de Separación Lineal (Ultra-Robusto)
-  // Primero separamos por los delimitadores principales
-  const rawParts = fallasStr.split(/[|/]/);
+  // v1.9.81 Motor de Separación por Profundidad (Ignora delimitadores dentro de paréntesis)
   const result = [];
+  let depth = 0;
+  let start = 0;
 
-  rawParts.forEach(part => {
-    let raw = part.trim();
-    if (!raw) return;
+  for (let i = 0; i < fallasStr.length; i++) {
+    const char = fallasStr[i];
+    if (char === '(') depth++;
+    if (char === ')') depth--;
 
-    // Buscamos si hay una coma que separe fallas adicionales dentro de la parte
-    // pero solo si no está dentro de un paréntesis
-    let depth = 0;
-    let start = 0;
-    for (let i = 0; i < raw.length; i++) {
-        if (raw[i] === '(') depth++;
-        if (raw[i] === ')') depth--;
-        if (raw[i] === ',' && depth === 0) {
-            processItem(raw.substring(start, i).trim());
-            start = i + 1;
-        }
+    // Si encontramos un delimitador (|, / o coma) y estamos en nivel 0 (fuera de paréntesis)
+    if (depth === 0 && (char === '|' || char === '/' || char === ',')) {
+      processItem(fallasStr.substring(start, i).trim());
+      start = i + 1;
     }
-    processItem(raw.substring(start).trim());
-  });
+  }
+  // Procesar la última parte
+  processItem(fallasStr.substring(start).trim());
 
   function processItem(text) {
       if (!text || text === '-') return;
