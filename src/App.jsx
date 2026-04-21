@@ -627,41 +627,45 @@ function App() {
     // 1. Extraer el nombre del operador para el contexto actual
     let operadorEnContexto = '';
     if (camion.operador) {
-      const ops = camion.operador.split(/\s*,\s*/); // Split robusto por coma
-      const matchingOp = ops.find(o => o.trim().toUpperCase().startsWith(`${context.toUpperCase()}:`));
+      const ops = camion.operador.split(/\s*,\s*/);
+      // Buscamos "GX: Nombre" o "GX- Nombre" etc.
+      const prefixRegex = new RegExp(`^${context}\\s*[:\\-]`, 'i');
+      const matchingOp = ops.find(o => prefixRegex.test(o.trim()));
+      
       if (matchingOp) {
-        operadorEnContexto = matchingOp.split(/:\s*/)[1] || '';
-      } else if (context === 'General' && !ops.some(o => o.includes(':'))) {
+        operadorEnContexto = matchingOp.split(/[:\\-]\s*(.*)/s)[1] || '';
+      } else if (context === 'General' && !ops.some(o => /G\d+\s*[:\\-]/i.test(o))) {
         operadorEnContexto = camion.operador;
       }
     }
 
     // 2. Extraer fallas y observaciones filtradas
     if (camion.fallas) {
-      const parts = camion.fallas.split(/\s*,\s*/); // Split robusto por coma
+      const parts = camion.fallas.split(/\s*,\s*/);
       parts.forEach(p => {
-        // Regex para capturar "Nombre (Nota)"
         const match = p.match(/^(.*?)(?:\s*\((.*?)\))?$/);
         if (match) {
           const nombreExtraido = match[1].trim().toLowerCase();
           const combinedObs = match[2] || '';
           
-          // Búsqueda insensible a mayúsculas
           const fallaObj = fallas.find(f => f.nombre.trim().toLowerCase() === nombreExtraido);
           
           if (fallaObj) {
             if (combinedObs) {
-              const segments = combinedObs.split(/\s*[|/]\s*/); // Split robusto por | o /
-              const mySegment = segments.find(seg => {
-                const s = seg.trim().toUpperCase();
-                return s === context.toUpperCase() || s.startsWith(`${context.toUpperCase()}:`);
-              });
+              const segments = combinedObs.split(/\s*[|/]\s*/);
+              // Regex para detectar el grupo en el segmento: "G1", "G1:", "G1 :", "G1-", etc.
+              const groupPattern = new RegExp(`^${context}(\\s*[:\\-]\\s*|\\s*$)`, 'i');
+              
+              const mySegment = segments.find(seg => groupPattern.test(seg.trim()));
               
               if (mySegment) {
                 danos[fallaObj.id] = true;
-                obs[fallaObj.id] = mySegment.includes(':') ? mySegment.split(/:\s*/)[1] : '';
+                // Extraer el texto después del prefijo "GX: "
+                const textMatch = mySegment.trim().match(new RegExp(`^${context}\\s*[:\\-]\\s*(.*)$`, 'i'));
+                obs[fallaObj.id] = textMatch ? textMatch[1] : '';
               } else if (context === 'General') {
-                const legacySeg = segments.find(seg => !seg.includes(':') && !/^G\d+$/.test(seg.trim().toUpperCase()));
+                // Legacy/General: segmentos que no empiezan por G1, G2, G3
+                const legacySeg = segments.find(seg => !/G\d+\s*[:\\-]/i.test(seg.trim()) && !/^G\d+$/i.test(seg.trim()));
                 if (legacySeg) {
                   danos[fallaObj.id] = true;
                   obs[fallaObj.id] = legacySeg;
