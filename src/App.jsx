@@ -2214,7 +2214,7 @@ function App() {
             </div>
 
             <div className="form-section-divider"><span className="form-section-title">Operador Asignado</span></div>
-            <div className="form-grid-2">
+            <div className="form-grid-2" style={{ alignItems: 'flex-end', gap: '1.5rem' }}>
               <div className="input-group">
                 <label className="input-label">Nombre del Operador</label>
                 <input
@@ -2225,43 +2225,45 @@ function App() {
                   onChange={(e) => setOperador(e.target.value)}
                 />
               </div>
-              <div className="input-group">
-                <label className="input-label">Ubicación (Mina)</label>
-                <select
-                  className="input-field"
-                  value={mina}
-                  onChange={(e) => setMina(e.target.value)}
-                  disabled={session.role !== 'admin'}
-                  style={{
-                    backgroundColor: session.role !== 'admin' ? '#f3f4f6' : 'rgba(255,255,255,0.8)',
-                    cursor: session.role !== 'admin' ? 'not-allowed' : 'default',
-                    color: session.role !== 'admin' ? '#6b7280' : 'inherit'
-                  }}
-                >
-                  <option value="PB">Mina Pribbenow (PB)</option>
-                  <option value="ED">Mina El Descanso (ED)</option>
-                </select>
-              </div>
-            </div>
-
-            <div className="form-grid-2" style={{ marginTop: '-1rem' }}>
-              <div className="input-group">
-                <label className="input-label">Grupo</label>
-                <select
-                  className="input-field"
-                  value={grupo}
-                  onChange={(e) => setGrupo(e.target.value)}
-                  disabled={session.role !== 'admin'}
-                  style={{
-                    backgroundColor: session.role !== 'admin' ? '#f3f4f6' : 'rgba(255,255,255,0.8)',
-                    cursor: session.role !== 'admin' ? 'not-allowed' : 'default',
-                    color: session.role !== 'admin' ? '#6b7280' : 'inherit'
-                  }}
-                >
-                  <option value="1">Grupo 1</option>
-                  <option value="2">Grupo 2</option>
-                  <option value="3">Grupo 3</option>
-                </select>
+              
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.8rem', width: '100%' }}>
+                <div className="input-group">
+                  <label className="input-label" style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Ubicación (Mina)</label>
+                  <select
+                    className="input-field"
+                    style={{ 
+                      padding: '0.4rem 0.6rem', 
+                      fontSize: '0.85rem',
+                      backgroundColor: session.role !== 'admin' ? '#f3f4f6' : 'rgba(255,255,255,0.8)',
+                      cursor: session.role !== 'admin' ? 'not-allowed' : 'default'
+                    }}
+                    value={mina}
+                    onChange={(e) => setMina(e.target.value)}
+                    disabled={session.role !== 'admin'}
+                  >
+                    <option value="PB">PB</option>
+                    <option value="ED">ED</option>
+                  </select>
+                </div>
+                <div className="input-group">
+                  <label className="input-label" style={{ fontSize: '0.75rem', color: 'var(--text-muted)' }}>Grupo</label>
+                  <select
+                    className="input-field"
+                    style={{ 
+                      padding: '0.4rem 0.6rem', 
+                      fontSize: '0.85rem',
+                      backgroundColor: session.role !== 'admin' ? '#f3f4f6' : 'rgba(255,255,255,0.8)',
+                      cursor: session.role !== 'admin' ? 'not-allowed' : 'default'
+                    }}
+                    value={grupo}
+                    onChange={(e) => setGrupo(e.target.value)}
+                    disabled={session.role !== 'admin'}
+                  >
+                    <option value="1">G1</option>
+                    <option value="2">G2</option>
+                    <option value="3">G3</option>
+                  </select>
+                </div>
               </div>
             </div>
 
