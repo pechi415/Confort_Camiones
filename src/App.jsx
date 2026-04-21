@@ -614,18 +614,36 @@ function App() {
 
   const prepararEdicion = (camion) => {
     const danos = {};
-    const obs = {};
+    const obs = {}; // Ahora será un objeto de objetos: { fallaId: { G1: 'nota', G2: 'nota', 'General': 'nota' } }
+    
     if (camion.fallas) {
       const parts = camion.fallas.split(', ');
       parts.forEach(p => {
         const match = p.match(/^(.*?)(?:\s\((.*?)\))?$/);
         if (match) {
           const nombre = match[1];
-          const comentario = match[2];
+          const combinedObs = match[2] || '';
           const fallaObj = fallas.find(f => f.nombre === nombre);
+          
           if (fallaObj) {
             danos[fallaObj.id] = true;
-            if (comentario) obs[fallaObj.id] = comentario;
+            obs[fallaObj.id] = {};
+            
+            if (combinedObs) {
+              const segments = combinedObs.split(' | ');
+              segments.forEach(seg => {
+                const groupMatch = seg.match(/^G(\d+):\s*(.*)$/);
+                if (groupMatch) {
+                  const gNum = groupMatch[1];
+                  const text = groupMatch[2];
+                  obs[fallaObj.id][`G${gNum}`] = text;
+                } else {
+                  // Legacy data or general notes
+                  const existing = obs[fallaObj.id]['General'] || '';
+                  obs[fallaObj.id]['General'] = existing ? `${existing} | ${seg}` : seg;
+                }
+              });
+            }
           }
         }
       });
@@ -650,13 +668,23 @@ function App() {
     let nuevoImpacto = 0;
     const itemsFallas = [];
 
-    Object.keys(selectedDanosEdit).forEach(id => {
-      if (selectedDanosEdit[id]) {
-        const fallaObj = fallas.find(f => f.id === id);
+    Object.keys(selectedDanosEdit).forEach(fallaId => {
+      if (selectedDanosEdit[fallaId]) {
+        const fallaObj = fallas.find(f => f.id === fallaId);
         if (fallaObj) {
           nuevoImpacto += fallaObj.impacto;
-          const obs = observacionesEdit[id] ? ` (${observacionesEdit[id]})` : '';
-          itemsFallas.push(`${fallaObj.nombre}${obs}`);
+          
+          const groupNotes = observacionesEdit[fallaId] || {};
+          const combinedSegments = [];
+          
+          // Re-ensamblar en orden (General primero, luego G1, G2, G3)
+          if (groupNotes['General']) combinedSegments.push(groupNotes['General']);
+          ['G1', 'G2', 'G3'].forEach(g => {
+            if (groupNotes[g]) combinedSegments.push(`${g}: ${groupNotes[g]}`);
+          });
+          
+          const obsStr = combinedSegments.length > 0 ? ` (${combinedSegments.join(' | ')})` : '';
+          itemsFallas.push(`${fallaObj.nombre}${obsStr}`);
         }
       }
     });
@@ -2402,7 +2430,7 @@ function App() {
                     const fallasConsolidadas = Array.from(todasFallasIds).map(id => {
                       const f = fallas.find(x => x.id === id);
                       const obsViejas = obsAnteriores[id] || '';
-                      const obsNuevas = observaciones[id] || '';
+                      const obsNuevas = observaciones[id] ? `G${grupo}: ${observaciones[id]}` : '';
 
                       // Motor de Inteligencia Algorítmica (Detección Semántica / Lógica Difusa)
                       const todasObs = [obsViejas, obsNuevas].filter(Boolean).sort((a, b) => b.length - a.length);
@@ -2445,7 +2473,7 @@ function App() {
 
                     const fallasDetalladas = Object.keys(selectedDanos).map(id => {
                       const nombreFalla = fallas.find(f => f.id === id)?.nombre;
-                      const comentario = observaciones[id] ? ` (${observaciones[id]})` : '';
+                      const comentario = observaciones[id] ? ` (G${grupo}: ${observaciones[id]})` : '';
                       return `${nombreFalla}${comentario}`;
                     }).join(', ');
 
@@ -2824,21 +2852,50 @@ function App() {
                           </span>
                         </div>
                         {selectedDanosEdit[falla.id] && (
-                          <div className="fade-in" style={{ marginTop: '0.8rem', paddingLeft: '2.2rem' }}>
-                            <input
-                              type="text"
-                              className="input-field"
-                              style={{
-                                padding: '0.6rem 0.8rem',
-                                fontSize: '0.85rem',
-                                background: 'white',
-                                borderRadius: '8px',
-                                border: '1px solid #e2e8f0'
-                              }}
-                              placeholder="Observación técnica opcional..."
-                              value={observacionesEdit[falla.id] || ''}
-                              onChange={(e) => handleObsChangeEdit(falla.id, e.target.value)}
-                            />
+                          <div className="fade-in" style={{ marginTop: '0.8rem', paddingLeft: '2.2rem', display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+                            {/* Renderizar cada bloque de grupo */}
+                            {['General', 'G1', 'G2', 'G3'].map(gKey => {
+                              const noteText = observacionesEdit[falla.id]?.[gKey] || '';
+                              if (gKey !== 'General' && !camionEditando.grupo.includes(gKey.replace('G','')) && !noteText) return null;
+                              
+                              const isMyGroup = gKey === `G${session.grupo}`;
+                              const isAdmin = session.role === 'admin';
+                              const canEdit = isAdmin || isMyGroup;
+                              
+                              if (!noteText && !isMyGroup) return null;
+
+                              return (
+                                <div key={gKey} style={{ position: 'relative' }}>
+                                  <div style={{ fontSize: '0.65rem', fontWeight: 'bold', color: isMyGroup ? 'var(--secondary-blue)' : '#94a3b8', marginBottom: '0.2rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                                    {gKey === 'General' ? 'NOTAS GENERALES / LEGACY' : `OBSERVACIÓN ${gKey}`}
+                                    {isMyGroup && <span style={{ background: 'rgba(59, 130, 246, 0.1)', padding: '1px 4px', borderRadius: '4px', fontSize: '0.6rem' }}>TU GRUPO</span>}
+                                  </div>
+                                  <input
+                                    type="text"
+                                    className="input-field"
+                                    style={{
+                                      padding: '0.5rem 0.7rem',
+                                      fontSize: '0.82rem',
+                                      background: canEdit ? 'white' : 'rgba(241, 245, 249, 0.5)',
+                                      borderRadius: '8px',
+                                      border: isMyGroup ? '1px solid var(--secondary-blue)' : '1px solid #e2e8f0',
+                                      cursor: canEdit ? 'text' : 'not-allowed',
+                                      color: canEdit ? 'var(--primary-black)' : '#64748b'
+                                    }}
+                                    placeholder={isMyGroup ? "Escribe tu observación aquí..." : "Sin observación de este grupo"}
+                                    value={noteText}
+                                    readOnly={!canEdit}
+                                    onChange={(e) => {
+                                      const val = e.target.value;
+                                      setObservacionesEdit(prev => ({
+                                        ...prev,
+                                        [falla.id]: { ...prev[falla.id], [gKey]: val }
+                                      }));
+                                    }}
+                                  />
+                                </div>
+                              );
+                            })}
                           </div>
                         )}
                       </div>
