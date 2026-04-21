@@ -1231,6 +1231,7 @@ function App() {
           <div className="brand-logo-container">
             <div className="brand-logo-text">CAMIONES</div>
             <div className="brand-subtitle">PRODUCCIÓN</div>
+            <div style={{ fontSize: '0.65rem', background: 'rgba(255,255,255,0.2)', padding: '2px 8px', borderRadius: '4px', marginTop: '0.5rem', fontWeight: 'bold' }}>VERSION v3.0.1</div>
           </div>
         </div>
 
