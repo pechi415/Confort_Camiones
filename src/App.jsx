@@ -627,10 +627,10 @@ function App() {
     // 1. Extraer el nombre del operador para el contexto actual
     let operadorEnContexto = '';
     if (camion.operador) {
-      const ops = camion.operador.split(', ');
-      const matchingOp = ops.find(o => o.startsWith(`${context}: `));
+      const ops = camion.operador.split(/\s*,\s*/); // Split robusto por coma
+      const matchingOp = ops.find(o => o.trim().toUpperCase().startsWith(`${context.toUpperCase()}:`));
       if (matchingOp) {
-        operadorEnContexto = matchingOp.replace(`${context}: `, '');
+        operadorEnContexto = matchingOp.split(/:\s*/)[1] || '';
       } else if (context === 'General' && !ops.some(o => o.includes(':'))) {
         operadorEnContexto = camion.operador;
       }
@@ -638,33 +638,36 @@ function App() {
 
     // 2. Extraer fallas y observaciones filtradas
     if (camion.fallas) {
-      const parts = camion.fallas.split(', ');
+      const parts = camion.fallas.split(/\s*,\s*/); // Split robusto por coma
       parts.forEach(p => {
-        const match = p.match(/^(.*?)(?:\s\((.*?)\))?$/);
+        // Regex para capturar "Nombre (Nota)"
+        const match = p.match(/^(.*?)(?:\s*\((.*?)\))?$/);
         if (match) {
-          const nombre = match[1].trim();
+          const nombreExtraido = match[1].trim().toLowerCase();
           const combinedObs = match[2] || '';
-          const fallaObj = fallas.find(f => f.nombre.trim() === nombre);
+          
+          // Búsqueda insensible a mayúsculas
+          const fallaObj = fallas.find(f => f.nombre.trim().toLowerCase() === nombreExtraido);
           
           if (fallaObj) {
             if (combinedObs) {
-              const segments = combinedObs.split(' | ');
-              // Buscar segmento del grupo actual: "G1: nota" o solo "G1"
-              const mySegment = segments.find(seg => seg === context || seg.startsWith(`${context}: `));
+              const segments = combinedObs.split(/\s*[|/]\s*/); // Split robusto por | o /
+              const mySegment = segments.find(seg => {
+                const s = seg.trim().toUpperCase();
+                return s === context.toUpperCase() || s.startsWith(`${context.toUpperCase()}:`);
+              });
               
               if (mySegment) {
                 danos[fallaObj.id] = true;
-                obs[fallaObj.id] = mySegment.includes(': ') ? mySegment.split(': ')[1] : '';
+                obs[fallaObj.id] = mySegment.includes(':') ? mySegment.split(/:\s*/)[1] : '';
               } else if (context === 'General') {
-                // Legacy: segmento sin ":" que no sea un identificador de grupo G1/2/3
-                const legacySeg = segments.find(seg => !seg.includes(': ') && !/^G\d+$/.test(seg));
+                const legacySeg = segments.find(seg => !seg.includes(':') && !/^G\d+$/.test(seg.trim().toUpperCase()));
                 if (legacySeg) {
                   danos[fallaObj.id] = true;
                   obs[fallaObj.id] = legacySeg;
                 }
               }
             } else if (context === 'General') {
-              // Caso Legacy puro: Falla sin paréntesis
               danos[fallaObj.id] = true;
             }
           }
