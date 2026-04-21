@@ -642,29 +642,30 @@ function App() {
       parts.forEach(p => {
         const match = p.match(/^(.*?)(?:\s\((.*?)\))?$/);
         if (match) {
-          const nombre = match[1];
+          const nombre = match[1].trim();
           const combinedObs = match[2] || '';
-          const fallaObj = fallas.find(f => f.nombre === nombre);
+          const fallaObj = fallas.find(f => f.nombre.trim() === nombre);
           
           if (fallaObj) {
-            // Nota: No marcamos 'true' si el grupo actual no tiene nada que ver?
-            // En unificado, si la falla existe, quizás deba verse. 
-            // Pero el usuario pidió "solo fallas que el registro".
-            
             if (combinedObs) {
               const segments = combinedObs.split(' | ');
-              const mySegment = segments.find(seg => seg.startsWith(`${context}: `));
+              // Buscar segmento del grupo actual: "G1: nota" o solo "G1"
+              const mySegment = segments.find(seg => seg === context || seg.startsWith(`${context}: `));
               
               if (mySegment) {
                 danos[fallaObj.id] = true;
-                obs[fallaObj.id] = mySegment.replace(`${context}: `, '');
+                obs[fallaObj.id] = mySegment.includes(': ') ? mySegment.split(': ')[1] : '';
               } else if (context === 'General') {
-                const legacySeg = segments.find(seg => !seg.includes(': '));
+                // Legacy: segmento sin ":" que no sea un identificador de grupo G1/2/3
+                const legacySeg = segments.find(seg => !seg.includes(': ') && !/^G\d+$/.test(seg));
                 if (legacySeg) {
                   danos[fallaObj.id] = true;
                   obs[fallaObj.id] = legacySeg;
                 }
               }
+            } else if (context === 'General') {
+              // Caso Legacy puro: Falla sin paréntesis
+              danos[fallaObj.id] = true;
             }
           }
         }
@@ -711,9 +712,14 @@ function App() {
           fallasConsolidadasAnteriores[nombre] = {};
           if (combined) {
             combined.split(' | ').forEach(seg => {
-              const gMatch = seg.match(/^(G\d+):\s*(.*)$/);
-              if (gMatch) fallasConsolidadasAnteriores[nombre][gMatch[1]] = gMatch[2];
-              else fallasConsolidadasAnteriores[nombre]['General'] = seg;
+              const gMatch = seg.match(/^(G\d+)(?::\s*(.*))?$/);
+              if (gMatch) {
+                const gId = gMatch[1];
+                const gNote = gMatch[2] || '';
+                fallasConsolidadasAnteriores[nombre][gId] = gNote;
+              } else {
+                fallasConsolidadasAnteriores[nombre]['General'] = seg;
+              }
             });
           }
         }
