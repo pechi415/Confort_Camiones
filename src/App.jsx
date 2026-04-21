@@ -259,6 +259,28 @@ function App() {
     return numStr.split(/,[\s]*/).map(g => `G${g.trim()}`).join(' | ');
   };
 
+  // Helper de Tiempo de Ciclo v2.1 (Ingreso -> Liberación)
+  const formatearCiclo = (inicio, fin) => {
+    if (!inicio || !fin) return '---';
+    try {
+      const start = new Date(inicio);
+      const end = new Date(fin);
+      const diffMs = end - start;
+      if (isNaN(diffMs) || diffMs < 0) return '---';
+      
+      const totalMinutes = Math.floor(diffMs / 60000);
+      const hours = Math.floor(totalMinutes / 60);
+      const minutes = totalMinutes % 60;
+      
+      if (hours >= 24) {
+        const days = Math.floor(hours / 24);
+        const remHours = hours % 24;
+        return `${days}d ${remHours}h`;
+      }
+      return hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
+    } catch (e) { return '---'; }
+  };
+
   // ---------- SISTEMA DE MENSAJERÍA PERSONALIZADA (ZERO BROWSER DIALOGS) ----------
   const [toasts, setToasts] = useState([]);
   const [modalConfig, setModalConfig] = useState({
@@ -420,13 +442,27 @@ function App() {
     return c.mina === session?.mina;
   });
 
+  const conteoLiberados = camionesAccessibles.filter(c => c.estado === 'liberado').length;
+  
+  const calcularPromedioCiclo = () => {
+    const liberadosValidos = camionesAccessibles.filter(c => c.estado === 'liberado' && c.finalizado_at && (c.time || c.creado_at));
+    if (liberadosValidos.length === 0) return "---";
+    const sumaMs = liberadosValidos.reduce((acc, c) => {
+      const inicio = new Date(c.time || c.creado_at);
+      const fin = new Date(c.finalizado_at);
+      return acc + (fin - inicio);
+    }, 0);
+    const promMs = sumaMs / liberadosValidos.length;
+    const hours = Math.floor(promMs / 3600000);
+    const mins = Math.floor((promMs % 3600000) / 60000);
+    return hours >= 24 ? `${Math.floor(hours/24)}d ${hours%24}h` : (hours > 0 ? `${hours}h ${mins}m` : `${mins}m`);
+  };
+
   const kpis = [
     { id: 'espera', titulo: 'Lista de Espera', icon: <Hourglass strokeWidth={1.5} size={20} />, valor: camionesAccessibles.filter(c => c.estado === 'espera').length.toString(), color: '#9ca3af', subtitulo: 'Pre-Programa' },
-    { id: 'evaluar', titulo: 'Por Evaluar', icon: <Search strokeWidth={1.5} size={20} />, valor: camionesAccessibles.filter(c => c.estado === 'evaluar').length.toString(), color: 'var(--secondary-blue)', subtitulo: 'En Programa' },
-    { id: 'evaluados', titulo: 'Evaluados', icon: <SearchCheck strokeWidth={1.5} size={20} />, valor: camionesAccessibles.filter(c => c.estado === 'evaluados').length.toString(), color: '#8b5cf6', subtitulo: 'En Programa' },
     { id: 'taller', titulo: 'En Taller', icon: <Wrench strokeWidth={1.5} size={20} />, valor: camionesAccessibles.filter(c => c.estado === 'taller').length.toString(), color: 'var(--secondary-yellow)', subtitulo: 'Ejecución' },
     { id: 'feedback', titulo: 'Feedback', icon: <CheckCircle2 strokeWidth={1.5} size={20} />, valor: camionesAccessibles.filter(c => c.estado === 'feedback').length.toString(), color: '#10b981', subtitulo: 'Validación' },
-    { id: 'garantia', titulo: 'Garantía', icon: <ShieldAlert strokeWidth={1.5} size={20} />, valor: camionesAccessibles.filter(c => c.estado === 'garantia').length.toString(), color: 'var(--primary-red)', subtitulo: 'Retorno VIP' }
+    { id: 'promedio', titulo: 'Promedio Ciclo', icon: <Zap strokeWidth={1.5} size={20} />, valor: calcularPromedioCiclo(), color: '#6366f1', subtitulo: 'Rendimiento' }
   ];
 
   const columnasKanban = [
@@ -520,13 +556,17 @@ function App() {
   };
 
   const liberarCamion = async (camionId) => {
+    const ahoraStr = new Date().toISOString();
     // UI Optimista
     setCamionesRegistrados(prev =>
-      prev.map(c => c.id === camionId ? { ...c, estado: 'liberado' } : c)
+      prev.map(c => c.id === camionId ? { ...c, estado: 'liberado', finalizado_at: ahoraStr } : c)
     );
 
-    // DB update
-    await supabase.from('camiones').update({ estado: 'liberado' }).eq('id', camionId);
+    // DB update (v2.1)
+    await supabase.from('camiones').update({ 
+      estado: 'liberado', 
+      finalizado_at: ahoraStr 
+    }).eq('id', camionId);
     addToast("🚀 Camión liberado con éxito. Ahora reside en el Historial.");
   };
 
@@ -1149,8 +1189,6 @@ function App() {
     }
   }) : [];
 
-  const conteoLiberados = session ? camionesAccessibles.filter(c => c.estado === 'liberado').length : 0;
-
   return (
     <div className="app-container">
       {/* Sidebar */}
@@ -1691,6 +1729,7 @@ function App() {
                     <th style={{ width: '80px', whiteSpace: 'nowrap' }}>Camión</th>
                     <th style={{ minWidth: '220px', width: '280px' }}>Fallas Reparadas</th>
                     <th style={{ whiteSpace: 'nowrap' }}>Ingreso a Fila</th>
+                    <th style={{ whiteSpace: 'nowrap' }}>Liberación</th>
                     <th style={{ whiteSpace: 'nowrap' }}>Tiempo de Ciclo</th>
                     <th style={{ whiteSpace: 'nowrap' }}>Operador</th>
                     <th style={{ whiteSpace: 'nowrap', textAlign: 'center' }}>Mina</th>
@@ -1724,7 +1763,10 @@ function App() {
                           </div>
                         </td>
                         <td data-label="Ingreso" style={{ fontSize: '0.85rem' }}>{formatFechaCorta(registro.time || registro.creado_at)}</td>
-                        <td data-label="Ciclo" className="collapsible-col" style={{ fontSize: '0.85rem' }}>Calculando...</td>
+                        <td data-label="Liberación" style={{ fontSize: '0.85rem' }}>{formatFechaCorta(registro.finalizado_at)}</td>
+                        <td data-label="Ciclo" className="collapsible-col" style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--primary-red)' }}>
+                          {formatearCiclo(registro.time || registro.creado_at, registro.finalizado_at)}
+                        </td>
                         <td data-label="Operador" className="collapsible-col" style={{ fontSize: '0.85rem', whiteSpace: 'nowrap' }}>
                           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
                             {(registro.operador || 'N/A').split(', ').map((op, idx) => {
