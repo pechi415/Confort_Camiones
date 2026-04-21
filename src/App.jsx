@@ -183,6 +183,7 @@ function App() {
   const [grupo, setGrupo] = useState(reportForm.grupo);
   const [selectedDanos, setSelectedDanos] = useState(reportForm.selectedDanos);
   const [observaciones, setObservaciones] = useState(reportForm.observaciones);
+  const [editingGroupContext, setEditingGroupContext] = useState(null); // Contexto de grupo activo en edición (v4.0)
 
   // Efecto para persistir cambios en tiempo real
   useEffect(() => {
@@ -613,9 +614,29 @@ function App() {
   };
 
   const prepararEdicion = (camion) => {
+    const context = session.role === 'admin' ? 'General' : `G${session.grupo}`;
+    setEditingGroupContext(context);
+    cargarContextoEdicion(camion, context);
+  };
+
+  const cargarContextoEdicion = (camion, context) => {
+    if (!camion) return;
     const danos = {};
-    const obs = {}; // Ahora será un objeto de objetos: { fallaId: { G1: 'nota', G2: 'nota', 'General': 'nota' } }
+    const obs = {}; // Se cargará solo como { fallaId: 'nota' } para el contexto actual
     
+    // 1. Extraer el nombre del operador para el contexto actual
+    let operadorEnContexto = '';
+    if (camion.operador) {
+      const ops = camion.operador.split(', ');
+      const matchingOp = ops.find(o => o.startsWith(`${context}: `));
+      if (matchingOp) {
+        operadorEnContexto = matchingOp.replace(`${context}: `, '');
+      } else if (context === 'General' && !ops.some(o => o.includes(':'))) {
+        operadorEnContexto = camion.operador;
+      }
+    }
+
+    // 2. Extraer fallas y observaciones filtradas
     if (camion.fallas) {
       const parts = camion.fallas.split(', ');
       parts.forEach(p => {
@@ -626,31 +647,33 @@ function App() {
           const fallaObj = fallas.find(f => f.nombre === nombre);
           
           if (fallaObj) {
-            danos[fallaObj.id] = true;
-            obs[fallaObj.id] = {};
+            // Nota: No marcamos 'true' si el grupo actual no tiene nada que ver?
+            // En unificado, si la falla existe, quizás deba verse. 
+            // Pero el usuario pidió "solo fallas que el registro".
             
             if (combinedObs) {
               const segments = combinedObs.split(' | ');
-              segments.forEach(seg => {
-                const groupMatch = seg.match(/^G(\d+):\s*(.*)$/);
-                if (groupMatch) {
-                  const gNum = groupMatch[1];
-                  const text = groupMatch[2];
-                  obs[fallaObj.id][`G${gNum}`] = text;
-                } else {
-                  // Legacy data or general notes
-                  const existing = obs[fallaObj.id]['General'] || '';
-                  obs[fallaObj.id]['General'] = existing ? `${existing} | ${seg}` : seg;
+              const mySegment = segments.find(seg => seg.startsWith(`${context}: `));
+              
+              if (mySegment) {
+                danos[fallaObj.id] = true;
+                obs[fallaObj.id] = mySegment.replace(`${context}: `, '');
+              } else if (context === 'General') {
+                const legacySeg = segments.find(seg => !seg.includes(': '));
+                if (legacySeg) {
+                  danos[fallaObj.id] = true;
+                  obs[fallaObj.id] = legacySeg;
                 }
-              });
+              }
             }
           }
         }
       });
     }
+
     setSelectedDanosEdit(danos);
     setObservacionesEdit(obs);
-    setCamionEditando(camion);
+    setCamionEditando({ ...camion, operadorContexto: operadorEnContexto });
   };
 
   const handleDanoToggleEdit = (id) => {
@@ -668,38 +691,96 @@ function App() {
     let nuevoImpacto = 0;
     const itemsFallas = [];
 
-    Object.keys(selectedDanosEdit).forEach(fallaId => {
-      if (selectedDanosEdit[fallaId]) {
-        const fallaObj = fallas.find(f => f.id === fallaId);
-        if (fallaObj) {
-          nuevoImpacto += fallaObj.impacto;
-          
-          const groupNotes = observacionesEdit[fallaId] || {};
-          const combinedSegments = [];
-          
-          // Re-ensamblar en orden (General primero, luego G1, G2, G3)
-          if (groupNotes['General']) combinedSegments.push(groupNotes['General']);
-          ['G1', 'G2', 'G3'].forEach(g => {
-            if (groupNotes[g]) combinedSegments.push(`${g}: ${groupNotes[g]}`);
-          });
-          
-          const obsStr = combinedSegments.length > 0 ? ` (${combinedSegments.join(' | ')})` : '';
-          itemsFallas.push(`${fallaObj.nombre}${obsStr}`);
+    // 1. Re-ensamblar Operadores (Merge Seguro)
+    const context = editingGroupContext;
+    const opsAnteriores = (camionEditando.operador || '').split(', ').filter(o => !o.startsWith(`${context}: `));
+    if (context === 'General' && !camionEditando.operador.includes(':')) {
+       // Si editamos el 'General' y era un string plano, lo reemplazamos
+    }
+    const nuevoOpStr = camionEditando.operadorContexto ? `${context}: ${camionEditando.operadorContexto}` : '';
+    const listaOpsActualizada = [...opsAnteriores, nuevoOpStr].filter(Boolean).sort();
+
+    // 2. Re-ensamblar Fallas y Observaciones
+    const fallasConsolidadasAnteriores = {}; // fallaNombre -> { G1: obs, G2: obs, General: obs }
+    if (camionEditando.fallas) {
+      camionEditando.fallas.split(', ').forEach(fallStr => {
+        const match = fallStr.match(/^(.*?)(?:\s\((.*?)\))?$/);
+        if (match) {
+          const nombre = match[1];
+          const combined = match[2] || '';
+          fallasConsolidadasAnteriores[nombre] = {};
+          if (combined) {
+            combined.split(' | ').forEach(seg => {
+              const gMatch = seg.match(/^(G\d+):\s*(.*)$/);
+              if (gMatch) fallasConsolidadasAnteriores[nombre][gMatch[1]] = gMatch[2];
+              else fallasConsolidadasAnteriores[nombre]['General'] = seg;
+            });
+          }
+        }
+      });
+    }
+
+    // Aplicar mis cambios del Modal al mapa de fallas consolidado
+    // Primero, limpiamos MIS fallas viejas del mapa
+    Object.keys(fallasConsolidadasAnteriores).forEach(fNome => {
+      delete fallasConsolidadasAnteriores[fNome][context];
+    });
+
+    // Añadimos MIS fallas nuevas según selectedDanosEdit
+    Object.keys(selectedDanosEdit).forEach(fId => {
+      if (selectedDanosEdit[fId]) {
+        const fallObj = fallas.find(f => f.id === fId);
+        if (fallObj) {
+          if (!fallasConsolidadasAnteriores[fallObj.nombre]) fallasConsolidadasAnteriores[fallObj.nombre] = {};
+          if (observacionesEdit[fId]) fallasConsolidadasAnteriores[fallObj.nombre][context] = observacionesEdit[fId];
+          else if (!fallasConsolidadasAnteriores[fallObj.nombre][context]) {
+             // Si marqué la falla pero no puse observación, nos aseguramos que aparezca el grupo si es necesario?
+             // El usuario dijo "comentarios que el registro". Si no hay comentario, tal vez no deba salir nada.
+             // Para simplificar: si no hay obs, solo ponemos el nombre de la falla sin obs para ese grupo.
+             fallasConsolidadasAnteriores[fallObj.nombre][context] = ''; 
+          }
         }
       }
     });
 
-    const nuevaAtencion = nuevoImpacto > 50 ? 'CRÍTICA' : nuevoImpacto > 20 ? 'ALTA' : 'NORMAL';
-    const nuevaFallasStr = itemsFallas.join(', ');
+    // Reconstruir el string final
+    const finalFallasItems = [];
+    let totalPuntos = 0;
+    
+    // Necesitamos saber qué fallas totales existen
+    const todasLasFallasNombres = Object.keys(fallasConsolidadasAnteriores);
+    
+    todasLasFallasNombres.forEach(fNome => {
+      const fObj = fallas.find(f => f.nombre === fNome);
+      const segments = [];
+      const obsMap = fallasConsolidadasAnteriores[fNome];
+      
+      if (obsMap['General']) segments.push(obsMap['General']);
+      ['G1', 'G2', 'G3'].forEach(g => {
+        if (obsMap.hasOwnProperty(g)) {
+           const note = obsMap[g];
+           segments.push(note ? `${g}: ${note}` : g);
+        }
+      });
+
+      if (segments.length > 0) {
+        finalFallasItems.push(`${fNome} (${segments.join(' | ')})`);
+        if (fObj) totalPuntos += fObj.impacto;
+      } else if (fObj) {
+        // Falla sin ninguna observación de ningún grupo (No debería pasar si estamos mergeando bien)
+        // Pero si pasa, solo el nombre
+        // finalFallasItems.push(fNome);
+        // totalPuntos += fObj.impacto;
+      }
+    });
+
+    const atencion = totalPuntos > 50 ? 'CRÍTICA' : totalPuntos > 20 ? 'ALTA' : 'NORMAL';
 
     const { error } = await supabase.from('camiones').update({
-      flota: camionEditando.flota,
-      operador: camionEditando.operador,
-      mina: camionEditando.mina,
-      grupo: camionEditando.grupo,
-      atencion: nuevaAtencion,
-      fallas: nuevaFallasStr,
-      puntos: nuevoImpacto
+      operador: listaOpsActualizada.join(', '),
+      fallas: finalFallasItems.join(', '),
+      puntos: totalPuntos,
+      atencion: atencion
     }).eq('id', camionEditando.id);
 
     if (error) return alert("Error al actualizar: " + error.message);
@@ -1231,7 +1312,6 @@ function App() {
           <div className="brand-logo-container">
             <div className="brand-logo-text">CAMIONES</div>
             <div className="brand-subtitle">PRODUCCIÓN</div>
-            <div style={{ fontSize: '0.65rem', background: 'rgba(255,255,255,0.2)', padding: '2px 8px', borderRadius: '4px', marginTop: '0.5rem', fontWeight: 'bold' }}>VERSION v3.0.1</div>
           </div>
         </div>
 
@@ -2787,21 +2867,48 @@ function App() {
                     />
                   </div>
                   <div className="input-group" style={{ marginBottom: 0 }}>
-                    <label className="input-label">Nombre del Operador</label>
+                    <label className="input-label">Nombre del Operador ({editingGroupContext})</label>
                     <input
                       type="text"
                       className="input-field"
-                      value={camionEditando.operador || ''}
-                      onChange={e => setCamionEditando({ ...camionEditando, operador: e.target.value })}
-                      placeholder="Nombre completo del conductor..."
+                      value={camionEditando.operadorContexto || ''}
+                      onChange={e => setCamionEditando({ ...camionEditando, operadorContexto: e.target.value })}
+                      placeholder="Nombre del conductor para este grupo..."
                       style={{ background: 'rgba(255,255,255,0.5)', border: '1px solid rgba(0,0,0,0.1)' }}
                     />
                   </div>
                 </div>
 
+                {/* Selector de Grupo Estilo Tabs (v4.0) */}
+                <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem', borderBottom: '1px solid #e2e8f0', paddingBottom: '0.5rem' }}>
+                  {['General', 'G1', 'G2', 'G3'].map(g => (
+                    <button
+                      key={g}
+                      onClick={() => {
+                        setEditingGroupContext(g);
+                        cargarContextoEdicion(camionEditando, g);
+                      }}
+                      style={{
+                        padding: '0.5rem 1rem',
+                        borderRadius: '8px',
+                        border: 'none',
+                        background: editingGroupContext === g ? 'var(--primary-red)' : 'transparent',
+                        color: editingGroupContext === g ? 'white' : '#64748b',
+                        fontSize: '0.8rem',
+                        fontWeight: 'bold',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s',
+                        display: (session.role === 'admin' || g === `G${session.grupo}` || (g === 'General' && session.role === 'admin')) ? 'block' : 'none'
+                      }}
+                    >
+                      {g === 'General' ? 'General' : `Reporte ${g}`}
+                    </button>
+                  ))}
+                </div>
+
                 {/* Checklist de Fallas Estilo Premium */}
                 <div style={{ marginTop: '0.5rem' }}>
-                  <label className="input-label" style={{ marginBottom: '1rem', display: 'block' }}>Items de Fallas Reportadas</label>
+                  <label className="input-label" style={{ marginBottom: '1rem', display: 'block' }}>Fallas Reportadas por {editingGroupContext}</label>
                   <div style={{
                     display: 'flex',
                     flexDirection: 'column',
@@ -2853,50 +2960,21 @@ function App() {
                           </span>
                         </div>
                         {selectedDanosEdit[falla.id] && (
-                          <div className="fade-in" style={{ marginTop: '0.8rem', paddingLeft: '2.2rem', display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
-                            {/* Renderizar cada bloque de grupo */}
-                            {['General', 'G1', 'G2', 'G3'].map(gKey => {
-                              const noteText = observacionesEdit[falla.id]?.[gKey] || '';
-                              if (gKey !== 'General' && !camionEditando.grupo.includes(gKey.replace('G','')) && !noteText) return null;
-                              
-                              const isMyGroup = gKey === `G${session.grupo}`;
-                              const isAdmin = session.role === 'admin';
-                              const canEdit = isAdmin || isMyGroup;
-                              
-                              if (!noteText && !isMyGroup) return null;
-
-                              return (
-                                <div key={gKey} style={{ position: 'relative' }}>
-                                  <div style={{ fontSize: '0.65rem', fontWeight: 'bold', color: isMyGroup ? 'var(--secondary-blue)' : '#94a3b8', marginBottom: '0.2rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                                    {gKey === 'General' ? 'NOTAS GENERALES / LEGACY' : `OBSERVACIÓN ${gKey}`}
-                                    {isMyGroup && <span style={{ background: 'rgba(59, 130, 246, 0.1)', padding: '1px 4px', borderRadius: '4px', fontSize: '0.6rem' }}>TU GRUPO</span>}
-                                  </div>
-                                  <input
-                                    type="text"
-                                    className="input-field"
-                                    style={{
-                                      padding: '0.5rem 0.7rem',
-                                      fontSize: '0.82rem',
-                                      background: canEdit ? 'white' : 'rgba(241, 245, 249, 0.5)',
-                                      borderRadius: '8px',
-                                      border: isMyGroup ? '1px solid var(--secondary-blue)' : '1px solid #e2e8f0',
-                                      cursor: canEdit ? 'text' : 'not-allowed',
-                                      color: canEdit ? 'var(--primary-black)' : '#64748b'
-                                    }}
-                                    placeholder={isMyGroup ? "Escribe tu observación aquí..." : "Sin observación de este grupo"}
-                                    value={noteText}
-                                    readOnly={!canEdit}
-                                    onChange={(e) => {
-                                      const val = e.target.value;
-                                      setObservacionesEdit(prev => ({
-                                        ...prev,
-                                        [falla.id]: { ...prev[falla.id], [gKey]: val }
-                                      }));
-                                    }}
-                                  />
-                                </div>
-                              );
-                            })}
+                          <div className="fade-in" style={{ marginTop: '0.8rem', paddingLeft: '2.2rem' }}>
+                            <input
+                              type="text"
+                              className="input-field"
+                              style={{
+                                padding: '0.6rem 0.8rem',
+                                fontSize: '0.85rem',
+                                background: 'white',
+                                borderRadius: '8px',
+                                border: '1px solid #e2e8f0'
+                              }}
+                              placeholder={`Observación de ${editingGroupContext}...`}
+                              value={observacionesEdit[falla.id] || ''}
+                              onChange={(e) => handleObsChangeEdit(falla.id, e.target.value)}
+                            />
                           </div>
                         )}
                       </div>
