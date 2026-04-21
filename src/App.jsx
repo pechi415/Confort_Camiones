@@ -1187,8 +1187,12 @@ function App() {
       });
     } catch (err) {
       console.error("Error en filtro de historial:", err);
-      return true; // En caso de duda, mostrar para evitar pantalla en blanco
+      return true;
     }
+  }).sort((a, b) => {
+    const timeA = a.finalizado_at ? new Date(a.finalizado_at).getTime() : 0;
+    const timeB = b.finalizado_at ? new Date(b.finalizado_at).getTime() : 0;
+    return timeB - timeA;
   }) : [];
 
   return (
