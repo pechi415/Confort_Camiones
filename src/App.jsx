@@ -188,12 +188,8 @@ function App() {
   const [observacionesEdit, setObservacionesEdit] = useState({});
   const [operadorEdit, setOperadorEdit] = useState(''); 
   
-  // v4.5.3: Sincronización Segura y Blindada
-  useEffect(() => {
-    if (camionEditando && editingGroupContext) {
-      cargarContextoEdicion(camionEditando, editingGroupContext);
-    }
-  }, [editingGroupContext]);
+  // v4.8: La sincronización ya no usa useEffect para evitar estados estancados y bucles.
+  // Ahora se dispara manualmente mediante sincronizarModal().
 
   // Efecto para persistir cambios en tiempo real
   useEffect(() => {
@@ -626,21 +622,11 @@ function App() {
     const context = session.role === 'admin' ? 'General' : `G${session.grupo}`;
     setEditingGroupContext(context);
     
-    // Inicialización inmediata del operador para evitar el "nombre perdido" (v4.7)
-    let opIni = '';
-    if (camion.operador) {
-       const ops = camion.operador.split(/\s*,\s*/);
-       const prefixRegex = new RegExp(`^${context}\\s*[:\\-]`, 'i');
-       const matchingOp = ops.find(o => prefixRegex.test(o.trim()));
-       if (matchingOp) opIni = matchingOp.split(/[:\\-]\s*(.*)/s)[1] || '';
-       else if ((context === 'G1' || context === 'General') && !ops.some(o => /G\d+\s*[:\\-]/i.test(o))) {
-         opIni = camion.operador;
-       }
-    }
-    setOperadorEdit(opIni);
+    // v4.8: Sincronización Manual Determinista al abrir
+    sincronizarModal(camion, context);
   };
 
-  const cargarContextoEdicion = (camion, context) => {
+  const sincronizarModal = (camion, context) => {
     if (!camion) return;
     const danos = {};
     const obs = {};
@@ -730,7 +716,7 @@ function App() {
 
     setSelectedDanosEdit(danos);
     setObservacionesEdit(obs);
-    // setOperadorEdit ya se maneja en prepararEdicion para velocidad (v4.7)
+    setOperadorEdit(operadorEnContexto);
   };
 
   const handleDanoToggleEdit = (id) => {
@@ -2907,7 +2893,7 @@ function App() {
                     <Truck size={24} color="var(--primary-red)" />
                   </div>
                   <div>
-                    <h3 style={{ margin: 0, color: 'var(--primary-black)', fontSize: '1.3rem' }}>Edición del Diagnóstico <small style={{ color: 'var(--primary-red)', fontSize: '0.75rem' }}>v4.7</small></h3>
+                    <h3 style={{ margin: 0, color: 'var(--primary-black)', fontSize: '1.3rem' }}>Edición del Diagnóstico <small style={{ color: 'var(--primary-red)', fontSize: '0.75rem' }}>v4.8</small></h3>
                     <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-muted)' }}>Corrija fallas y operador para el equipo <b>{camionEditando?.flota}</b></p>
                   </div>
                 </div>
@@ -2935,7 +2921,7 @@ function App() {
                 </div>
 
                 {/* Selector de Grupo Estilo Tabs (v4.0) */}
-                <div style={{ display: 'flex', gap: '0.5rem', marginBottom: '1.5rem', borderBottom: '1px solid #e2e8f0', paddingBottom: '0.5rem' }}>
+                <div style={{ display: 'flex', gap: '0.5rem', borderBottom: '1px solid #f1f5f9', paddingBottom: '0.5rem' }}>
                   {['General', 'G1', 'G2', 'G3'].map(g => (
                     <button
                       key={g}
@@ -2965,7 +2951,7 @@ function App() {
                 <div style={{ marginTop: '0.5rem' }}>
                   <label className="input-label" style={{ marginBottom: '0.5rem', display: 'block' }}>Fallas Reportadas por {editingGroupContext}</label>
                   
-                  {/* Debug Log Inteligente (v4.7 - Migración) */}
+                  {/* Debug Log Inteligente (v4.8 - Sincronismo) */}
                   <div style={{ fontSize: '0.65rem', color: '#94a3b8', background: '#f8fafc', padding: '0.6rem', borderRadius: '8px', marginBottom: '1rem', border: '1px dashed #cbd5e1' }}>
                     <strong>🔍 Datos en DB:</strong> {camionEditando?.fallas || 'Ninguna falla detectada'}
                   </div>
