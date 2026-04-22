@@ -625,6 +625,19 @@ function App() {
     setCamionEditando(camion);
     const context = session.role === 'admin' ? 'General' : `G${session.grupo}`;
     setEditingGroupContext(context);
+    
+    // Inicialización inmediata del operador para evitar el "nombre perdido" (v4.7)
+    let opIni = '';
+    if (camion.operador) {
+       const ops = camion.operador.split(/\s*,\s*/);
+       const prefixRegex = new RegExp(`^${context}\\s*[:\\-]`, 'i');
+       const matchingOp = ops.find(o => prefixRegex.test(o.trim()));
+       if (matchingOp) opIni = matchingOp.split(/[:\\-]\s*(.*)/s)[1] || '';
+       else if ((context === 'G1' || context === 'General') && !ops.some(o => /G\d+\s*[:\\-]/i.test(o))) {
+         opIni = camion.operador;
+       }
+    }
+    setOperadorEdit(opIni);
   };
 
   const cargarContextoEdicion = (camion, context) => {
@@ -717,7 +730,7 @@ function App() {
 
     setSelectedDanosEdit(danos);
     setObservacionesEdit(obs);
-    setOperadorEdit(operadorEnContexto);
+    // setOperadorEdit ya se maneja en prepararEdicion para velocidad (v4.7)
   };
 
   const handleDanoToggleEdit = (id) => {
@@ -735,32 +748,34 @@ function App() {
     let nuevoImpacto = 0;
     const itemsFallas = [];
 
-    // 1. Re-ensamblar Operadores (Merge Seguro)
+    // 1. Re-ensamblar Operadores (Merge Seguro v4.7)
     const context = editingGroupContext;
-    const opsAnteriores = (camionEditando.operador || '').split(', ').filter(o => !o.startsWith(`${context}: `));
-    if (context === 'General' && !camionEditando.operador.includes(':')) {
-       // Si editamos el 'General' y era un string plano, lo reemplazamos
-    }
+    const opsAnteriores = (camionEditando.operador || '').split(/\s*,\s*/).filter(o => {
+      const gMatch = o.match(/^(G\d+|General)\s*[:\-]/i);
+      if (gMatch) return gMatch[1].toLowerCase() !== context.toLowerCase();
+      // Si no tiene prefijo y estamos en G1/General, lo estamos reemplazando
+      return !(context === 'G1' || context === 'General');
+    });
     const nuevoOpStr = operadorEdit ? `${context}: ${operadorEdit}` : '';
     const listaOpsActualizada = [...opsAnteriores, nuevoOpStr].filter(Boolean).sort();
 
     // 2. Re-ensamblar Fallas y Observaciones
     const fallasConsolidadasAnteriores = {}; // fallaNombre -> { G1: obs, G2: obs, General: obs }
     if (camionEditando.fallas) {
-      camionEditando.fallas.split(', ').forEach(fallStr => {
-        const match = fallStr.match(/^(.*?)(?:\s\((.*?)\))?$/);
+      camionEditando.fallas.split(/\s*,\s*/).forEach(fallStr => {
+        const match = fallStr.match(/^(.*?)(?:\s*\((.*?)\))?$/);
         if (match) {
-          const nombre = match[1];
+          const nombre = match[1].trim();
           const combined = match[2] || '';
-          fallasConsolidadasAnteriores[nombre] = {};
+          if (!fallasConsolidadasAnteriores[nombre]) fallasConsolidadasAnteriores[nombre] = {};
+          
           if (combined) {
-            combined.split(' | ').forEach(seg => {
-              const gMatch = seg.match(/^(G\d+)(?::\s*(.*))?$/);
+            combined.split(/\s*[|/]\s*/).forEach(seg => {
+              const gMatch = seg.match(/^(G\d+|General)\s*[:\-]\s*(.*)$/i);
               if (gMatch) {
-                const gId = gMatch[1];
-                const gNote = gMatch[2] || '';
-                fallasConsolidadasAnteriores[nombre][gId] = gNote;
+                fallasConsolidadasAnteriores[nombre][gMatch[1].toUpperCase()] = gMatch[2] || '';
               } else {
+                // Legacy: Si no hay prefijo, lo guardamos como General para migrarlo
                 fallasConsolidadasAnteriores[nombre]['General'] = seg;
               }
             });
@@ -2892,7 +2907,7 @@ function App() {
                     <Truck size={24} color="var(--primary-red)" />
                   </div>
                   <div>
-                    <h3 style={{ margin: 0, color: 'var(--primary-black)', fontSize: '1.3rem' }}>Edición del Diagnóstico <small style={{ color: 'var(--primary-red)', fontSize: '0.75rem' }}>v4.6.1</small></h3>
+                    <h3 style={{ margin: 0, color: 'var(--primary-black)', fontSize: '1.3rem' }}>Edición del Diagnóstico <small style={{ color: 'var(--primary-red)', fontSize: '0.75rem' }}>v4.7</small></h3>
                     <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-muted)' }}>Corrija fallas y operador para el equipo <b>{camionEditando?.flota}</b></p>
                   </div>
                 </div>
@@ -2950,7 +2965,7 @@ function App() {
                 <div style={{ marginTop: '0.5rem' }}>
                   <label className="input-label" style={{ marginBottom: '0.5rem', display: 'block' }}>Fallas Reportadas por {editingGroupContext}</label>
                   
-                  {/* Debug Log Inteligente (v4.6 - Heritage) */}
+                  {/* Debug Log Inteligente (v4.7 - Migración) */}
                   <div style={{ fontSize: '0.65rem', color: '#94a3b8', background: '#f8fafc', padding: '0.6rem', borderRadius: '8px', marginBottom: '1rem', border: '1px dashed #cbd5e1' }}>
                     <strong>🔍 Datos en DB:</strong> {camionEditando?.fallas || 'Ninguna falla detectada'}
                   </div>
