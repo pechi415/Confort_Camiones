@@ -187,7 +187,7 @@ function App() {
   const [selectedDanosEdit, setSelectedDanosEdit] = useState({});
   const [observacionesEdit, setObservacionesEdit] = useState({});
   const [operadorEdit, setOperadorEdit] = useState(''); 
-  
+  const [camionEditando, setCamionEditando] = useState(null); // Movido aquí para evitar WSoD (v5.3.1)  
   // v5.3: Sincronización Segura. Carga los datos cada vez que cambia el grupo o el camión.
   useEffect(() => {
     if (camionEditando && editingGroupContext) {
@@ -214,7 +214,6 @@ function App() {
   const [usuarioEditando, setUsuarioEditando] = useState(null);
   const [selectedReport, setSelectedReport] = useState(null); // Para el Modal de detalles técnicos
   const [expandedCardId, setExpandedCardId] = useState(null); // Acordeón de Kanban
-  const [camionEditando, setCamionEditando] = useState(null); // Para el Modal de edición rápida camión
   const [camionInGarantia, setCamionInGarantia] = useState(null); // Para el Modal de Motivo de Garantía
   const [pendientesGarantia, setPendientesGarantia] = useState({});
   const [registrosLimit, setRegistrosLimit] = useState(20);
