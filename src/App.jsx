@@ -184,13 +184,16 @@ function App() {
   const [selectedDanos, setSelectedDanos] = useState(reportForm.selectedDanos);
   const [observaciones, setObservaciones] = useState(reportForm.observaciones);
   const [editingGroupContext, setEditingGroupContext] = useState(null); // Contexto de grupo activo en edición (v4.0)
-
-  // Sincronización Reactiva de Edición (v4.4.2)
+  const [selectedDanosEdit, setSelectedDanosEdit] = useState({});
+  const [observacionesEdit, setObservacionesEdit] = useState({});
+  const [operadorEdit, setOperadorEdit] = useState(''); 
+  
+  // v4.5.3: Sincronización Segura y Blindada
   useEffect(() => {
     if (camionEditando && editingGroupContext) {
       cargarContextoEdicion(camionEditando, editingGroupContext);
     }
-  }, [editingGroupContext, camionEditando]);
+  }, [editingGroupContext]);
 
   // Efecto para persistir cambios en tiempo real
   useEffect(() => {
@@ -212,8 +215,6 @@ function App() {
   const [selectedReport, setSelectedReport] = useState(null); // Para el Modal de detalles técnicos
   const [expandedCardId, setExpandedCardId] = useState(null); // Acordeón de Kanban
   const [camionEditando, setCamionEditando] = useState(null); // Para el Modal de edición rápida camión
-  const [selectedDanosEdit, setSelectedDanosEdit] = useState({});
-  const [observacionesEdit, setObservacionesEdit] = useState({});
   const [camionInGarantia, setCamionInGarantia] = useState(null); // Para el Modal de Motivo de Garantía
   const [pendientesGarantia, setPendientesGarantia] = useState({});
   const [registrosLimit, setRegistrosLimit] = useState(20);
@@ -709,7 +710,7 @@ function App() {
 
     setSelectedDanosEdit(danos);
     setObservacionesEdit(obs);
-    setCamionEditando({ ...camion, operadorContexto: operadorEnContexto });
+    setOperadorEdit(operadorEnContexto);
   };
 
   const handleDanoToggleEdit = (id) => {
@@ -733,7 +734,7 @@ function App() {
     if (context === 'General' && !camionEditando.operador.includes(':')) {
        // Si editamos el 'General' y era un string plano, lo reemplazamos
     }
-    const nuevoOpStr = camionEditando.operadorContexto ? `${context}: ${camionEditando.operadorContexto}` : '';
+    const nuevoOpStr = operadorEdit ? `${context}: ${operadorEdit}` : '';
     const listaOpsActualizada = [...opsAnteriores, nuevoOpStr].filter(Boolean).sort();
 
     // 2. Re-ensamblar Fallas y Observaciones
@@ -829,13 +830,10 @@ function App() {
     // Actualizar estado local
     setCamionesRegistrados(prev => prev.map(c => c.id === camionEditando.id ? {
       ...c,
-      flota: camionEditando.flota,
-      operador: camionEditando.operador,
-      mina: camionEditando.mina,
-      grupo: camionEditando.grupo,
-      atencion: nuevaAtencion,
-      fallas: nuevaFallasStr,
-      puntos: nuevoImpacto
+      operador: listaOpsActualizada.join(', '),
+      fallas: finalFallasItems.join(', '),
+      puntos: totalPuntos,
+      atencion: atencion
     } : c));
 
     setCamionEditando(null);
@@ -1515,10 +1513,10 @@ function App() {
                             <td>{formatFechaCorta(camion?.time || camion?.creado_at)}</td>
                             <td>
                               <div style={{ display: 'flex', justifyContent: 'center', gap: '0.6rem' }}>
-                                {(session?.role?.toLowerCase() === 'admin' || session?.role?.toLowerCase() === 'supervisor' || session?.rol?.toLowerCase() === 'admin' || session?.rol?.toLowerCase() === 'supervisor') && (
+                                {(session?.role?.toLowerCase() === 'admin' || session?.role?.toLowerCase() === 'supervisor' || session?.role?.toLowerCase() === 'admin' || session?.role?.toLowerCase() === 'supervisor') && (
                                   <button onClick={() => prepararEdicion(camion)} className="btn-action btn-action-edit" title="Editar"><Edit3 size={18} /></button>
                                 )}
-                                {(session?.role?.toLowerCase() === 'admin' || session?.rol?.toLowerCase() === 'admin') && (
+                                {(session?.role?.toLowerCase() === 'admin' || session?.role?.toLowerCase() === 'admin') && (
                                   <button 
                                     onClick={(e) => { e.stopPropagation(); handleSafeDelete(camion.id, () => eliminarCamion(camion.id, camion.flota)); }} 
                                     className={`btn-action ${confirmDeleteId === camion.id ? 'btn-action-confirm-desktop' : 'btn-action-delete'}`}
@@ -1563,10 +1561,10 @@ function App() {
                         </div>
                         <div style={{ marginTop: '0.8rem', display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
                           <button onClick={() => setSelectedReport(camion)} style={{ background: 'rgba(59, 130, 246, 0.1)', border: 'none', color: '#3b82f6', padding: '0.3rem', borderRadius: '6px' }} title="Diagnóstico"><FileText size={16} /></button>
-                          {(session?.role?.toLowerCase() === 'admin' || session?.role?.toLowerCase() === 'supervisor' || session?.rol?.toLowerCase() === 'admin' || session?.rol?.toLowerCase() === 'supervisor') && (
+                          {(session?.role?.toLowerCase() === 'admin' || session?.role?.toLowerCase() === 'supervisor' || session?.role?.toLowerCase() === 'admin' || session?.role?.toLowerCase() === 'supervisor') && (
                             <button onClick={() => prepararEdicion(camion)} style={{ background: 'rgba(255,255,255,0.8)', border: '1px solid #e5e7eb', color: '#6b7280', padding: '0.3rem', borderRadius: '6px' }} title="Editar"><Edit3 size={16} /></button>
                           )}
-                          {(session?.role?.toLowerCase() === 'admin' || session?.rol?.toLowerCase() === 'admin') && (
+                          {(session?.role?.toLowerCase() === 'admin' || session?.role?.toLowerCase() === 'admin') && (
                             <button 
                               onClick={(e) => { e.stopPropagation(); handleSafeDelete(camion.id, () => eliminarCamion(camion.id, camion.flota)); }} 
                               style={{ 
@@ -2887,7 +2885,7 @@ function App() {
                     <Truck size={24} color="var(--primary-red)" />
                   </div>
                   <div>
-                    <h3 style={{ margin: 0, color: 'var(--primary-black)', fontSize: '1.3rem' }}>Edición del Diagnóstico <small style={{ color: 'var(--primary-red)', fontSize: '0.75rem' }}>v4.5.1</small></h3>
+                    <h3 style={{ margin: 0, color: 'var(--primary-black)', fontSize: '1.3rem' }}>Edición del Diagnóstico <small style={{ color: 'var(--primary-red)', fontSize: '0.75rem' }}>v4.5.3</small></h3>
                     <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-muted)' }}>Corrija fallas y operador para el equipo <b>{camionEditando?.flota}</b></p>
                   </div>
                 </div>
@@ -2896,18 +2894,12 @@ function App() {
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
                 {/* Campos Principales */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 2fr', gap: '1.5rem' }}>
-                  <div className="input-group" style={{ marginBottom: 0 }}>
+                <div style={{ display: 'grid', gridTemplateColumns: '80px 1fr', gap: '1rem' }}>
+                  <div>
                     <label className="input-label">N° Flota</label>
-                    <input
-                      type="text"
-                      className="input-field"
-                      value={camionEditando.flota}
-                      onChange={e => setCamionEditando({ ...camionEditando, flota: e.target.value.replace(/\D/g, '').slice(0, 4) })}
-                      style={{ background: 'rgba(255,255,255,0.5)', border: '1px solid rgba(0,0,0,0.1)' }}
-                    />
+                    <input type="text" className="input-field" value={camionEditando?.flota || ''} disabled style={{ background: '#f8fafc', fontWeight: 'bold' }} />
                   </div>
-                  <div className="input-group" style={{ marginBottom: 0 }}>
+                  <div>
                     <label className="input-label">Nombre del Operador ({editingGroupContext})</label>
                     <input
                       type="text"
