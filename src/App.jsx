@@ -641,7 +641,8 @@ function App() {
       
       if (matchingOp) {
         operadorEnContexto = matchingOp.split(/[:\\-]\s*(.*)/s)[1] || '';
-      } else if (context === 'General' && !ops.some(o => /G\d+\s*[:\\-]/i.test(o))) {
+      } else if ((context === 'G1' || context === 'General') && !ops.some(o => /G\d+\s*[:\\-]/i.test(o))) {
+        // Modo Herencia (v4.6): Si no hay prefijos Gx, asumimos que el dato es G1/General
         operadorEnContexto = camion.operador;
       }
     }
@@ -684,9 +685,14 @@ function App() {
           if (fallaObj) {
             if (combinedObs) {
               // Dividimos las notas de grupos (G1 | G2 | G3)
-              const segments = combinedObs.split(/\s*[|/]\s*/);
               const groupPattern = new RegExp(`^${context}(\\s*[:\\-]\\s*|\\s*$)`, 'i');
-              const mySegment = segments.find(seg => groupPattern.test(seg.trim()));
+              let mySegment = segments.find(seg => groupPattern.test(seg.trim()));
+              
+              // Modo Herencia Fallas (v4.6)
+              if (!mySegment && (context === 'G1' || context === 'General')) {
+                // Si estamos en G1 y no hay marcas de grupo, tomamos el primer segmento que no pertenezca a otro grupo
+                mySegment = segments.find(seg => !/G\d+\s*[:\\-]/i.test(seg.trim()));
+              }
               
               if (mySegment) {
                 danos[fallaObj.id] = true;
@@ -2885,7 +2891,7 @@ function App() {
                     <Truck size={24} color="var(--primary-red)" />
                   </div>
                   <div>
-                    <h3 style={{ margin: 0, color: 'var(--primary-black)', fontSize: '1.3rem' }}>Edición del Diagnóstico <small style={{ color: 'var(--primary-red)', fontSize: '0.75rem' }}>v4.5.3</small></h3>
+                    <h3 style={{ margin: 0, color: 'var(--primary-black)', fontSize: '1.3rem' }}>Edición del Diagnóstico <small style={{ color: 'var(--primary-red)', fontSize: '0.75rem' }}>v4.6</small></h3>
                     <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-muted)' }}>Corrija fallas y operador para el equipo <b>{camionEditando?.flota}</b></p>
                   </div>
                 </div>
@@ -2943,7 +2949,7 @@ function App() {
                 <div style={{ marginTop: '0.5rem' }}>
                   <label className="input-label" style={{ marginBottom: '0.5rem', display: 'block' }}>Fallas Reportadas por {editingGroupContext}</label>
                   
-                  {/* Debug Log Inteligente (v4.5.1) */}
+                  {/* Debug Log Inteligente (v4.6 - Heritage) */}
                   <div style={{ fontSize: '0.65rem', color: '#94a3b8', background: '#f8fafc', padding: '0.6rem', borderRadius: '8px', marginBottom: '1rem', border: '1px dashed #cbd5e1' }}>
                     <strong>🔍 Datos en DB:</strong> {camionEditando?.fallas || 'Ninguna falla detectada'}
                   </div>
