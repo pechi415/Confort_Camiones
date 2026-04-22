@@ -673,8 +673,12 @@ function App() {
           const nombreExtraido = match[1].trim().toLowerCase();
           const combinedObs = match[2] || '';
           
-          // Búsqueda insensible en el catálogo global
-          const fallaObj = fallas.find(f => f.nombre.trim().toLowerCase() === nombreExtraido);
+          // v4.5 Búsqueda Difusa / Inteligente en el catálogo
+          const fallaObj = fallas.find(f => {
+            const fNom = f.nombre.trim().toLowerCase();
+            // Match exacto, o uno contiene al otro (Fuzzy)
+            return fNom === nombreExtraido || fNom.includes(nombreExtraido) || nombreExtraido.includes(fNom);
+          });
           
           if (fallaObj) {
             if (combinedObs) {
@@ -2883,8 +2887,8 @@ function App() {
                     <Truck size={24} color="var(--primary-red)" />
                   </div>
                   <div>
-                    <h3 style={{ margin: 0, color: 'var(--primary-black)', fontSize: '1.3rem' }}>Edición del Diagnóstico <small style={{ color: 'var(--primary-red)', fontSize: '0.75rem' }}>v4.4.2</small></h3>
-                    <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-muted)' }}>Corrija fallas y operador para el equipo <b>{camionEditando.flota}</b></p>
+                    <h3 style={{ margin: 0, color: 'var(--primary-black)', fontSize: '1.3rem' }}>Edición del Diagnóstico <small style={{ color: 'var(--primary-red)', fontSize: '0.75rem' }}>v4.5.1</small></h3>
+                    <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-muted)' }}>Corrija fallas y operador para el equipo <b>{camionEditando?.flota}</b></p>
                   </div>
                 </div>
                 <button onClick={() => setCamionEditando(null)} style={{ background: 'transparent', border: 'none', color: '#9ca3af', cursor: 'pointer', fontSize: '1.8rem' }}>×</button>
@@ -2945,7 +2949,13 @@ function App() {
 
                 {/* Checklist de Fallas Estilo Premium */}
                 <div style={{ marginTop: '0.5rem' }}>
-                  <label className="input-label" style={{ marginBottom: '1rem', display: 'block' }}>Fallas Reportadas por {editingGroupContext}</label>
+                  <label className="input-label" style={{ marginBottom: '0.5rem', display: 'block' }}>Fallas Reportadas por {editingGroupContext}</label>
+                  
+                  {/* Debug Log Inteligente (v4.5.1) */}
+                  <div style={{ fontSize: '0.65rem', color: '#94a3b8', background: '#f8fafc', padding: '0.6rem', borderRadius: '8px', marginBottom: '1rem', border: '1px dashed #cbd5e1' }}>
+                    <strong>🔍 Datos en DB:</strong> {camionEditando?.fallas || 'Ninguna falla detectada'}
+                  </div>
+
                   <div style={{
                     display: 'flex',
                     flexDirection: 'column',
