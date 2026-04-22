@@ -628,6 +628,12 @@ function App() {
 
   const sincronizarModal = (camion, context) => {
     if (!camion) return;
+    
+    // v5.0: Reset Absoluto de Estados previo a la carga (Determinismo Total)
+    setSelectedDanosEdit({});
+    setObservacionesEdit({});
+    setOperadorEdit('');
+
     const danos = {};
     const obs = {};
     
@@ -689,20 +695,18 @@ function App() {
               const groupPattern = new RegExp(`^${context}(\\s*[:\\-]\\s*|\\s*$)`, 'i');
               let mySegment = segments.find(seg => groupPattern.test(seg.trim()));
               
-              // v4.9 Universal Heritage Fallas: Si no hay marca de grupo, buscamos el primer segmento "huérfano"
+              // v5.0 Universal Heritage: Rescate de segmentos huérfanos para G1/General
               if (!mySegment && (context === 'G1' || context === 'General')) {
                 mySegment = segments.find(seg => !/G\d+\s*[:\\-]/i.test(seg.trim()));
-                if (mySegment) {
-                  danos[fallaObj.id] = true;
-                  obs[fallaObj.id] = mySegment || '';
-                }
-              } else if (mySegment) {
+              }
+              
+              if (mySegment) {
                 danos[fallaObj.id] = true;
                 const textMatch = mySegment.trim().match(new RegExp(`^${context}\\s*[:\\-]\\s*(.*)$`, 'i'));
                 obs[fallaObj.id] = textMatch ? textMatch[1] : mySegment;
               }
             } else if (context === 'General' || context === 'G1') {
-              // v4.9: Si la falla no tiene paréntesis pero está en la DB, la marcamos para G1/General
+              // Falla sin paréntesis pero presente en base de datos: La marcamos de todos modos (v5.0)
               danos[fallaObj.id] = true;
             }
           }
@@ -2856,6 +2860,7 @@ function App() {
         {/* Modal de Edición Rápida Avanzada de Camión (Admin/Supervisor) */}
         {camionEditando && (
           <div
+            key={`${camionEditando.id}-${editingGroupContext}`} 
             className="fade-in"
             style={{
               position: 'fixed',
@@ -2889,7 +2894,7 @@ function App() {
                     <Truck size={24} color="var(--primary-red)" />
                   </div>
                   <div>
-                    <h3 style={{ margin: 0, color: 'var(--primary-black)', fontSize: '1.3rem' }}>Edición del Diagnóstico <small style={{ color: 'var(--primary-red)', fontSize: '0.75rem' }}>v4.8</small></h3>
+                    <h3 style={{ margin: 0, color: 'var(--primary-black)', fontSize: '1.3rem' }}>Edición del Diagnóstico <small style={{ color: 'var(--primary-red)', fontSize: '0.75rem' }}>v5.0</small></h3>
                     <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-muted)' }}>Corrija fallas y operador para el equipo <b>{camionEditando?.flota}</b></p>
                   </div>
                 </div>
