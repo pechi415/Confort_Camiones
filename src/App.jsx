@@ -622,13 +622,12 @@ function App() {
   const cargarContextoEdicion = (camion, context) => {
     if (!camion) return;
     const danos = {};
-    const obs = {}; // Se cargará solo como { fallaId: 'nota' } para el contexto actual
+    const obs = {};
     
-    // 1. Extraer el nombre del operador para el contexto actual
+    // 1. Extraer el nombre del operador para el contexto actual (Fuzzy Match)
     let operadorEnContexto = '';
     if (camion.operador) {
       const ops = camion.operador.split(/\s*,\s*/);
-      // Buscamos "GX: Nombre" o "GX- Nombre" etc.
       const prefixRegex = new RegExp(`^${context}\\s*[:\\-]`, 'i');
       const matchingOp = ops.find(o => prefixRegex.test(o.trim()));
       
@@ -639,32 +638,50 @@ function App() {
       }
     }
 
-    // 2. Extraer fallas y observaciones filtradas
+    // 2. Extraer fallas y observaciones filtradas con Motor de Profundidad (v4.4)
     if (camion.fallas) {
-      const parts = camion.fallas.split(/\s*,\s*/);
+      const rawFallas = camion.fallas;
+      const parts = [];
+      let depth = 0;
+      let lastSplit = 0;
+
+      // Dividimos la cadena solo en comas que estén en nivel 0 de paréntesis
+      for (let i = 0; i < rawFallas.length; i++) {
+        const char = rawFallas[i];
+        if (char === '(') depth++;
+        if (char === ')') depth--;
+        if (depth === 0 && char === ',') {
+          parts.push(rawFallas.substring(lastSplit, i).trim());
+          lastSplit = i + 1;
+        }
+      }
+      parts.push(rawFallas.substring(lastSplit).trim());
+
       parts.forEach(p => {
+        if (!p || p === '-') return;
+
+        // Regex para capturar "Nombre (Nota)"
         const match = p.match(/^(.*?)(?:\s*\((.*?)\))?$/);
         if (match) {
           const nombreExtraido = match[1].trim().toLowerCase();
           const combinedObs = match[2] || '';
           
+          // Búsqueda insensible en el catálogo global
           const fallaObj = fallas.find(f => f.nombre.trim().toLowerCase() === nombreExtraido);
           
           if (fallaObj) {
             if (combinedObs) {
+              // Dividimos las notas de grupos (G1 | G2 | G3)
               const segments = combinedObs.split(/\s*[|/]\s*/);
-              // Regex para detectar el grupo en el segmento: "G1", "G1:", "G1 :", "G1-", etc.
               const groupPattern = new RegExp(`^${context}(\\s*[:\\-]\\s*|\\s*$)`, 'i');
-              
               const mySegment = segments.find(seg => groupPattern.test(seg.trim()));
               
               if (mySegment) {
                 danos[fallaObj.id] = true;
-                // Extraer el texto después del prefijo "GX: "
                 const textMatch = mySegment.trim().match(new RegExp(`^${context}\\s*[:\\-]\\s*(.*)$`, 'i'));
                 obs[fallaObj.id] = textMatch ? textMatch[1] : '';
               } else if (context === 'General') {
-                // Legacy/General: segmentos que no empiezan por G1, G2, G3
+                // Modo Admin/General: Captura notas sin prefijo de grupo
                 const legacySeg = segments.find(seg => !/G\d+\s*[:\\-]/i.test(seg.trim()) && !/^G\d+$/i.test(seg.trim()));
                 if (legacySeg) {
                   danos[fallaObj.id] = true;
