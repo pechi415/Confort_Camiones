@@ -685,6 +685,7 @@ function App() {
           if (fallaObj) {
             if (combinedObs) {
               // Dividimos las notas de grupos (G1 | G2 | G3)
+              const segments = combinedObs.split(/\s*[|/]\s*/);
               const groupPattern = new RegExp(`^${context}(\\s*[:\\-]\\s*|\\s*$)`, 'i');
               let mySegment = segments.find(seg => groupPattern.test(seg.trim()));
               
@@ -697,13 +698,13 @@ function App() {
               if (mySegment) {
                 danos[fallaObj.id] = true;
                 const textMatch = mySegment.trim().match(new RegExp(`^${context}\\s*[:\\-]\\s*(.*)$`, 'i'));
-                obs[fallaObj.id] = textMatch ? textMatch[1] : '';
-              } else if (context === 'General') {
-                // Modo Admin/General: Captura notas sin prefijo de grupo
-                const legacySeg = segments.find(seg => !/G\d+\s*[:\\-]/i.test(seg.trim()) && !/^G\d+$/i.test(seg.trim()));
+                obs[fallaObj.id] = textMatch ? textMatch[1] : mySegment;
+              } else if (context === 'General' || context === 'G1') {
+                // v4.6.1: Captura robusta de notas heredadas (sin prefijo)
+                const legacySeg = segments.find(seg => !/G\d+\s*[:\\-]/i.test(seg.trim()));
                 if (legacySeg) {
-                  danos[fallaObj.id] = true;
-                  obs[fallaObj.id] = legacySeg;
+                   danos[fallaObj.id] = true;
+                   obs[fallaObj.id] = legacySeg;
                 }
               }
             } else if (context === 'General') {
@@ -2891,7 +2892,7 @@ function App() {
                     <Truck size={24} color="var(--primary-red)" />
                   </div>
                   <div>
-                    <h3 style={{ margin: 0, color: 'var(--primary-black)', fontSize: '1.3rem' }}>Edición del Diagnóstico <small style={{ color: 'var(--primary-red)', fontSize: '0.75rem' }}>v4.6</small></h3>
+                    <h3 style={{ margin: 0, color: 'var(--primary-black)', fontSize: '1.3rem' }}>Edición del Diagnóstico <small style={{ color: 'var(--primary-red)', fontSize: '0.75rem' }}>v4.6.1</small></h3>
                     <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-muted)' }}>Corrija fallas y operador para el equipo <b>{camionEditando?.flota}</b></p>
                   </div>
                 </div>
