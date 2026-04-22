@@ -636,13 +636,14 @@ function App() {
     if (camion.operador) {
       const ops = camion.operador.split(/\s*,\s*/);
       const prefixRegex = new RegExp(`^${context}\\s*[:\\-]`, 'i');
-      const matchingOp = ops.find(o => prefixRegex.test(o.trim()));
+      let matchingOp = ops.find(o => prefixRegex.test(o.trim()));
       
       if (matchingOp) {
         operadorEnContexto = matchingOp.split(/[:\\-]\s*(.*)/s)[1] || '';
-      } else if ((context === 'G1' || context === 'General') && !ops.some(o => /G\d+\s*[:\\-]/i.test(o))) {
-        // Modo Herencia (v4.6): Si no hay prefijos Gx, asumimos que el dato es G1/General
-        operadorEnContexto = camion.operador;
+      } else if (context === 'G1' || context === 'General') {
+        // v4.9 Universal Heritage: Buscamos cualquier nombre que NO tenga etiqueta de otro grupo
+        const fallbackOp = ops.find(o => !/G\d+\s*[:\\-]/i.test(o.trim()));
+        if (fallbackOp) operadorEnContexto = fallbackOp;
       }
     }
 
@@ -688,25 +689,20 @@ function App() {
               const groupPattern = new RegExp(`^${context}(\\s*[:\\-]\\s*|\\s*$)`, 'i');
               let mySegment = segments.find(seg => groupPattern.test(seg.trim()));
               
-              // Modo Herencia Fallas (v4.6)
+              // v4.9 Universal Heritage Fallas: Si no hay marca de grupo, buscamos el primer segmento "huérfano"
               if (!mySegment && (context === 'G1' || context === 'General')) {
-                // Si estamos en G1 y no hay marcas de grupo, tomamos el primer segmento que no pertenezca a otro grupo
                 mySegment = segments.find(seg => !/G\d+\s*[:\\-]/i.test(seg.trim()));
-              }
-              
-              if (mySegment) {
+                if (mySegment) {
+                  danos[fallaObj.id] = true;
+                  obs[fallaObj.id] = mySegment || '';
+                }
+              } else if (mySegment) {
                 danos[fallaObj.id] = true;
                 const textMatch = mySegment.trim().match(new RegExp(`^${context}\\s*[:\\-]\\s*(.*)$`, 'i'));
                 obs[fallaObj.id] = textMatch ? textMatch[1] : mySegment;
-              } else if (context === 'General' || context === 'G1') {
-                // v4.6.1: Captura robusta de notas heredadas (sin prefijo)
-                const legacySeg = segments.find(seg => !/G\d+\s*[:\\-]/i.test(seg.trim()));
-                if (legacySeg) {
-                   danos[fallaObj.id] = true;
-                   obs[fallaObj.id] = legacySeg;
-                }
               }
-            } else if (context === 'General') {
+            } else if (context === 'General' || context === 'G1') {
+              // v4.9: Si la falla no tiene paréntesis pero está en la DB, la marcamos para G1/General
               danos[fallaObj.id] = true;
             }
           }
