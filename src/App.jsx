@@ -188,8 +188,12 @@ function App() {
   const [observacionesEdit, setObservacionesEdit] = useState({});
   const [operadorEdit, setOperadorEdit] = useState(''); 
   
-  // v4.8: La sincronización ya no usa useEffect para evitar estados estancados y bucles.
-  // Ahora se dispara manualmente mediante sincronizarModal().
+  // v5.3: Sincronización Segura. Carga los datos cada vez que cambia el grupo o el camión.
+  useEffect(() => {
+    if (camionEditando && editingGroupContext) {
+      sincronizarModal(camionEditando, editingGroupContext);
+    }
+  }, [editingGroupContext, camionEditando?.id]);
 
   // Efecto para persistir cambios en tiempo real
   useEffect(() => {
@@ -2860,7 +2864,7 @@ function App() {
         {/* Modal de Edición Rápida Avanzada de Camión (Admin/Supervisor) */}
         {camionEditando && (
           <div
-            key={`${camionEditando.id}-${editingGroupContext}`} 
+            key={camionEditando.id} 
             className="fade-in"
             style={{
               position: 'fixed',
@@ -2894,7 +2898,7 @@ function App() {
                     <Truck size={24} color="var(--primary-red)" />
                   </div>
                   <div>
-                    <h3 style={{ margin: 0, color: 'var(--primary-black)', fontSize: '1.3rem' }}>Edición del Diagnóstico <small style={{ color: 'var(--primary-red)', fontSize: '0.75rem' }}>v5.0</small></h3>
+                    <h3 style={{ margin: 0, color: 'var(--primary-black)', fontSize: '1.3rem' }}>Edición del Diagnóstico <small style={{ color: 'var(--primary-red)', fontSize: '0.75rem' }}>v5.3</small></h3>
                     <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-muted)' }}>Corrija fallas y operador para el equipo <b>{camionEditando?.flota}</b></p>
                   </div>
                 </div>
