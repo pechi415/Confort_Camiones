@@ -185,6 +185,13 @@ function App() {
   const [observaciones, setObservaciones] = useState(reportForm.observaciones);
   const [editingGroupContext, setEditingGroupContext] = useState(null); // Contexto de grupo activo en edición (v4.0)
 
+  // Sincronización Reactiva de Edición (v4.4.2)
+  useEffect(() => {
+    if (camionEditando && editingGroupContext) {
+      cargarContextoEdicion(camionEditando, editingGroupContext);
+    }
+  }, [editingGroupContext, camionEditando]);
+
   // Efecto para persistir cambios en tiempo real
   useEffect(() => {
     sessionStorage.setItem('drummond_activeTab', activeTab);
@@ -614,9 +621,9 @@ function App() {
   };
 
   const prepararEdicion = (camion) => {
+    setCamionEditando(camion);
     const context = session.role === 'admin' ? 'General' : `G${session.grupo}`;
     setEditingGroupContext(context);
-    cargarContextoEdicion(camion, context);
   };
 
   const cargarContextoEdicion = (camion, context) => {
@@ -2876,7 +2883,7 @@ function App() {
                     <Truck size={24} color="var(--primary-red)" />
                   </div>
                   <div>
-                    <h3 style={{ margin: 0, color: 'var(--primary-black)', fontSize: '1.3rem' }}>Edición del Diagnóstico</h3>
+                    <h3 style={{ margin: 0, color: 'var(--primary-black)', fontSize: '1.3rem' }}>Edición del Diagnóstico <small style={{ color: 'var(--primary-red)', fontSize: '0.75rem' }}>v4.4.2</small></h3>
                     <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-muted)' }}>Corrija fallas y operador para el equipo <b>{camionEditando.flota}</b></p>
                   </div>
                 </div>
