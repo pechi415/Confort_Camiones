@@ -188,6 +188,14 @@ function App() {
   const [observacionesEdit, setObservacionesEdit] = useState({});
   const [operadorEdit, setOperadorEdit] = useState(''); 
   const [camionEditando, setCamionEditando] = useState(null); // Movido aquí para evitar WSoD (v5.3.1)  
+  const [editingGroupContext, setEditingGroupContext] = useState(null);
+
+  useEffect(() => {
+    if (camionEditando && editingGroupContext) {
+      sincronizarModal(camionEditando, editingGroupContext);
+    }
+  }, [editingGroupContext, camionEditando?.id]);
+
   // Efecto para persistir cambios en tiempo real
   useEffect(() => {
     sessionStorage.setItem('drummond_activeTab', activeTab);
@@ -615,11 +623,12 @@ function App() {
 
   const prepararEdicion = (camion) => {
     setCamionEditando(camion);
-    // Modal unificado: no necesitamos contexto de grupo para ocultar información.
-    sincronizarModal(camion);
+    const context = session.role === 'admin' ? 'General' : `G${session.grupo}`;
+    setEditingGroupContext(context);
+    sincronizarModal(camion, context);
   };
 
-  const sincronizarModal = (camion) => {
+  const sincronizarModal = (camion, context) => {
     if (!camion) return;
     
     setSelectedDanosEdit({});
@@ -628,49 +637,55 @@ function App() {
 
     const danos = {};
     const obs = {};
-    
-    // Cargamos todo el string de operador sin filtrar
-    let operadorUnificado = camion.operador || '';
+    let operadorUnificado = '';
 
-    // Extraer fallas y observaciones unificadas
-    if (camion.fallas) {
-      const rawFallas = camion.fallas;
-      const parts = [];
-      let depth = 0;
-      let lastSplit = 0;
-
-      for (let i = 0; i < rawFallas.length; i++) {
-        const char = rawFallas[i];
-        if (char === '(') depth++;
-        if (char === ')') depth--;
-        if (depth === 0 && char === ',') {
-          parts.push(rawFallas.substring(lastSplit, i).trim());
-          lastSplit = i + 1;
-        }
-      }
-      parts.push(rawFallas.substring(lastSplit).trim());
-
-      parts.forEach(p => {
-        if (!p || p === '-') return;
-
-        const match = p.match(/^(.*?)(?:\s*\((.*?)\))?$/);
-        if (match) {
-          const nombreExtraido = match[1].trim().toLowerCase();
-          const combinedObs = match[2] || '';
-          
-          const fallaObj = fallas.find(f => {
-            const fNom = f.nombre.trim().toLowerCase();
-            return fNom === nombreExtraido || fNom.includes(nombreExtraido) || nombreExtraido.includes(fNom);
-          });
-          
-          if (fallaObj) {
-            danos[fallaObj.id] = true;
-            if (combinedObs) {
-              obs[fallaObj.id] = combinedObs;
-            }
+    if (context === 'General') {
+      operadorUnificado = camion.operador || '';
+      if (camion.fallas) {
+        const rawFallas = camion.fallas;
+        const parts = [];
+        let depth = 0;
+        let lastSplit = 0;
+        for (let i = 0; i < rawFallas.length; i++) {
+          const char = rawFallas[i];
+          if (char === '(') depth++;
+          if (char === ')') depth--;
+          if (depth === 0 && char === ',') {
+            parts.push(rawFallas.substring(lastSplit, i).trim());
+            lastSplit = i + 1;
           }
         }
-      });
+        parts.push(rawFallas.substring(lastSplit).trim());
+
+        parts.forEach(p => {
+          if (!p || p === '-') return;
+          const match = p.match(/^(.*?)(?:\s*\((.*?)\))?$/);
+          if (match) {
+            const nombreExtraido = match[1].trim().toLowerCase();
+            const combinedObs = match[2] || '';
+            const fallaObj = fallas.find(f => {
+              const fNom = f.nombre.trim().toLowerCase();
+              return fNom === nombreExtraido || fNom.includes(nombreExtraido) || nombreExtraido.includes(fNom);
+            });
+            if (fallaObj) {
+              danos[fallaObj.id] = true;
+              if (combinedObs) obs[fallaObj.id] = combinedObs;
+            }
+          }
+        });
+      }
+    } else {
+      const dg = camion.detalles_grupos || {};
+      const miDetalle = dg[context];
+      if (miDetalle) {
+        operadorUnificado = miDetalle.operador || '';
+        if (miDetalle.fallas) {
+          Object.keys(miDetalle.fallas).forEach(fId => {
+            danos[fId] = true;
+            if (miDetalle.fallas[fId]) obs[fId] = miDetalle.fallas[fId];
+          });
+        }
+      }
     }
 
     setSelectedDanosEdit(danos);
@@ -689,43 +704,144 @@ function App() {
   const guardarEdicionAvanzada = async () => {
     if (!camionEditando) return;
 
-    // Recalcular Prioridad e Impacto
-    let totalPuntos = 0;
+    let operadorFinal = '';
     const finalFallasItems = [];
+    let totalPuntos = 0;
+    const detallesFinales = camionEditando.detalles_grupos ? { ...camionEditando.detalles_grupos } : {};
 
-    // 1. Operador unificado (se guarda tal como está en el input)
-    const operadorFinal = operadorEdit || '';
-
-    // 2. Fallas y observaciones unificadas
-    Object.keys(selectedDanosEdit).forEach(fId => {
-      if (selectedDanosEdit[fId]) {
-        const fallObj = fallas.find(f => f.id === fId);
-        if (fallObj) {
-          totalPuntos += fallObj.impacto;
-          const obs = observacionesEdit[fId] ? ` (${observacionesEdit[fId]})` : '';
-          finalFallasItems.push(`${fallObj.nombre}${obs}`);
+    if (editingGroupContext === 'General') {
+      operadorFinal = operadorEdit || '';
+      Object.keys(selectedDanosEdit).forEach(fId => {
+        if (selectedDanosEdit[fId]) {
+          const fallObj = fallas.find(f => f.id === fId);
+          if (fallObj) {
+            totalPuntos += fallObj.impacto;
+            const obs = observacionesEdit[fId] ? ` (${observacionesEdit[fId]})` : '';
+            finalFallasItems.push(`${fallObj.nombre}${obs}`);
+          }
         }
+      });
+    } else {
+      const fallasStruct = {};
+      Object.keys(selectedDanosEdit).forEach(id => {
+        if (selectedDanosEdit[id]) fallasStruct[id] = observacionesEdit[id] || '';
+      });
+
+      if (!detallesFinales[editingGroupContext]) {
+        detallesFinales[editingGroupContext] = {
+           supervisor: session.nombre,
+           mina: camionEditando.mina,
+           time: new Date().toLocaleString()
+        };
       }
-    });
+      detallesFinales[editingGroupContext].operador = operadorEdit;
+      detallesFinales[editingGroupContext].fallas = fallasStruct;
+
+      const opsSet = new Set();
+      (camionEditando.operador || '').split(/\s*,\s*/).forEach(o => {
+          const gMatch = o.match(/^(G\d+|General)\s*[:\-]/i);
+          if (!gMatch) opsSet.add(o.trim()); // Guardar legacy puro sin etiqueta
+          else if (!detallesFinales[gMatch[1].toUpperCase()]) opsSet.add(o.trim()); // Legacy con etiqueta que no esté en el JSON
+      });
+      Object.keys(detallesFinales).forEach(g => {
+          if (detallesFinales[g].operador) opsSet.add(`${g}: ${detallesFinales[g].operador}`);
+      });
+      operadorFinal = Array.from(opsSet).filter(Boolean).sort().join(', ');
+
+      const fallasMap = {};
+      if (camionEditando.fallas) {
+          const rawFallas = camionEditando.fallas;
+          const parts = [];
+          let depth = 0; let lastSplit = 0;
+          for (let i = 0; i < rawFallas.length; i++) {
+              if (rawFallas[i] === '(') depth++;
+              if (rawFallas[i] === ')') depth--;
+              if (depth === 0 && rawFallas[i] === ',') {
+                  parts.push(rawFallas.substring(lastSplit, i).trim());
+                  lastSplit = i + 1;
+              }
+          }
+          parts.push(rawFallas.substring(lastSplit).trim());
+          parts.forEach(p => {
+              if (!p || p === '-') return;
+              const match = p.match(/^(.*?)(?:\s*\((.*?)\))?$/);
+              if (match) {
+                  const nombre = match[1].trim();
+                  const combined = match[2] || '';
+                  if (!fallasMap[nombre]) fallasMap[nombre] = {};
+                  if (combined) {
+                      combined.split(/\s*[|/]\s*/).forEach(seg => {
+                          const gMatch = seg.match(/^(G\d+|General)\s*[:\-]\s*(.*)$/i);
+                          if (gMatch && !detallesFinales[gMatch[1].toUpperCase()]) {
+                              fallasMap[nombre][gMatch[1].toUpperCase()] = gMatch[2] || '';
+                          } else if (!gMatch) {
+                              fallasMap[nombre]['General'] = seg;
+                          }
+                      });
+                  }
+              }
+          });
+      }
+
+      Object.keys(detallesFinales).forEach(g => {
+          const gFallas = detallesFinales[g].fallas;
+          if (gFallas) {
+              Object.keys(gFallas).forEach(fId => {
+                  const fallObj = fallas.find(f => f.id === fId);
+                  if (fallObj) {
+                      if (!fallasMap[fallObj.nombre]) fallasMap[fallObj.nombre] = {};
+                      fallasMap[fallObj.nombre][g] = gFallas[fId] || '';
+                  }
+              });
+          }
+      });
+
+      const uniqueFallas = new Set();
+      Object.keys(fallasMap).forEach(fNome => {
+          const fObj = fallas.find(f => f.nombre === fNome);
+          if (fObj) {
+              uniqueFallas.add(fObj.id);
+              const obsMap = fallasMap[fNome];
+              const segments = [];
+              if (obsMap['General']) segments.push(obsMap['General']);
+              ['G1', 'G2', 'G3'].forEach(g => {
+                  if (obsMap.hasOwnProperty(g)) {
+                      const note = obsMap[g];
+                      segments.push(note ? `${g}: ${note}` : g);
+                  }
+              });
+              
+              if (segments.length > 0) {
+                  finalFallasItems.push(`${fNome} (${segments.join(' | ')})`);
+              } else {
+                  finalFallasItems.push(`${fNome}`);
+              }
+          }
+      });
+      
+      Array.from(uniqueFallas).forEach(id => {
+          const f = fallas.find(x => x.id === id);
+          if (f) totalPuntos += f.impacto;
+      });
+    }
 
     const atencion = totalPuntos > 50 ? 'CRÍTICA' : totalPuntos > 20 ? 'ALTA' : 'NORMAL';
 
-    const { error } = await supabase.from('camiones').update({
+    const camionActualizado = {
       operador: operadorFinal,
       fallas: finalFallasItems.join(', '),
       puntos: totalPuntos,
-      atencion: atencion
-    }).eq('id', camionEditando.id);
+      atencion: atencion,
+      detalles_grupos: detallesFinales
+    };
+
+    const { error } = await supabase.from('camiones').update(camionActualizado).eq('id', camionEditando.id);
 
     if (error) return alert("Error al actualizar: " + error.message);
 
-    // Actualizar estado local
     setCamionesRegistrados(prev => prev.map(c => c.id === camionEditando.id ? {
       ...c,
-      operador: operadorFinal,
-      fallas: finalFallasItems.join(', '),
-      puntos: totalPuntos,
-      atencion: atencion
+      ...camionActualizado
     } : c));
 
     setCamionEditando(null);
@@ -2479,6 +2595,23 @@ function App() {
                       return f.nombre + (combined ? ` (${combined})` : '');
                     }).join(', ');
 
+                    // Construimos la estructura JSON del grupo que reporta
+                    const fallasStruct = {};
+                    Object.keys(selectedDanos).forEach(id => {
+                        fallasStruct[id] = observaciones[id] || '';
+                    });
+                    const detallesAnteriores = camionExistente.detalles_grupos || {};
+                    const detallesNuevos = {
+                       ...detallesAnteriores,
+                       [`G${grupo}`]: {
+                          supervisor: session.nombre,
+                          operador: operador,
+                          mina: mina,
+                          time: new Date().toLocaleString(),
+                          fallas: fallasStruct
+                       }
+                    };
+
                     const camionActualizado = {
                       ...camionExistente,
                       grupo: listaGrupos.join(', '),
@@ -2487,7 +2620,8 @@ function App() {
                       fallas: fallasConsolidadas,
                       puntos: puntosFinales,
                       atencion: atencionLabel,
-                      consenso: numGrupos // Nuevo campo para UI
+                      consenso: numGrupos, // Nuevo campo para UI
+                      detalles_grupos: detallesNuevos
                     };
 
                     const { error } = await supabase.from('camiones').update(camionActualizado).eq('id', camionExistente.id);
@@ -2506,6 +2640,20 @@ function App() {
                       return `${nombreFalla}${comentario}`;
                     }).join(', ');
 
+                    const fallasStruct = {};
+                    Object.keys(selectedDanos).forEach(id => {
+                        fallasStruct[id] = observaciones[id] || '';
+                    });
+                    const detallesNuevos = {
+                       [`G${grupo}`]: {
+                          supervisor: session.nombre,
+                          operador: operador,
+                          mina: mina,
+                          time: new Date().toLocaleString(),
+                          fallas: fallasStruct
+                       }
+                    };
+
                     const nuevoCamion = {
                       flota: flota,
                       operador: `G${grupo}: ${operador}`,
@@ -2517,7 +2665,8 @@ function App() {
                       fallas: fallasDetalladas,
                       time: new Date().toLocaleString(),
                       puntos: totalImpacto,
-                      consenso: 1
+                      consenso: 1,
+                      detalles_grupos: detallesNuevos
                     };
 
                     const { data, error } = await supabase.from('camiones').insert([nuevoCamion]).select();
@@ -2810,21 +2959,51 @@ function App() {
                     <input type="text" className="input-field" value={camionEditando?.flota || ''} disabled style={{ background: '#f8fafc', fontWeight: 'bold' }} />
                   </div>
                   <div>
-                    <label className="input-label">Nombres de Operadores (Completo)</label>
+                    <label className="input-label">
+                      {editingGroupContext === 'General' ? 'Nombres de Operadores (Completo)' : `Nombre del Operador (${editingGroupContext})`}
+                    </label>
                     <input
                       type="text"
                       className="input-field"
                       value={operadorEdit}
                       onChange={e => setOperadorEdit(e.target.value)}
-                      placeholder="Nombres de todos los conductores..."
+                      placeholder={editingGroupContext === 'General' ? "Nombres de todos los conductores..." : "Nombre del conductor para este grupo..."}
                       style={{ background: 'rgba(255,255,255,0.5)', border: '1px solid rgba(0,0,0,0.1)' }}
                     />
                   </div>
                 </div>
 
+                {/* Selector de Grupo Estilo Tabs (v4.0) */}
+                <div style={{ display: 'flex', gap: '0.5rem', borderBottom: '1px solid #f1f5f9', paddingBottom: '0.5rem' }}>
+                  {['General', 'G1', 'G2', 'G3'].map(g => (
+                    <button
+                      key={g}
+                      onClick={() => {
+                        setEditingGroupContext(g);
+                      }}
+                      style={{
+                        padding: '0.5rem 1rem',
+                        borderRadius: '8px',
+                        border: 'none',
+                        background: editingGroupContext === g ? 'var(--primary-red)' : 'transparent',
+                        color: editingGroupContext === g ? 'white' : '#64748b',
+                        fontSize: '0.8rem',
+                        fontWeight: 'bold',
+                        cursor: 'pointer',
+                        transition: 'all 0.2s',
+                        display: (session.role === 'admin' || g === `G${session.grupo}` || (g === 'General' && session.role === 'admin')) ? 'block' : 'none'
+                      }}
+                    >
+                      {g === 'General' ? 'General (Unificado)' : `Reporte ${g}`}
+                    </button>
+                  ))}
+                </div>
+
                 {/* Checklist de Fallas Estilo Premium */}
                 <div style={{ marginTop: '0.5rem' }}>
-                  <label className="input-label" style={{ marginBottom: '0.5rem', display: 'block' }}>Reporte de Fallas General</label>
+                  <label className="input-label" style={{ marginBottom: '0.5rem', display: 'block' }}>
+                    {editingGroupContext === 'General' ? 'Reporte de Fallas General' : `Fallas Reportadas por ${editingGroupContext}`}
+                  </label>
                   
                   {/* Debug Log Inteligente (v4.8 - Sincronismo) */}
                   <div style={{ fontSize: '0.65rem', color: '#94a3b8', background: '#f8fafc', padding: '0.6rem', borderRadius: '8px', marginBottom: '1rem', border: '1px dashed #cbd5e1' }}>
