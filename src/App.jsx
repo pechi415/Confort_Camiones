@@ -1609,7 +1609,14 @@ function App() {
                         </tr>
                       </thead>
                       <tbody>
-                        {(camionesAccessibles || []).filter(c => c && c.estado !== 'liberado').slice(0, 6).map((camion) => (
+                        {(camionesAccessibles || [])
+                          .filter(c => c && c.estado !== 'liberado')
+                          .sort((a, b) => {
+                            const pesos = { 'CRÍTICA': 3, 'ALTA': 2, 'NORMAL': 1 };
+                            return (pesos[b.atencion] || 0) - (pesos[a.atencion] || 0);
+                          })
+                          .slice(0, 6)
+                          .map((camion) => (
                           <tr key={camion?.id || Math.random()}>
                             <td>
                               <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
