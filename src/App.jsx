@@ -268,12 +268,29 @@ function App() {
     return numStr.split(/,[\s]*/).map(g => `G${g.trim()}`).join(' | ');
   };
 
+  const parseFecha = (dateStr) => {
+    if (!dateStr) return null;
+    const d = new Date(dateStr);
+    if (!isNaN(d.getTime())) return d;
+    
+    // Intento de parseo manual para formato DD/MM/YYYY, HH:MM:SS
+    const regex = /(\d{1,2})\/(\d{1,2})\/(\d{4})(?:[, ]+(\d{1,2}):(\d{1,2})(?::(\d{1,2}))?)?/;
+    const match = dateStr.match(regex);
+    if (match) {
+      const [ , dia, mes, anio, h, min, s ] = match;
+      return new Date(anio, mes - 1, dia, h || 0, min || 0, s || 0);
+    }
+    return null;
+  };
+
   // Helper de Tiempo de Ciclo v2.1 (Ingreso -> Liberación)
   const formatearCiclo = (inicio, fin) => {
     if (!inicio || !fin) return '---';
     try {
-      const start = new Date(inicio);
-      const end = new Date(fin);
+      const start = parseFecha(inicio);
+      const end = parseFecha(fin);
+      if (!start || !end) return '---';
+      
       const diffMs = end - start;
       if (isNaN(diffMs) || diffMs < 0) return '---';
       
@@ -456,12 +473,23 @@ function App() {
   const calcularPromedioCiclo = () => {
     const liberadosValidos = camionesAccessibles.filter(c => c.estado === 'liberado' && c.finalizado_at && (c.time || c.creado_at));
     if (liberadosValidos.length === 0) return "---";
+    
+    let validCount = 0;
     const sumaMs = liberadosValidos.reduce((acc, c) => {
-      const inicio = new Date(c.time || c.creado_at);
-      const fin = new Date(c.finalizado_at);
-      return acc + (fin - inicio);
+      const inicio = parseFecha(c.time || c.creado_at);
+      const fin = parseFecha(c.finalizado_at);
+      if (!inicio || !fin) return acc;
+      
+      const diffMs = fin - inicio;
+      if (isNaN(diffMs) || diffMs < 0) return acc;
+      
+      validCount++;
+      return acc + diffMs;
     }, 0);
-    const promMs = sumaMs / liberadosValidos.length;
+    
+    if (validCount === 0) return "---";
+    
+    const promMs = sumaMs / validCount;
     const hours = Math.floor(promMs / 3600000);
     const mins = Math.floor((promMs % 3600000) / 60000);
     return hours >= 24 ? `${Math.floor(hours/24)}d ${hours%24}h` : (hours > 0 ? `${hours}h ${mins}m` : `${mins}m`);
