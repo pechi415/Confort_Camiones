@@ -188,13 +188,6 @@ function App() {
   const [observacionesEdit, setObservacionesEdit] = useState({});
   const [operadorEdit, setOperadorEdit] = useState(''); 
   const [camionEditando, setCamionEditando] = useState(null); // Movido aquí para evitar WSoD (v5.3.1)  
-  // v5.3: Sincronización Segura. Carga los datos cada vez que cambia el grupo o el camión.
-  useEffect(() => {
-    if (camionEditando && editingGroupContext) {
-      sincronizarModal(camionEditando, editingGroupContext);
-    }
-  }, [editingGroupContext, camionEditando?.id]);
-
   // Efecto para persistir cambios en tiempo real
   useEffect(() => {
     sessionStorage.setItem('drummond_activeTab', activeTab);
@@ -622,17 +615,13 @@ function App() {
 
   const prepararEdicion = (camion) => {
     setCamionEditando(camion);
-    const context = session.role === 'admin' ? 'General' : `G${session.grupo}`;
-    setEditingGroupContext(context);
-    
-    // v4.8: Sincronización Manual Determinista al abrir
-    sincronizarModal(camion, context);
+    // Modal unificado: no necesitamos contexto de grupo para ocultar información.
+    sincronizarModal(camion);
   };
 
-  const sincronizarModal = (camion, context) => {
+  const sincronizarModal = (camion) => {
     if (!camion) return;
     
-    // v5.0: Reset Absoluto de Estados previo a la carga (Determinismo Total)
     setSelectedDanosEdit({});
     setObservacionesEdit({});
     setOperadorEdit('');
@@ -640,30 +629,16 @@ function App() {
     const danos = {};
     const obs = {};
     
-    // 1. Extraer el nombre del operador para el contexto actual (Fuzzy Match)
-    let operadorEnContexto = '';
-    if (camion.operador) {
-      const ops = camion.operador.split(/\s*,\s*/);
-      const prefixRegex = new RegExp(`^${context}\\s*[:\\-]`, 'i');
-      let matchingOp = ops.find(o => prefixRegex.test(o.trim()));
-      
-      if (matchingOp) {
-        operadorEnContexto = matchingOp.split(/[:\\-]\s*(.*)/s)[1] || '';
-      } else if (context === 'G1' || context === 'General') {
-        // v4.9 Universal Heritage: Buscamos cualquier nombre que NO tenga etiqueta de otro grupo
-        const fallbackOp = ops.find(o => !/G\d+\s*[:\\-]/i.test(o.trim()));
-        if (fallbackOp) operadorEnContexto = fallbackOp;
-      }
-    }
+    // Cargamos todo el string de operador sin filtrar
+    let operadorUnificado = camion.operador || '';
 
-    // 2. Extraer fallas y observaciones filtradas con Motor de Profundidad (v4.4)
+    // Extraer fallas y observaciones unificadas
     if (camion.fallas) {
       const rawFallas = camion.fallas;
       const parts = [];
       let depth = 0;
       let lastSplit = 0;
 
-      // Dividimos la cadena solo en comas que estén en nivel 0 de paréntesis
       for (let i = 0; i < rawFallas.length; i++) {
         const char = rawFallas[i];
         if (char === '(') depth++;
@@ -678,39 +653,20 @@ function App() {
       parts.forEach(p => {
         if (!p || p === '-') return;
 
-        // Regex para capturar "Nombre (Nota)"
         const match = p.match(/^(.*?)(?:\s*\((.*?)\))?$/);
         if (match) {
           const nombreExtraido = match[1].trim().toLowerCase();
           const combinedObs = match[2] || '';
           
-          // v4.5 Búsqueda Difusa / Inteligente en el catálogo
           const fallaObj = fallas.find(f => {
             const fNom = f.nombre.trim().toLowerCase();
-            // Match exacto, o uno contiene al otro (Fuzzy)
             return fNom === nombreExtraido || fNom.includes(nombreExtraido) || nombreExtraido.includes(fNom);
           });
           
           if (fallaObj) {
+            danos[fallaObj.id] = true;
             if (combinedObs) {
-              // Dividimos las notas de grupos (G1 | G2 | G3)
-              const segments = combinedObs.split(/\s*[|/]\s*/);
-              const groupPattern = new RegExp(`^${context}(\\s*[:\\-]\\s*|\\s*$)`, 'i');
-              let mySegment = segments.find(seg => groupPattern.test(seg.trim()));
-              
-              // v5.0 Universal Heritage: Rescate de segmentos huérfanos para G1/General
-              if (!mySegment && (context === 'G1' || context === 'General')) {
-                mySegment = segments.find(seg => !/G\d+\s*[:\\-]/i.test(seg.trim()));
-              }
-              
-              if (mySegment) {
-                danos[fallaObj.id] = true;
-                const textMatch = mySegment.trim().match(new RegExp(`^${context}\\s*[:\\-]\\s*(.*)$`, 'i'));
-                obs[fallaObj.id] = textMatch ? textMatch[1] : mySegment;
-              }
-            } else if (context === 'General' || context === 'G1') {
-              // Falla sin paréntesis pero presente en base de datos: La marcamos de todos modos (v5.0)
-              danos[fallaObj.id] = true;
+              obs[fallaObj.id] = combinedObs;
             }
           }
         }
@@ -719,7 +675,7 @@ function App() {
 
     setSelectedDanosEdit(danos);
     setObservacionesEdit(obs);
-    setOperadorEdit(operadorEnContexto);
+    setOperadorEdit(operadorUnificado);
   };
 
   const handleDanoToggleEdit = (id) => {
@@ -734,121 +690,28 @@ function App() {
     if (!camionEditando) return;
 
     // Recalcular Prioridad e Impacto
-    let nuevoImpacto = 0;
-    const itemsFallas = [];
+    let totalPuntos = 0;
+    const finalFallasItems = [];
 
-    // 1. Re-ensamblar Operadores (Merge Seguro v4.7)
-    const context = editingGroupContext;
-    const opsAnteriores = (camionEditando.operador || '').split(/\s*,\s*/).filter(o => {
-      const gMatch = o.match(/^(G\d+|General)\s*[:\-]/i);
-      if (gMatch) return gMatch[1].toLowerCase() !== context.toLowerCase();
-      // Si no tiene prefijo y estamos en G1/General, lo estamos reemplazando
-      return !(context === 'G1' || context === 'General');
-    });
-    const nuevoOpStr = operadorEdit ? `${context}: ${operadorEdit}` : '';
-    const listaOpsActualizada = [...opsAnteriores, nuevoOpStr].filter(Boolean).sort();
+    // 1. Operador unificado (se guarda tal como está en el input)
+    const operadorFinal = operadorEdit || '';
 
-    // 2. Re-ensamblar Fallas y Observaciones
-    const fallasConsolidadasAnteriores = {}; // fallaNombre -> { G1: obs, G2: obs, General: obs }
-    if (camionEditando.fallas) {
-      const rawFallas = camionEditando.fallas;
-      const parts = [];
-      let depth = 0;
-      let lastSplit = 0;
-
-      // Dividimos la cadena solo en comas que estén en nivel 0 de paréntesis
-      for (let i = 0; i < rawFallas.length; i++) {
-        const char = rawFallas[i];
-        if (char === '(') depth++;
-        if (char === ')') depth--;
-        if (depth === 0 && char === ',') {
-          parts.push(rawFallas.substring(lastSplit, i).trim());
-          lastSplit = i + 1;
-        }
-      }
-      parts.push(rawFallas.substring(lastSplit).trim());
-
-      parts.forEach(fallStr => {
-        if (!fallStr || fallStr === '-') return;
-        const match = fallStr.match(/^(.*?)(?:\s*\((.*?)\))?$/);
-        if (match) {
-          const nombre = match[1].trim();
-          const combined = match[2] || '';
-          if (!fallasConsolidadasAnteriores[nombre]) fallasConsolidadasAnteriores[nombre] = {};
-          
-          if (combined) {
-            combined.split(/\s*[|/]\s*/).forEach(seg => {
-              const gMatch = seg.match(/^(G\d+|General)\s*[:\-]\s*(.*)$/i);
-              if (gMatch) {
-                fallasConsolidadasAnteriores[nombre][gMatch[1].toUpperCase()] = gMatch[2] || '';
-              } else {
-                // Legacy: Si no hay prefijo, lo guardamos como General para migrarlo
-                fallasConsolidadasAnteriores[nombre]['General'] = seg;
-              }
-            });
-          }
-        }
-      });
-    }
-
-    // Aplicar mis cambios del Modal al mapa de fallas consolidado
-    // Primero, limpiamos MIS fallas viejas del mapa
-    Object.keys(fallasConsolidadasAnteriores).forEach(fNome => {
-      delete fallasConsolidadasAnteriores[fNome][context];
-    });
-
-    // Añadimos MIS fallas nuevas según selectedDanosEdit
+    // 2. Fallas y observaciones unificadas
     Object.keys(selectedDanosEdit).forEach(fId => {
       if (selectedDanosEdit[fId]) {
         const fallObj = fallas.find(f => f.id === fId);
         if (fallObj) {
-          if (!fallasConsolidadasAnteriores[fallObj.nombre]) fallasConsolidadasAnteriores[fallObj.nombre] = {};
-          if (observacionesEdit[fId]) fallasConsolidadasAnteriores[fallObj.nombre][context] = observacionesEdit[fId];
-          else if (!fallasConsolidadasAnteriores[fallObj.nombre][context]) {
-             // Si marqué la falla pero no puse observación, nos aseguramos que aparezca el grupo si es necesario?
-             // El usuario dijo "comentarios que el registro". Si no hay comentario, tal vez no deba salir nada.
-             // Para simplificar: si no hay obs, solo ponemos el nombre de la falla sin obs para ese grupo.
-             fallasConsolidadasAnteriores[fallObj.nombre][context] = ''; 
-          }
+          totalPuntos += fallObj.impacto;
+          const obs = observacionesEdit[fId] ? ` (${observacionesEdit[fId]})` : '';
+          finalFallasItems.push(`${fallObj.nombre}${obs}`);
         }
-      }
-    });
-
-    // Reconstruir el string final
-    const finalFallasItems = [];
-    let totalPuntos = 0;
-    
-    // Necesitamos saber qué fallas totales existen
-    const todasLasFallasNombres = Object.keys(fallasConsolidadasAnteriores);
-    
-    todasLasFallasNombres.forEach(fNome => {
-      const fObj = fallas.find(f => f.nombre === fNome);
-      const segments = [];
-      const obsMap = fallasConsolidadasAnteriores[fNome];
-      
-      if (obsMap['General']) segments.push(obsMap['General']);
-      ['G1', 'G2', 'G3'].forEach(g => {
-        if (obsMap.hasOwnProperty(g)) {
-           const note = obsMap[g];
-           segments.push(note ? `${g}: ${note}` : g);
-        }
-      });
-
-      if (segments.length > 0) {
-        finalFallasItems.push(`${fNome} (${segments.join(' | ')})`);
-        if (fObj) totalPuntos += fObj.impacto;
-      } else if (fObj) {
-        // Falla sin ninguna observación de ningún grupo (No debería pasar si estamos mergeando bien)
-        // Pero si pasa, solo el nombre
-        // finalFallasItems.push(fNome);
-        // totalPuntos += fObj.impacto;
       }
     });
 
     const atencion = totalPuntos > 50 ? 'CRÍTICA' : totalPuntos > 20 ? 'ALTA' : 'NORMAL';
 
     const { error } = await supabase.from('camiones').update({
-      operador: listaOpsActualizada.join(', '),
+      operador: operadorFinal,
       fallas: finalFallasItems.join(', '),
       puntos: totalPuntos,
       atencion: atencion
@@ -859,7 +722,7 @@ function App() {
     // Actualizar estado local
     setCamionesRegistrados(prev => prev.map(c => c.id === camionEditando.id ? {
       ...c,
-      operador: listaOpsActualizada.join(', '),
+      operador: operadorFinal,
       fallas: finalFallasItems.join(', '),
       puntos: totalPuntos,
       atencion: atencion
@@ -2947,48 +2810,21 @@ function App() {
                     <input type="text" className="input-field" value={camionEditando?.flota || ''} disabled style={{ background: '#f8fafc', fontWeight: 'bold' }} />
                   </div>
                   <div>
-                    <label className="input-label">Nombre del Operador ({editingGroupContext})</label>
+                    <label className="input-label">Nombres de Operadores (Completo)</label>
                     <input
                       type="text"
                       className="input-field"
-                      value={camionEditando.operadorContexto || ''}
-                      onChange={e => setCamionEditando({ ...camionEditando, operadorContexto: e.target.value })}
-                      placeholder="Nombre del conductor para este grupo..."
+                      value={operadorEdit}
+                      onChange={e => setOperadorEdit(e.target.value)}
+                      placeholder="Nombres de todos los conductores..."
                       style={{ background: 'rgba(255,255,255,0.5)', border: '1px solid rgba(0,0,0,0.1)' }}
                     />
                   </div>
                 </div>
 
-                {/* Selector de Grupo Estilo Tabs (v4.0) */}
-                <div style={{ display: 'flex', gap: '0.5rem', borderBottom: '1px solid #f1f5f9', paddingBottom: '0.5rem' }}>
-                  {['General', 'G1', 'G2', 'G3'].map(g => (
-                    <button
-                      key={g}
-                      onClick={() => {
-                        setEditingGroupContext(g);
-                        sincronizarModal(camionEditando, g);
-                      }}
-                      style={{
-                        padding: '0.5rem 1rem',
-                        borderRadius: '8px',
-                        border: 'none',
-                        background: editingGroupContext === g ? 'var(--primary-red)' : 'transparent',
-                        color: editingGroupContext === g ? 'white' : '#64748b',
-                        fontSize: '0.8rem',
-                        fontWeight: 'bold',
-                        cursor: 'pointer',
-                        transition: 'all 0.2s',
-                        display: (session.role === 'admin' || g === `G${session.grupo}` || (g === 'General' && session.role === 'admin')) ? 'block' : 'none'
-                      }}
-                    >
-                      {g === 'General' ? 'General' : `Reporte ${g}`}
-                    </button>
-                  ))}
-                </div>
-
                 {/* Checklist de Fallas Estilo Premium */}
                 <div style={{ marginTop: '0.5rem' }}>
-                  <label className="input-label" style={{ marginBottom: '0.5rem', display: 'block' }}>Fallas Reportadas por {editingGroupContext}</label>
+                  <label className="input-label" style={{ marginBottom: '0.5rem', display: 'block' }}>Reporte de Fallas General</label>
                   
                   {/* Debug Log Inteligente (v4.8 - Sincronismo) */}
                   <div style={{ fontSize: '0.65rem', color: '#94a3b8', background: '#f8fafc', padding: '0.6rem', borderRadius: '8px', marginBottom: '1rem', border: '1px dashed #cbd5e1' }}>
@@ -3057,7 +2893,7 @@ function App() {
                                 borderRadius: '8px',
                                 border: '1px solid #e2e8f0'
                               }}
-                              placeholder={`Observación de ${editingGroupContext}...`}
+                              placeholder={`Observación detallada de la falla...`}
                               value={observacionesEdit[falla.id] || ''}
                               onChange={(e) => handleObsChangeEdit(falla.id, e.target.value)}
                             />
