@@ -622,19 +622,40 @@ function App() {
     await supabase.from('camiones').update({ [key]: nuevoValor }).eq('id', camionId);
   };
 
-  const liberarCamion = async (camionId) => {
+  const liberarCamion = async (camionId, flota) => {
+    const idNum = parseInt(camionId);
+    if (isNaN(idNum)) return addToast("❌ ID de camión inválido", "error");
+
     const ahoraStr = new Date().toISOString();
-    // UI Optimista
+    
+    // UI Optimista: Movemos todos los registros de esta flota a liberado localmente
     setCamionesRegistrados(prev =>
-      prev.map(c => c.id === camionId ? { ...c, estado: 'liberado', finalizado_at: ahoraStr } : c)
+      prev.map(c => (c.id === idNum || c.flota === flota) ? { ...c, estado: 'liberado', finalizado_at: ahoraStr } : c)
     );
 
-    // DB update (v2.1)
-    await supabase.from('camiones').update({ 
-      estado: 'liberado', 
-      finalizado_at: ahoraStr 
-    }).eq('id', camionId);
-    addToast("🚀 Camión liberado con éxito. Ahora reside en el Historial.");
+    // Persistencia en DB: Liberamos TODO lo que coincida con esta flota y no esté liberado
+    // Esto resuelve el problema de registros duplicados o "fantasmas"
+    const { data, error } = await supabase.from('camiones')
+      .update({ estado: 'liberado', finalizado_at: ahoraStr })
+      .eq('flota', flota)
+      .not('estado', 'eq', 'liberado')
+      .select();
+
+    if (error) {
+      addToast("❌ Error en base de datos: " + error.message, "error");
+      // Refresco forzado para recuperar estado real
+      const { data: retry } = await supabase.from('camiones').select('*');
+      if (retry) setCamionesRegistrados(retry);
+    } else if (!data || data.length === 0) {
+      addToast("⚠️ No se encontró el registro activo para liberar.", "warning");
+    } else {
+      addToast(`🚀 Camión ${flota} liberado con éxito (${data.length} registros). Sincronizando...`);
+      
+      setTimeout(async () => {
+        const { data: flotaInfo } = await supabase.from('camiones').select('*').order('id', { ascending: false });
+        if (flotaInfo) setCamionesRegistrados(flotaInfo);
+      }, 1000);
+    }
   };
 
   const eliminarCamion = async (camionId, flota) => {
@@ -1283,7 +1304,7 @@ function App() {
         <div style={{ background: 'white', padding: '3rem', borderRadius: '12px', boxShadow: '0 10px 25px rgba(0,0,0,0.1)', width: '100%', maxWidth: '400px' }}>
           <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
             <h1 style={{ color: '#ef4444', margin: 0, fontSize: '1.8rem', letterSpacing: '-1px' }}>DRUMMOND</h1>
-            <p style={{ color: '#1f2937', fontWeight: 'bold', margin: '0.2rem 0', fontSize: '1.2rem' }}>Programa de Confort Camiones</p>
+            <p style={{ color: '#1f2937', fontWeight: 'bold', margin: '0.2rem 0', fontSize: '1.2rem' }}>Programa de Confort Camiones v2.0.1</p>
             <span style={{ fontSize: '0.8rem', color: '#6b7280' }}>Plataforma Interna Asegurada</span>
           </div>
 
@@ -1827,7 +1848,7 @@ function App() {
                                 {([camion.aprobado_g1, camion.aprobado_g2, camion.aprobado_g3].filter(Boolean).length >= 2) ? (
                                   <button
                                     className="btn btn-primary"
-                                    onClick={() => liberarCamion(camion.id)}
+                                    onClick={() => liberarCamion(camion.id, camion.flota)}
                                     style={{ width: '100%', marginTop: '0.8rem', padding: '0.4rem', fontSize: '0.75rem', background: '#10b981', borderColor: '#10b981' }}
                                   >
                                     🚛 LIBERAR CAMIÓN
