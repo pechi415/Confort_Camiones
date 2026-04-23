@@ -1,0 +1,22 @@
+{
+  "name": "Drummond Confort Camiones",
+  "short_name": "Drummond",
+  "description": "Sistema de Trazabilidad y Mantenimiento de Camiones Drummond",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#ef4444",
+  "icons": [
+    {
+      "src": "/favicon.jpg",
+      "sizes": "192x192",
+      "type": "image/jpeg",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/favicon.jpg",
+      "sizes": "512x512",
+      "type": "image/jpeg"
+    }
+  ]
+}
