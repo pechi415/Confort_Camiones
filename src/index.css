@@ -478,8 +478,8 @@ h1, h2, h3, h4, h5, h6 {
   }
 
   .main-content {
-    padding: 1rem 1.2rem;
-    overflow: visible !important; /* Permitir que el scroll sea manejado por la ventana principal */
+    padding: 0.8rem 1rem;
+    overflow: visible !important; 
   }
 
   .page-header {
@@ -601,6 +601,7 @@ h1, h2, h3, h4, h5, h6 {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
+    margin-bottom: 0.8rem !important;
   }
 }
 
@@ -616,7 +617,7 @@ h1, h2, h3, h4, h5, h6 {
 @media (max-width: 768px) {
   .kanban-column {
     max-width: 72vw;
-    height: calc(100vh - 250px);
+    height: calc(100vh - 340px);
   }
 }
 
@@ -624,8 +625,8 @@ h1, h2, h3, h4, h5, h6 {
     display: flex;
     justify-content: center;
     gap: 0.5rem;
-    margin-top: 1rem;
-    margin-bottom: 1rem;
+    margin-top: 0.5rem;
+    margin-bottom: 0.5rem;
   }
 
   .indicator-dot {
