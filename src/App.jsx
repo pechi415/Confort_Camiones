@@ -70,6 +70,94 @@ function calcularSimilitudIA(s1, s2) {
 
 
 // Motor de Limpieza Retroactiva (Aplica IA a datos existentes de la nube)
+const corregirOrtografiaIA = (texto) => {
+  if (!texto) return '';
+  let t = texto;
+  const diccionario = {
+    'tolba': 'tolva', 'suspencion': 'suspensión', 'valvula': 'válvula', 'vibrasion': 'vibración',
+    'vibracion': 'vibración', 'frena': 'freno', 'presion': 'presión', 'hidraulico': 'hidráulico',
+    'direccion': 'dirección', 'transmicion': 'transmisión', 'transmision': 'transmisión',
+    'recalienta': 'se recalienta', 'vacio': 'vacío', 'neumatico': 'neumático', 'botiquin': 'botiquín',
+    'bateria': 'batería', 'codigo': 'código', 'dinamico': 'dinámico', 'estatico': 'estático',
+    'proximo': 'próximo', 'despues': 'después', 'tambien': 'también', 'ademas': 'además',
+    'aun': 'aún', 'todavia': 'todavía', 'mas': 'más', 'porsentaje': 'porcentaje', 'asiento': 'asiento',
+    'cabina': 'cabina', 'golpea': 'golpea', 'ruido': 'ruido', 'fuga': 'fuga', 'bote': 'fuga',
+    'manguera': 'manguera', 'roto': 'roto', 'partido': 'partido', 'fisura': 'fisura', 'grieta': 'grieta',
+    'soldadura': 'soldadura', 'perno': 'perno', 'tornillo': 'tornillo', 'suelto': 'suelto',
+    'flojo': 'flojo', 'ajustar': 'ajustar', 'reemplazar': 'reemplazar', 'cambiar': 'cambiar',
+    'revisar': 'revisar', 'chequear': 'chequear', 'limpiar': 'limpiar', 'engrasar': 'engrasar',
+    'lubricar': 'lubricar', 'desgaste': 'desgaste', 'excesivo': 'excesivo', 'bajo': 'bajo',
+    'alto': 'alto', 'nivel': 'nivel', 'temperatura': 'temperatura', 'caliente': 'caliente',
+    'frio': 'frío', 'duro': 'duro', 'blando': 'blando', 'vacio': 'vacío', 'lleno': 'lleno',
+    'luces': 'luces', 'faro': 'faro', 'stop': 'stop', 'reversa': 'reversa', 'alarma': 'alarma',
+    'pito': 'pito', 'claxon': 'claxon', 'vidrio': 'vidrio', 'parabrisas': 'parabrisas',
+    'limpiaparabrisas': 'limpiaparabrisas', 'puerta': 'puerta', 'chapa': 'chapa', 'manija': 'manija',
+    'espejo': 'espejo', 'retrovisor': 'retrovisor', 'escalera': 'escalera', 'pasamanos': 'pasamanos',
+    'extintor': 'extintor', 'botiquin': 'botiquín', 'llanta': 'llanta', 'neumatico': 'neumático',
+    'rin': 'rin', 'tuerca': 'tuerca', 'valvula': 'válvula', 'tapa': 'tapa', 'tanque': 'tanque',
+    'combustible': 'combustible', 'diesel': 'diésel', 'gasoil': 'gasoil', 'filtro': 'filtro',
+    'agua': 'agua', 'radiador': 'radiador', 'tapa': 'tapa', 'correa': 'correa', 'ventilador': 'ventilador',
+    'alternador': 'alternador', 'bateria': 'batería', 'cable': 'cable', 'borne': 'borne',
+    'sulfatado': 'sulfatado', 'arranque': 'arranque', 'swich': 'switch', 'suich': 'switch',
+    'encendido': 'encendido', 'tablero': 'tablero', 'pantalla': 'pantalla', 'falla': 'falla',
+    'codigo': 'código', 'sensor': 'sensor', 'presion': 'presión', 'flujo': 'flujo',
+    'velocidad': 'velocidad', 'marcha': 'marcha', 'cambio': 'cambio', 'neutro': 'neutro',
+    'parqueo': 'parqueo', 'freno': 'freno', 'emergencia': 'emergencia', 'parqueo': 'parqueo',
+    'servicio': 'servicio', 'retardo': 'retardo', 'dinamico': 'dinámico', 'estatico': 'estático',
+    'prueba': 'prueba', 'bien': 'bien', 'mal': 'mal', 'regular': 'regular', 'malo': 'malo',
+    'bueno': 'bueno', 'excelente': 'excelente', 'urgente': 'urgente', 'prioridad': 'prioridad',
+    'taller': 'taller', 'campo': 'campo', 'ruta': 'ruta', 'via': 'vía', 'rampa': 'rampa',
+    'botadero': 'botadero', 'pala': 'pala', 'cargador': 'cargador', 'tractor': 'tractor',
+    'motoniveladora': 'motoniveladora', 'tanquero': 'tanquero', 'lubricador': 'lubricador',
+    'mantenimiento': 'mantenimiento', 'preventivo': 'preventivo', 'correctivo': 'correctivo',
+    'inspeccion': 'inspección', 'rutina': 'rutina', 'chequeo': 'chequeo', 'diario': 'diario',
+    'turno': 'turno', 'dia': 'día', 'noche': 'noche', 'mañana': 'mañana', 'tarde': 'tarde',
+    'hoy': 'hoy', 'ayer': 'ayer', 'mañana': 'mañana', 'proximo': 'próximo', 'anterior': 'anterior',
+    'actual': 'actual', 'nuevo': 'nuevo', 'viejo': 'viejo', 'usado': 'usado', 'limpio': 'limpio',
+    'sucio': 'sucio', 'grasa': 'grasa', 'polvo': 'polvo', 'barro': 'barro', 'agua': 'agua',
+    'aceite': 'aceite', 'combustible': 'combustible', 'aire': 'aire', 'oxigeno': 'oxígeno',
+    'nitrogeno': 'nitrógeno', 'fuego': 'fuego', 'incendio': 'incendio', 'humo': 'humo',
+    'calor': 'calor', 'frio': 'frío', 'luz': 'luz', 'sonido': 'sonido', 'ruido': 'ruido',
+    'olor': 'olor', 'quemado': 'quemado', 'dulce': 'dulce', 'podrido': 'podrido', 'fuerte': 'fuerte',
+    'debil': 'débil', 'suave': 'suave', 'duro': 'duro', 'blando': 'blando', 'fragil': 'frágil',
+    'resistente': 'resistente', 'pesado': 'pesado', 'liviano': 'liviano', 'grande': 'grande',
+    'pequeño': 'pequeño', 'largo': 'largo', 'corto': 'corto', 'ancho': 'ancho', 'angosto': 'angosto',
+    'alto': 'alto', 'bajo': 'bajo', 'profundo': 'profundo', 'superficial': 'superficial',
+    'rapido': 'rápido', 'lento': 'lento', 'veloz': 'veloz', 'quieto': 'quieto', 'movimiento': 'movimiento',
+    'vibracion': 'vibración', 'oscilacion': 'oscilación', 'giro': 'giro', 'vuelta': 'vuelta',
+    'arriba': 'arriba', 'abajo': 'abajo', 'adelante': 'adelante', 'atras': 'atrás',
+    'derecha': 'derecha', 'izquierda': 'izquierda', 'centro': 'centro', 'medio': 'medio',
+    'lado': 'lado', 'esquina': 'esquina', 'borde': 'borde', 'punta': 'punta', 'fondo': 'fondo',
+    'frente': 'frente', 'atras': 'atrás', 'cerca': 'cerca', 'lejos': 'lejos', 'dentro': 'dentro',
+    'fuera': 'fuera', 'encima': 'encima', 'debajo': 'debajo', 'sobre': 'sobre', 'bajo': 'bajo',
+    'entre': 'entre', 'hacia': 'hacia', 'desde': 'desde', 'por': 'por', 'para': 'para',
+    'con': 'con', 'sin': 'sin', 'contra': 'contra', 'segun': 'según', 'hasta': 'hasta',
+    'durante': 'durante', 'mientras': 'mientras', 'cuando' : 'cuando', 'donde': 'donde',
+    'como': 'como', 'quien': 'quien', 'cual': 'cual', 'que': 'que', 'porque': 'porque',
+    'pues': 'pues', 'entonces': 'entonces', 'luego': 'luego', 'despues': 'después',
+    'antes': 'antes', 'ahora': 'ahora', 'siempre': 'siempre', 'nunca': 'nunca', 'jamas': 'jamás',
+    'talvez': 'tal vez', 'quiza': 'quizá', 'quizas': 'quizás', 'tambien': 'también',
+    'tampoco': 'tampoco', 'ademas': 'además', 'incluso': 'incluso', 'inclusive': 'inclusive',
+    'aun': 'aún', 'todavia': 'todavía', 'ya': 'ya', 'apenas': 'apenas', 'casi': 'casi',
+    'muy': 'muy', 'mucho': 'mucho', 'poco': 'poco', 'bastante': 'bastante', 'demasiado': 'demasiado',
+    'tan': 'tan', 'tanto': 'tanto', 'mas': 'más', 'menos': 'menos', 'solo': 'solo',
+    'unicamente': 'únicamente', 'precisamente': 'precisamente', 'exactamente': 'exactamente',
+    'justamente': 'justamente', 'claramente': 'claramente', 'logicamente': 'lógicamente',
+    'obviamente': 'obviamente', 'naturalmente': 'naturalmente', 'realmente': 'realmente',
+    'verdaderamente': 'verdaderamente', 'seguramente': 'seguramente', 'posiblemente': 'posiblemente',
+    'probablemente': 'probablemente', 'acaso': 'acaso', 'ojala': 'ojalá', 'amen': 'amén',
+    'si': 'sí', 'no': 'no', 'así': 'así', 'peor': 'peor', 'mejor': 'mejor'
+  };
+
+  Object.keys(diccionario).forEach(error => {
+    const regex = new RegExp(`\\b${error}\\b`, 'gi');
+    t = t.replace(regex, diccionario[error]);
+  });
+
+  // Capitalización de la primera letra
+  return t.charAt(0).toUpperCase() + t.slice(1);
+};
+
 const limpiarFallasIA = (fallasStr) => {
   if (!fallasStr) return [];
   
@@ -811,7 +899,8 @@ function App() {
           const fallObj = fallas.find(f => f.id === fId);
           if (fallObj) {
             totalPuntos += fallObj.impacto;
-            const obs = observacionesEdit[fId] ? ` (${observacionesEdit[fId]})` : '';
+            const obsLimpia = corregirOrtografiaIA(observacionesEdit[fId] || '');
+            const obs = obsLimpia ? ` (${obsLimpia})` : '';
             finalFallasItems.push(`${fallObj.nombre}${obs}`);
           }
         }
@@ -819,7 +908,7 @@ function App() {
     } else {
       const fallasStruct = {};
       Object.keys(selectedDanosEdit).forEach(id => {
-        if (selectedDanosEdit[id]) fallasStruct[id] = observacionesEdit[id] || '';
+        if (selectedDanosEdit[id]) fallasStruct[id] = corregirOrtografiaIA(observacionesEdit[id] || '');
       });
 
       if (!detallesFinales[editingGroupContext]) {
@@ -2726,7 +2815,8 @@ function App() {
                     // Construimos la estructura JSON del grupo que reporta
                     const fallasStruct = {};
                     Object.keys(selectedDanos).forEach(id => {
-                        fallasStruct[id] = observaciones[id] || '';
+                        // IA: Corrección de Ortografía Automática v3.5
+                        fallasStruct[id] = corregirOrtografiaIA(observaciones[id] || '');
                     });
                     const detallesAnteriores = camionExistente.detalles_grupos || {};
                     const detallesNuevos = {
@@ -2764,13 +2854,15 @@ function App() {
 
                     const fallasDetalladas = Object.keys(selectedDanos).map(id => {
                       const nombreFalla = fallas.find(f => f.id === id)?.nombre;
-                      const comentario = observaciones[id] ? ` (G${grupo}: ${observaciones[id]})` : '';
+                      // IA: Corrección de Ortografía Automática v3.5
+                      const comentarioLimpio = corregirOrtografiaIA(observaciones[id] || '');
+                      const comentario = comentarioLimpio ? ` (G${grupo}: ${comentarioLimpio})` : '';
                       return `${nombreFalla}${comentario}`;
                     }).join(', ');
 
                     const fallasStruct = {};
                     Object.keys(selectedDanos).forEach(id => {
-                        fallasStruct[id] = observaciones[id] || '';
+                        fallasStruct[id] = corregirOrtografiaIA(observaciones[id] || '');
                     });
                     const detallesNuevos = {
                        [`G${grupo}`]: {
