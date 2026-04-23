@@ -283,6 +283,18 @@ function App() {
     return null;
   };
 
+  const formatFechaYHora = (dateStr) => {
+    if (!dateStr) return '---';
+    const d = parseFecha(dateStr);
+    if (!d) return dateStr.substring(0, 16);
+    const dia = String(d.getDate()).padStart(2, '0');
+    const mes = String(d.getMonth() + 1).padStart(2, '0');
+    const anio = String(d.getFullYear());
+    const h = String(d.getHours()).padStart(2, '0');
+    const min = String(d.getMinutes()).padStart(2, '0');
+    return `${dia}/${mes}/${anio} ${h}:${min}`;
+  };
+
   // Helper de Tiempo de Ciclo v2.1 (Ingreso -> Liberación)
   const formatearCiclo = (inicio, fin) => {
     if (!inicio || !fin) return '---';
@@ -1957,8 +1969,8 @@ function App() {
                             {limpiarFallasIA(registro.fallas).map(f => `${f.falla}${f.obs !== '-' ? ` (${f.obs})` : ''}`).join(', ')}
                           </div>
                         </td>
-                        <td data-label="Ingreso" style={{ fontSize: '0.85rem' }}>{formatFechaCorta(registro.time || registro.creado_at)}</td>
-                        <td data-label="Liberación" style={{ fontSize: '0.85rem' }}>{formatFechaCorta(registro.finalizado_at)}</td>
+                        <td data-label="Ingreso" style={{ fontSize: '0.85rem' }}>{formatFechaYHora(registro.time || registro.creado_at)}</td>
+                        <td data-label="Liberación" style={{ fontSize: '0.85rem' }}>{formatFechaYHora(registro.finalizado_at)}</td>
                         <td data-label="Ciclo" className="collapsible-col" style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--primary-red)' }}>
                           {formatearCiclo(registro.time || registro.creado_at, registro.finalizado_at)}
                         </td>
