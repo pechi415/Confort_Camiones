@@ -761,7 +761,10 @@ function App() {
             });
             if (fallaObj) {
               danos[fallaObj.id] = true;
-              if (combinedObs) obs[fallaObj.id] = combinedObs;
+              if (combinedObs) {
+                // Limpieza de prefijos G1:, G2:, G3: y separadores para la vista unificada
+                obs[fallaObj.id] = combinedObs.replace(/G[1-3]:\s*/g, '');
+              }
             }
           }
         });
