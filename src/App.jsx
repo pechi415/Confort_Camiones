@@ -751,7 +751,25 @@ function App() {
     // 2. Re-ensamblar Fallas y Observaciones
     const fallasConsolidadasAnteriores = {}; // fallaNombre -> { G1: obs, G2: obs, General: obs }
     if (camionEditando.fallas) {
-      camionEditando.fallas.split(/\s*,\s*/).forEach(fallStr => {
+      const rawFallas = camionEditando.fallas;
+      const parts = [];
+      let depth = 0;
+      let lastSplit = 0;
+
+      // Dividimos la cadena solo en comas que estén en nivel 0 de paréntesis
+      for (let i = 0; i < rawFallas.length; i++) {
+        const char = rawFallas[i];
+        if (char === '(') depth++;
+        if (char === ')') depth--;
+        if (depth === 0 && char === ',') {
+          parts.push(rawFallas.substring(lastSplit, i).trim());
+          lastSplit = i + 1;
+        }
+      }
+      parts.push(rawFallas.substring(lastSplit).trim());
+
+      parts.forEach(fallStr => {
+        if (!fallStr || fallStr === '-') return;
         const match = fallStr.match(/^(.*?)(?:\s*\((.*?)\))?$/);
         if (match) {
           const nombre = match[1].trim();
@@ -2549,10 +2567,27 @@ function App() {
                     // 4. Construcción del string de fallas consolidado (Preservando comentarios anteriores)
                     const obsAnteriores = {};
                     if (camionExistente.fallas) {
-                      camionExistente.fallas.split(', ').forEach(p => {
-                        const match = p.match(/^(.*?)(?:\s\((.*?)\))?$/);
+                      const rawFallas = camionExistente.fallas;
+                      const parts = [];
+                      let depth = 0;
+                      let lastSplit = 0;
+
+                      for (let i = 0; i < rawFallas.length; i++) {
+                        const char = rawFallas[i];
+                        if (char === '(') depth++;
+                        if (char === ')') depth--;
+                        if (depth === 0 && char === ',') {
+                          parts.push(rawFallas.substring(lastSplit, i).trim());
+                          lastSplit = i + 1;
+                        }
+                      }
+                      parts.push(rawFallas.substring(lastSplit).trim());
+
+                      parts.forEach(p => {
+                        if (!p || p === '-') return;
+                        const match = p.match(/^(.*?)(?:\s*\((.*?)\))?$/);
                         if (match && match[2]) {
-                          const fObj = fallas.find(f => f.nombre === match[1]);
+                          const fObj = fallas.find(f => f.nombre === match[1].trim());
                           if (fObj) obsAnteriores[fObj.id] = match[2];
                         }
                       });
@@ -2931,7 +2966,7 @@ function App() {
                       key={g}
                       onClick={() => {
                         setEditingGroupContext(g);
-                        cargarContextoEdicion(camionEditando, g);
+                        sincronizarModal(camionEditando, g);
                       }}
                       style={{
                         padding: '0.5rem 1rem',
