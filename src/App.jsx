@@ -188,7 +188,7 @@ function App() {
   const [observacionesEdit, setObservacionesEdit] = useState({});
   const [operadorEdit, setOperadorEdit] = useState(''); 
   const [camionEditando, setCamionEditando] = useState(null); // Movido aquí para evitar WSoD (v5.3.1)  
-  const [editingGroupContext, setEditingGroupContext] = useState(null);
+
 
   useEffect(() => {
     if (camionEditando && editingGroupContext) {
