@@ -936,19 +936,41 @@ function App() {
       addToast("⏳ Preparando archivo Excel...", "info");
 
       const datosExcel = registrosFiltrados.map(r => {
-        const opEntries = (r.operador || '').split(', ');
-        const getOp = (g) => opEntries.find(n => n.includes(`G${g}:`))?.replace(`G${g}:`, '').trim() || '-';
+        // Extracción de datos desde JSONB (v2.1.0)
+        const dG = r.detalles_grupos || {};
+        
+        const getOp = (g) => dG[`G${g}`]?.operador || (r.operador || '').split(', ').find(n => n.includes(`G${g}:`))?.replace(`G${g}:`, '').trim() || '-';
+        const getSup = (g) => dG[`G${g}`]?.supervisor || (r.supervisor || '').split(', ').find(n => n.includes(`G${g}:`))?.replace(`G${g}:`, '').trim() || '-';
+        
+        // Cálculo de Tiempo de Ciclo
+        let cicloTxt = '-';
+        if (r.finalizado_at && (r.ingreso_evaluar_at || r.creado_at)) {
+          const inicio = new Date(r.ingreso_evaluar_at || r.creado_at);
+          const fin = new Date(r.finalizado_at);
+          const diffMs = fin - inicio;
+          const diffMin = Math.max(0, Math.floor(diffMs / 60000));
+          const horas = Math.floor(diffMin / 60);
+          const mins = diffMin % 60;
+          cicloTxt = horas > 0 ? `${horas}h ${mins}m` : `${mins} min`;
+        }
+
         return {
-          "Fecha Registro": r.time,
+          "Fecha Reporte": r.time,
           "Flota": r.flota,
-          "Ubicación": r.mina,
+          "Mina/Ubicación": r.mina,
+          "Atención/Prioridad": r.atencion || 'NORMAL',
           "Op. Grupo 1": getOp(1),
+          "Sup. Grupo 1": getSup(1),
           "Op. Grupo 2": getOp(2),
+          "Sup. Grupo 2": getSup(2),
           "Op. Grupo 3": getOp(3),
-          "Fallas Reportadas": r.fallas,
-          "VB G1": r.aprobado_g1 ? 'Aprobado' : '-',
-          "VB G2": r.aprobado_g2 ? 'Aprobado' : '-',
-          "VB G3": r.aprobado_g3 ? 'Aprobado' : '-'
+          "Sup. Grupo 3": getSup(3),
+          "Fallas Unificadas": r.fallas,
+          "Ciclo de Tiempo": cicloTxt,
+          "Fecha Liberación": r.finalizado_at ? new Date(r.finalizado_at).toLocaleString() : '-',
+          "Estado G1": r.aprobado_g1 ? 'Aprobado' : '-',
+          "Estado G2": r.aprobado_g2 ? 'Aprobado' : '-',
+          "Estado G3": r.aprobado_g3 ? 'Aprobado' : '-'
         };
       });
 
@@ -1069,10 +1091,12 @@ function App() {
       doc.text(`Personal que reporta el estado (Operadores Permanentes):`, 20, 45);
       doc.setFont("helvetica", "normal");
       
-      // Filtrar para mostrar solo al reportero original en la cabecera (v1.9.115)
-      const originalGrupoPrefix = `G${registro.grupo || '1'}:`;
-      const allOps = (registro.operador || 'N/A').split(', ');
-      const operText = allOps.find(n => n.includes(originalGrupoPrefix)) || allOps[0] || 'N/A';
+      // Filtrar para mostrar solo al reportero original (v2.1.0)
+      const dG_orig = registro.detalles_grupos || {};
+      const origG = registro.grupo || '1';
+      const reporteroData = dG_orig[`G${origG}`] || {};
+      
+      const operText = reporteroData.operador || (registro.operador || 'N/A').split(', ').find(n => n.includes(`G${origG}:`)) || (registro.operador || 'N/A').split(', ')[0];
       
       const operSplit = doc.splitTextToSize(operText, 170);
       doc.text(operSplit, 20, 52);
@@ -1082,8 +1106,7 @@ function App() {
       doc.text(`Gestor del reporte (Supervisor de Camiones):`, 20, supLabelY);
 
       doc.setFont("helvetica", "normal");
-      const allSups = (registro.supervisor || 'N/A').split(', ');
-      const supText = allSups.find(n => n.includes(originalGrupoPrefix)) || allSups[0] || 'N/A';
+      const supText = reporteroData.supervisor || (registro.supervisor || 'N/A').split(', ').find(n => n.includes(`G${origG}:`)) || (registro.supervisor || 'N/A').split(', ')[0];
       
       const supSplit = doc.splitTextToSize(supText, 170);
       const supDataY = supLabelY + 7;
@@ -1121,10 +1144,9 @@ function App() {
         headStyles: { fillColor: [0, 0, 0], textColor: [255, 255, 255] }
       });
 
+      const dG = registro.detalles_grupos || {};
       const grupoActual = session.grupo || '1';
-      const grupoPrefix = `G${grupoActual}:`;
-      const opNames = (registro.operador || '').split(', ');
-      const opNameFiltered = opNames.find(n => n.includes(grupoPrefix))?.replace(grupoPrefix, '').trim() || 'N/A';
+      const opNameFiltered = dG[`G${grupoActual}`]?.operador || (registro.operador || '').split(', ').find(n => n.includes(`G${grupoActual}:`))?.replace(`G${grupoActual}:`, '').trim() || 'N/A';
 
       const signY = doc.lastAutoTable.finalY + 35;
       
