@@ -2944,7 +2944,7 @@ function App() {
                     <Truck size={24} color="var(--primary-red)" />
                   </div>
                   <div>
-                    <h3 style={{ margin: 0, color: 'var(--primary-black)', fontSize: '1.3rem' }}>Edición del Diagnóstico <small style={{ color: 'var(--primary-red)', fontSize: '0.75rem' }}>v5.3</small></h3>
+                    <h3 style={{ margin: 0, color: 'var(--primary-black)', fontSize: '1.3rem' }}>Edición del Diagnóstico</h3>
                     <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-muted)' }}>Corrija fallas y operador para el equipo <b>{camionEditando?.flota}</b></p>
                   </div>
                 </div>
@@ -2973,42 +2973,41 @@ function App() {
                   </div>
                 </div>
 
-                {/* Selector de Grupo Estilo Tabs (v4.0) */}
-                <div style={{ display: 'flex', gap: '0.5rem', borderBottom: '1px solid #f1f5f9', paddingBottom: '0.5rem' }}>
-                  {['General', 'G1', 'G2', 'G3'].map(g => (
-                    <button
-                      key={g}
-                      onClick={() => {
-                        setEditingGroupContext(g);
-                      }}
-                      style={{
-                        padding: '0.5rem 1rem',
-                        borderRadius: '8px',
-                        border: 'none',
-                        background: editingGroupContext === g ? 'var(--primary-red)' : 'transparent',
-                        color: editingGroupContext === g ? 'white' : '#64748b',
-                        fontSize: '0.8rem',
-                        fontWeight: 'bold',
-                        cursor: 'pointer',
-                        transition: 'all 0.2s',
-                        display: (session.role === 'admin' || g === `G${session.grupo}` || (g === 'General' && session.role === 'admin')) ? 'block' : 'none'
-                      }}
-                    >
-                      {g === 'General' ? 'General (Unificado)' : `Reporte ${g}`}
-                    </button>
-                  ))}
-                </div>
+                {/* Selector de Grupo Estilo Tabs (v4.0) - Solo visible para administradores */}
+                {session.role === 'admin' && (
+                  <div style={{ display: 'flex', gap: '0.5rem', borderBottom: '1px solid #f1f5f9', paddingBottom: '0.5rem' }}>
+                    {['General', 'G1', 'G2', 'G3'].map(g => (
+                      <button
+                        key={g}
+                        onClick={() => {
+                          setEditingGroupContext(g);
+                          sincronizarModal(camionEditando, g);
+                        }}
+                        style={{
+                          padding: '0.5rem 1rem',
+                          borderRadius: '8px',
+                          border: 'none',
+                          background: editingGroupContext === g ? 'var(--primary-red)' : 'transparent',
+                          color: editingGroupContext === g ? 'white' : '#64748b',
+                          fontSize: '0.8rem',
+                          fontWeight: 'bold',
+                          cursor: 'pointer',
+                          transition: 'all 0.2s',
+                          display: 'block'
+                        }}
+                      >
+                        {g === 'General' ? 'General (Unificado)' : `Reporte ${g}`}
+                      </button>
+                    ))}
+                  </div>
+                )}
 
                 {/* Checklist de Fallas Estilo Premium */}
                 <div style={{ marginTop: '0.5rem' }}>
                   <label className="input-label" style={{ marginBottom: '0.5rem', display: 'block' }}>
                     {editingGroupContext === 'General' ? 'Reporte de Fallas General' : `Fallas Reportadas por ${editingGroupContext}`}
                   </label>
-                  
-                  {/* Debug Log Inteligente (v4.8 - Sincronismo) */}
-                  <div style={{ fontSize: '0.65rem', color: '#94a3b8', background: '#f8fafc', padding: '0.6rem', borderRadius: '8px', marginBottom: '1rem', border: '1px dashed #cbd5e1' }}>
-                    <strong>🔍 Datos en DB:</strong> {camionEditando?.fallas || 'Ninguna falla detectada'}
-                  </div>
+
 
                   <div style={{
                     display: 'flex',
