@@ -930,7 +930,7 @@ function App() {
       Object.keys(detallesFinales).forEach(g => {
           if (detallesFinales[g].operador) opsSet.add(`${g}: ${detallesFinales[g].operador}`);
       });
-      operadorFinal = Array.from(opsSet).filter(Boolean).sort().join(', ');
+      operadorFinal = Array.from(opsSet).filter(Boolean).sort().join(' | ');
 
       const fallasMap = {};
       if (camionEditando.fallas) {
@@ -1013,7 +1013,7 @@ function App() {
 
     const camionActualizado = {
       operador: operadorFinal,
-      fallas: finalFallasItems.join(', '),
+      fallas: finalFallasItems.join(' | '),
       puntos: totalPuntos,
       atencion: atencion,
       detalles_grupos: detallesFinales
@@ -2729,14 +2729,14 @@ function App() {
                     const supLimpio = normalizarNombre(session.nombre);
 
                     // 1. Integración de Grupos, Conductores y Supervisores
-                    const listaGrupos = Array.from(new Set([...camionExistente.grupo.split(', '), grupo])).sort();
+                    const listaGrupos = Array.from(new Set([...camionExistente.grupo.split(/\s*[,|]\s*/), grupo])).sort();
 
                     const nuevoRegSup = `G${grupo}: ${supLimpio}`;
-                    const supsActuales = (camionExistente.supervisor || '').split(', ').filter(Boolean);
+                    const supsActuales = (camionExistente.supervisor || '').split(/\s*[,|]\s*/).filter(Boolean);
                     const listaSupervisores = Array.from(new Set([...supsActuales, nuevoRegSup]));
 
                     const nuevoRegOp = `G${grupo}: ${opLimpio}`;
-                    const opsActuales = (camionExistente.operador || '').split(', ').filter(Boolean);
+                    const opsActuales = (camionExistente.operador || '').split(/\s*[,|]\s*/).filter(Boolean);
                     const listaOperadores = Array.from(new Set([...opsActuales, nuevoRegOp]));
 
                     const numGrupos = listaGrupos.length;
@@ -2810,7 +2810,7 @@ function App() {
                       const combined = unicas.join(' | ');
 
                       return f.nombre + (combined ? ` (${combined})` : '');
-                    }).join(', ');
+                    }).join(' | ');
 
                     // Construimos la estructura JSON del grupo que reporta
                     const fallasStruct = {};
@@ -2832,9 +2832,9 @@ function App() {
 
                     const camionActualizado = {
                       ...camionExistente,
-                      grupo: listaGrupos.join(', '),
-                      supervisor: listaSupervisores.join(', '),
-                      operador: listaOperadores.join(', '),
+                      grupo: listaGrupos.join(' | '),
+                      supervisor: listaSupervisores.join(' | '),
+                      operador: listaOperadores.join(' | '),
                       fallas: fallasConsolidadas,
                       puntos: puntosFinales,
                       atencion: atencionLabel,
@@ -2858,7 +2858,7 @@ function App() {
                       const comentarioLimpio = corregirOrtografiaIA(observaciones[id] || '');
                       const comentario = comentarioLimpio ? ` (G${grupo}: ${comentarioLimpio})` : '';
                       return `${nombreFalla}${comentario}`;
-                    }).join(', ');
+                    }).join(' | ');
 
                     const fallasStruct = {};
                     Object.keys(selectedDanos).forEach(id => {
