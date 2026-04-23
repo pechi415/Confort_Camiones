@@ -1429,12 +1429,12 @@ function App() {
   }) : [];
 
   return (
-    <div className="app-container">
+    <div className="app-container" style={{ background: '#e0f2fe' }}>
       {/* Sidebar */}
       <aside className="sidebar">
         <div className="brand">
           <div className="brand-logo-container">
-            <div className="brand-logo-text">CAMIONES</div>
+            <div className="brand-logo-text">CAMIONES v2.0.2</div>
             <div className="brand-subtitle">PRODUCCIÓN</div>
           </div>
         </div>
