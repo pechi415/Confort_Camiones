@@ -27,7 +27,7 @@ function calcularSimilitudIA(s1, s2) {
         if (['golpea', 'golpeando', 'golpeteo'].includes(w)) return 'golpe';
         if (['suena', 'sonido', 'ruido'].includes(w)) return 'ruido';
         if (['cabina', 'izquierdo', 'izq'].includes(w)) return 'izquierda';
-        if (['rigidaz', 'rigida', 'dura'].includes(w)) return 'rigidez';
+        if (['rigidaz', 'rigida', 'rigidas', 'dura', 'duras'].includes(w)) return 'rigidez';
         return w;
       })
       .join(' ');
@@ -86,7 +86,7 @@ const limpiarFallasIA = (fallasStr) => {
       if (openParen !== -1 && closeParen !== -1 && closeParen > openParen) {
           const rawObs = text.substring(openParen + 1, closeParen).trim();
           // v1.9.86 Limpieza recursiva de observaciones internas (para datos históricos)
-          const obsParts = rawObs.split(/\s*[|/]\s*/).filter(Boolean);
+          const obsParts = rawObs.split(/\s*[|/]\s*/).filter(Boolean).map(p => p.replace(/^(?:G\d+|General)\s*[:\-]\s*/i, '').trim());
           const cleanObsParts = [];
           
           obsParts.forEach(part => {
