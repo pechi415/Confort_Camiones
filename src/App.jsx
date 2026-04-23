@@ -1521,7 +1521,7 @@ function App() {
                             <td>{formatFechaCorta(camion?.time || camion?.creado_at)}</td>
                             <td>
                               <div style={{ display: 'flex', justifyContent: 'center', gap: '0.6rem' }}>
-                                {(session?.role?.toLowerCase() === 'admin' || session?.role?.toLowerCase() === 'supervisor' || session?.role?.toLowerCase() === 'admin' || session?.role?.toLowerCase() === 'supervisor') && (
+                                {(session?.role?.toLowerCase() === 'admin' || session?.role?.toLowerCase() === 'supervisor' || session?.rol?.toLowerCase() === 'admin' || session?.rol?.toLowerCase() === 'supervisor') && (
                                   <button onClick={() => prepararEdicion(camion)} className="btn-action btn-action-edit" title="Editar"><Edit3 size={18} /></button>
                                 )}
                                 {(session?.role?.toLowerCase() === 'admin' || session?.role?.toLowerCase() === 'admin') && (
@@ -1569,7 +1569,7 @@ function App() {
                         </div>
                         <div style={{ marginTop: '0.8rem', display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
                           <button onClick={() => setSelectedReport(camion)} style={{ background: 'rgba(59, 130, 246, 0.1)', border: 'none', color: '#3b82f6', padding: '0.3rem', borderRadius: '6px' }} title="Diagnóstico"><FileText size={16} /></button>
-                          {(session?.role?.toLowerCase() === 'admin' || session?.role?.toLowerCase() === 'supervisor' || session?.role?.toLowerCase() === 'admin' || session?.role?.toLowerCase() === 'supervisor') && (
+                          {(session?.role?.toLowerCase() === 'admin' || session?.role?.toLowerCase() === 'supervisor' || session?.rol?.toLowerCase() === 'admin' || session?.rol?.toLowerCase() === 'supervisor') && (
                             <button onClick={() => prepararEdicion(camion)} style={{ background: 'rgba(255,255,255,0.8)', border: '1px solid #e5e7eb', color: '#6b7280', padding: '0.3rem', borderRadius: '6px' }} title="Editar"><Edit3 size={16} /></button>
                           )}
                           {(session?.role?.toLowerCase() === 'admin' || session?.role?.toLowerCase() === 'admin') && (
