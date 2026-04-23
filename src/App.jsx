@@ -649,7 +649,7 @@ function App() {
     } else if (!data || data.length === 0) {
       addToast("⚠️ No se encontró el registro activo para liberar.", "warning");
     } else {
-      addToast(`🚀 Camión ${flota} liberado con éxito (${data.length} registros). Sincronizando...`);
+      addToast(`🚀 Camión ${flota} liberado con éxito. Sincronizando...`);
       
       setTimeout(async () => {
         const { data: flotaInfo } = await supabase.from('camiones').select('*').order('id', { ascending: false });
