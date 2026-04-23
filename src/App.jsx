@@ -296,10 +296,11 @@ function App() {
   };
 
   // Helper de Tiempo de Ciclo v2.1 (Ingreso -> Liberación)
-  const formatearCiclo = (inicio, fin) => {
-    if (!inicio || !fin) return '---';
+  const formatearCiclo = (inicio, fin, ingresoEvaluar) => {
+    const startRaw = ingresoEvaluar || inicio;
+    if (!startRaw || !fin) return '---';
     try {
-      const start = parseFecha(inicio);
+      const start = parseFecha(startRaw);
       const end = parseFecha(fin);
       if (!start || !end) return '---';
       
@@ -483,12 +484,13 @@ function App() {
   const conteoLiberados = camionesAccessibles.filter(c => c.estado === 'liberado').length;
   
   const calcularPromedioCiclo = () => {
-    const liberadosValidos = camionesAccessibles.filter(c => c.estado === 'liberado' && c.finalizado_at && (c.time || c.creado_at));
+    const liberadosValidos = camionesAccessibles.filter(c => c.estado === 'liberado' && c.finalizado_at && (c.ingreso_evaluar_at || c.time || c.creado_at));
     if (liberadosValidos.length === 0) return "---";
     
     let validCount = 0;
     const sumaMs = liberadosValidos.reduce((acc, c) => {
-      const inicio = parseFecha(c.time || c.creado_at);
+      const startRaw = c.ingreso_evaluar_at || c.time || c.creado_at;
+      const inicio = parseFecha(startRaw);
       const fin = parseFecha(c.finalizado_at);
       if (!inicio || !fin) return acc;
       
@@ -556,11 +558,25 @@ function App() {
 
     // UI Optimista (Instantáneo para el operador)
     setCamionesRegistrados(prev =>
-      prev.map(c => c.id.toString() === idStr ? { ...c, estado: nuevoEstado } : c)
+      prev.map(c => {
+        if (c.id.toString() === idStr) {
+          const updates = { ...c, estado: nuevoEstado };
+          if (nuevoEstado === 'evaluar' && !c.ingreso_evaluar_at) {
+            updates.ingreso_evaluar_at = new Date().toISOString();
+          }
+          return updates;
+        }
+        return c;
+      })
     );
 
     // Persistencia Oficial a la Nube (Asíncrono en segundo plano)
-    await supabase.from('camiones').update({ estado: nuevoEstado }).eq('id', parseInt(idStr));
+    const dbUpdates = { estado: nuevoEstado };
+    const targetCamion = camionesRegistrados.find(c => c.id.toString() === idStr);
+    if (nuevoEstado === 'evaluar' && targetCamion && !targetCamion.ingreso_evaluar_at) {
+      dbUpdates.ingreso_evaluar_at = new Date().toISOString();
+    }
+    await supabase.from('camiones').update(dbUpdates).eq('id', parseInt(idStr));
   };
 
   // Función para confirmar el envío a garantía con motivos detallados
@@ -1969,10 +1985,10 @@ function App() {
                             {limpiarFallasIA(registro.fallas).map(f => `${f.falla}${f.obs !== '-' ? ` (${f.obs})` : ''}`).join(', ')}
                           </div>
                         </td>
-                        <td data-label="Ingreso" style={{ fontSize: '0.85rem' }}>{formatFechaYHora(registro.time || registro.creado_at)}</td>
-                        <td data-label="Liberación" style={{ fontSize: '0.85rem' }}>{formatFechaYHora(registro.finalizado_at)}</td>
+                        <td data-label="Ingreso" style={{ fontSize: '0.85rem' }}>{formatFechaCorta(registro.time || registro.creado_at)}</td>
+                        <td data-label="Liberación" style={{ fontSize: '0.85rem' }}>{formatFechaCorta(registro.finalizado_at)}</td>
                         <td data-label="Ciclo" className="collapsible-col" style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--primary-red)' }}>
-                          {formatearCiclo(registro.time || registro.creado_at, registro.finalizado_at)}
+                          {formatearCiclo(registro.time || registro.creado_at, registro.finalizado_at, registro.ingreso_evaluar_at)}
                         </td>
                         <td data-label="Operador" className="collapsible-col" style={{ fontSize: '0.85rem', whiteSpace: 'nowrap' }}>
                           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
