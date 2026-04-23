@@ -2960,7 +2960,7 @@ function App() {
                   </div>
                   <div>
                     <label className="input-label">
-                      {editingGroupContext === 'General' ? 'Nombres de Operadores (Completo)' : `Nombre del Operador (${editingGroupContext})`}
+                      {editingGroupContext === 'General' ? 'Nombres de Operadores (Completo)' : `Nombre del Operador`}
                     </label>
                     <input
                       type="text"
@@ -3005,7 +3005,7 @@ function App() {
                 {/* Checklist de Fallas Estilo Premium */}
                 <div style={{ marginTop: '0.5rem' }}>
                   <label className="input-label" style={{ marginBottom: '0.5rem', display: 'block' }}>
-                    {editingGroupContext === 'General' ? 'Reporte de Fallas General' : `Fallas Reportadas por ${editingGroupContext}`}
+                    {editingGroupContext === 'General' ? 'Reporte de Fallas General' : `Fallas Reportadas`}
                   </label>
 
 
