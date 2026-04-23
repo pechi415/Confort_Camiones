@@ -9,25 +9,40 @@ import * as XLSX from 'xlsx';
 
 const LOGO_DRUMMOND = "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";
 
-// Motor de Inteligencia Algorítmica Humana (v1.9.95)
+// v3.0: Motor de IA de Trazabilidad - Normalización Semántica Avanzada
+const normalizarNombre = (n) => {
+  if (!n) return '';
+  return n.toLowerCase().trim()
+    .split(' ')
+    .filter(p => p.length > 0)
+    .map(p => p.charAt(0).toUpperCase() + p.slice(1))
+    .join(' ');
+};
+
 function calcularSimilitudIA(s1, s2) {
   if (!s1 || !s2) return 0;
   
   // Normalización Humana: Quitar conectores, intensificadores y unificar términos técnicos
   const normalizar = (str) => {
     return str.toLowerCase()
-      .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // Quitar acentos
+      .normalize("NFD").replace(/[\u03000-\u036f]/g, "") // Quitar acentos
       .replace(/\s+/g, ' ')
       .trim()
       // Eliminar palabras de relleno e intensidad
       .split(' ')
-      .filter(w => !['muy', 'demasiado', 'bastante', 'mucho', 'un', 'poco', 'del', 'de', 'la', 'el', 'en', 'con'].includes(w))
-      // Unificar términos técnicos comunes
+      .filter(w => !['muy', 'demasiado', 'bastante', 'mucho', 'un', 'poco', 'del', 'de', 'la', 'el', 'en', 'con', 'que', 'se'].includes(w))
+      // Unificar términos técnicos comunes de minería (Diccionario Drummond v3)
       .map(w => {
-        if (['golpea', 'golpeando', 'golpeteo'].includes(w)) return 'golpe';
-        if (['suena', 'sonido', 'ruido'].includes(w)) return 'ruido';
-        if (['cabina', 'izquierdo', 'izq'].includes(w)) return 'izquierda';
-        if (['rigidaz', 'rigida', 'rigidas', 'dura', 'duras'].includes(w)) return 'rigidez';
+        if (['golpea', 'golpeando', 'golpeteo', 'choca', 'impacto'].includes(w)) return 'golpe';
+        if (['suena', 'sonido', 'ruido', 'chirrido', 'cruje'].includes(w)) return 'ruido';
+        if (['cabina', 'izquierdo', 'izq'].includes(w)) return 'izq';
+        if (['derecho', 'der', 'derecha'].includes(w)) return 'der';
+        if (['rigidaz', 'rigida', 'rigidas', 'dura', 'duras', 'tiesa', 'brinca'].includes(w)) return 'rigidez';
+        if (['falla', 'dano', 'averia', 'descompuesto', 'roto', 'partido'].includes(w)) return 'dano';
+        if (['tolva', 'volquete', 'platon', 'caja', 'tolba'].includes(w)) return 'tolva';
+        if (['suspension', 'amortiguacion', 'cilindro', 'puntal'].includes(w)) return 'suspension';
+        if (['llanta', 'neumatico', 'rueda', 'goma'].includes(w)) return 'llanta';
+        if (['freno', 'frenando', 'frenado', 'balata', 'pastilla'].includes(w)) return 'freno';
         return w;
       })
       .join(' ');
@@ -2610,14 +2625,18 @@ function App() {
                   const camionExistente = camionesRegistrados.find(c => c.flota === flota && c.estado !== 'liberado');
 
                   if (camionExistente) {
+                    // Normalización de Nombres v3.0
+                    const opLimpio = normalizarNombre(operador);
+                    const supLimpio = normalizarNombre(session.nombre);
+
                     // 1. Integración de Grupos, Conductores y Supervisores
                     const listaGrupos = Array.from(new Set([...camionExistente.grupo.split(', '), grupo])).sort();
 
-                    const nuevoRegSup = `G${grupo}: ${session.nombre}`;
+                    const nuevoRegSup = `G${grupo}: ${supLimpio}`;
                     const supsActuales = (camionExistente.supervisor || '').split(', ').filter(Boolean);
                     const listaSupervisores = Array.from(new Set([...supsActuales, nuevoRegSup]));
 
-                    const nuevoRegOp = `G${grupo}: ${operador}`;
+                    const nuevoRegOp = `G${grupo}: ${opLimpio}`;
                     const opsActuales = (camionExistente.operador || '').split(', ').filter(Boolean);
                     const listaOperadores = Array.from(new Set([...opsActuales, nuevoRegOp]));
 
@@ -2703,8 +2722,8 @@ function App() {
                     const detallesNuevos = {
                        ...detallesAnteriores,
                        [`G${grupo}`]: {
-                          supervisor: session.nombre,
-                          operador: operador,
+                          supervisor: normalizarNombre(session.nombre),
+                          operador: normalizarNombre(operador),
                           mina: mina,
                           time: new Date().toLocaleString(),
                           fallas: fallasStruct
@@ -2745,8 +2764,8 @@ function App() {
                     });
                     const detallesNuevos = {
                        [`G${grupo}`]: {
-                          supervisor: session.nombre,
-                          operador: operador,
+                          supervisor: normalizarNombre(session.nombre),
+                          operador: normalizarNombre(operador),
                           mina: mina,
                           time: new Date().toLocaleString(),
                           fallas: fallasStruct
@@ -2755,10 +2774,10 @@ function App() {
 
                     const nuevoCamion = {
                       flota: flota,
-                      operador: `G${grupo}: ${operador}`,
+                      operador: `G${grupo}: ${normalizarNombre(operador)}`,
                       mina: mina,
                       grupo: grupo,
-                      supervisor: `G${grupo}: ${session.nombre}`,
+                      supervisor: `G${grupo}: ${normalizarNombre(session.nombre)}`,
                       estado: 'espera',
                       atencion: atencionLabel,
                       fallas: fallasDetalladas,
