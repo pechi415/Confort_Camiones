@@ -1941,21 +1941,22 @@ function App() {
                         <div 
                           className="kanban-card-header"
                           onClick={() => setExpandedCardId(expandedCardId === camion.id ? null : camion.id)}
+                          style={{ padding: '0.6rem 1rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
                         >
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
-                            <Truck size={18} color="var(--primary-red)" />
-                            <strong style={{ fontSize: '1.25rem', color: 'var(--primary-black)' }}>{camion.flota}</strong>
-                            {camion.motivo_garantia && <ShieldAlert size={18} color="#ef4444" className="pulse-slow" />}
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            <Truck size={16} color="var(--primary-red)" />
+                            <strong style={{ fontSize: '1.1rem', color: 'var(--primary-black)' }}>{camion.flota}</strong>
+                            {camion.motivo_garantia && <ShieldAlert size={16} color="#ef4444" className="pulse-slow" />}
                           </div>
-                          <div style={{ marginLeft: 'auto', display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
+                          <div style={{ display: 'flex', gap: '0.3rem', alignItems: 'center' }}>
                             {camion.consenso > 1 && (
-                              <div title={`Consenso de ${camion.consenso} grupos`} style={{ background: '#eff6ff', color: '#2563eb', padding: '0.2rem 0.4rem', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '0.2rem', border: '1px solid #dbeafe' }}>
-                                <Users size={12} /> {camion.consenso}
+                              <div title={`Consenso de ${camion.consenso} grupos`} style={{ background: '#eff6ff', color: '#2563eb', padding: '0.1rem 0.3rem', borderRadius: '4px', fontSize: '0.65rem', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '0.2rem', border: '1px solid #dbeafe' }}>
+                                <Users size={11} /> {camion.consenso}
                               </div>
                             )}
-                            {camion.atencion === 'CRÍTICA' && <span><Siren size={18} color="#ef4444" strokeWidth={2} /></span>}
-                            {camion.atencion === 'ALTA' && <span><AlertTriangle size={18} color="#eab308" strokeWidth={2} /></span>}
-                            {camion.atencion === 'NORMAL' && <span><CheckCircle2 size={18} color="#10b981" strokeWidth={2} /></span>}
+                            {camion.atencion === 'CRÍTICA' && <Siren size={16} color="#ef4444" strokeWidth={2} />}
+                            {camion.atencion === 'ALTA' && <AlertTriangle size={16} color="#eab308" strokeWidth={2} />}
+                            {camion.atencion === 'NORMAL' && <CheckCircle2 size={16} color="#10b981" strokeWidth={2} />}
                           </div>
                         </div>
 
