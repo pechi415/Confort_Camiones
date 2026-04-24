@@ -334,6 +334,12 @@ h1, h2, h3, h4, h5, h6 {
   overflow: visible;
 }
 
+@media (max-width: 768px) {
+  .kanban-card {
+    padding: 0.8rem 0.6rem;
+  }
+}
+
 .kanban-card:hover {
   transform: translateY(-2px);
   box-shadow: 0 24px 52px rgba(0, 0, 0, 0.12);
@@ -608,7 +614,7 @@ h1, h2, h3, h4, h5, h6 {
 
 @media (max-width: 768px) {
   .kanban-column {
-    max-width: 65vw;
+    max-width: 58vw;
     height: calc(100vh - 340px);
   }
 }
