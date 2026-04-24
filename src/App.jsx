@@ -285,6 +285,9 @@ const limpiarFallasIA = (fallasStr) => {
 
 function App() {
   // VERSIÓN DE EMERGENCIA: 1.4.7_RENAME_CSS_FIX
+  useEffect(() => {
+    document.title = "Drummond Confort v1.4.7";
+  }, []);
   const [activeTab, setActiveTab] = useState(() => sessionStorage.getItem('drummond_activeTab') || 'dashboard');
 
   // Supabase Auth Session State
