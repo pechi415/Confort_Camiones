@@ -3164,9 +3164,11 @@ function App() {
                 width: '100%',
                 margin: 0,
                 position: 'relative',
-                boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04)',
-                background: 'rgba(255, 255, 255, 0.95)',
-                border: '1px solid rgba(255, 255, 255, 0.3)'
+                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
+                background: 'rgba(255, 255, 255, 0.45)',
+                backdropFilter: 'blur(20px)',
+                WebkitBackdropFilter: 'blur(20px)',
+                border: '1px solid rgba(255, 255, 255, 0.4)'
               }}
               onClick={e => e.stopPropagation()}
             >
@@ -3270,8 +3272,9 @@ function App() {
                 boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
                 maxHeight: '85vh',
                 overflowY: 'auto',
-                background: 'rgba(255, 255, 255, 0.7)',
-                backdropFilter: 'blur(25px)'
+                background: 'rgba(255, 255, 255, 0.45)',
+                backdropFilter: 'blur(25px)',
+                WebkitBackdropFilter: 'blur(25px)'
               }}
             >
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem', borderBottom: '1px solid rgba(0,0,0,0.05)', paddingBottom: '1rem' }}>
@@ -3607,13 +3610,14 @@ function App() {
           padding: '20px'
         }}>
           <div className="modal-pop" style={{
-            background: 'rgba(255, 255, 255, 0.95)',
-            backdropFilter: 'blur(15px)',
+            background: 'rgba(255, 255, 255, 0.5)',
+            backdropFilter: 'blur(20px)',
+            WebkitBackdropFilter: 'blur(20px)',
             width: 'min(100%, 500px)',
             borderRadius: '24px',
             padding: '2rem',
-            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
-            border: '1px solid rgba(255, 255, 255, 0.3)'
+            boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.3)',
+            border: '1px solid rgba(255, 255, 255, 0.4)'
           }}>
             <h3 style={{ margin: '0 0 1rem 0', color: 'var(--primary-black)', fontSize: '1.5rem', display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
               {modalConfig.type === 'prompt' ? <ShieldAlert size={28} color="#ef4444" /> :
