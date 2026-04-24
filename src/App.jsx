@@ -1,6 +1,6 @@
 // VERSION_TAG: 1.4.5_ULTRA_COMPACT_FIX_FORCE
 import React, { useState, useEffect, useRef, useMemo } from 'react';
-import './index.css';
+import './industrial-v3.css';
 import { LayoutDashboard, Zap, FileText, Blocks, ClipboardList, ShieldAlert, ShieldCheck, MonitorCheck, PlusCircle, Trash2, Edit3, Settings, Shield, Unlock, LockKeyhole, Lock, RefreshCcw, Users, AlertTriangle, CheckCircle2, Wrench, Activity, Truck, Search, Hourglass, SearchCheck, Award, FileSpreadsheet, MapPin, Calendar, Siren, AlertCircle, Info, History, ChevronUp } from 'lucide-react';
 
 import { supabase } from './supabaseClient';
@@ -284,7 +284,7 @@ const limpiarFallasIA = (fallasStr) => {
 
 
 function App() {
-  // Versión del Sistema: 1.8.4 (Filtro Firma por Grupo)
+  // VERSIÓN DE EMERGENCIA: 1.4.7_RENAME_CSS_FIX
   const [activeTab, setActiveTab] = useState(() => sessionStorage.getItem('drummond_activeTab') || 'dashboard');
 
   // Supabase Auth Session State
@@ -3251,6 +3251,19 @@ function App() {
                 <Calendar size={18} color="#64748b" />
                 <span style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: '800', textTransform: 'uppercase' }}>Registro:</span>
                 <span style={{ fontSize: '1rem', color: '#1e293b', fontWeight: '900' }}>{formatFechaCorta(selectedReport.time)}</span>
+              </div>
+
+              <button
+                type="submit"
+                disabled={loading}
+                className="btn btn-primary"
+                style={{ width: '100%', marginTop: '1rem', padding: '1rem', fontSize: '1.1rem' }}
+              >
+                {loading ? <RefreshCcw className="animate-spin" /> : 'Ingresar al Sistema'}
+              </button>
+              
+              <div style={{ marginTop: '1.5rem', textAlign: 'center', opacity: 0.5, fontSize: '0.8rem', color: '#1e293b' }}>
+                VERSIÓN DIAGNÓSTICO: 1.4.6_ULTRA_COMPACT
               </div>
 
               <button
