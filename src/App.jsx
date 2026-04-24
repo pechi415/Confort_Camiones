@@ -3173,11 +3173,11 @@ function App() {
               top: 0, left: 0, right: 0, bottom: 0,
               backgroundColor: 'rgba(0,0,0,0.4)',
               backdropFilter: 'blur(10px)',
-              zIndex: 1000,
+              zIndex: 9999, // Super prioridad sobre la barra nav
               display: 'flex',
               alignItems: 'flex-start',
               justifyContent: 'center',
-              padding: '1.5rem',
+              padding: '1.5rem 1.5rem 120px 1.5rem', // Margen inferior masivo para scroll
               overflowY: 'auto',
               WebkitOverflowScrolling: 'touch'
             }}
