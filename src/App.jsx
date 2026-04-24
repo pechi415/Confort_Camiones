@@ -1952,7 +1952,7 @@ function App() {
                           <Truck size={17} color="var(--primary-red)" style={{ flexShrink: 0 }} />
                           <strong style={{ fontSize: '1.15rem', color: 'var(--primary-black)', marginRight: '0.2rem', flexShrink: 0 }}>{camion.flota}</strong>
                           
-                          {camion.motivo_garantia && <ShieldAlert size={17} color="#ef4444" className="pulse-slow" style={{ flexShrink: 0 }} />}
+                          {/* El icono de garantía se movió al botón de Diagnóstico para ganar espacio arriba */}
                           
                           {camion.consenso > 1 && (
                             <div title={`Consenso de ${camion.consenso} grupos`} style={{ background: '#eff6ff', color: '#2563eb', padding: '0.15rem 0.3rem', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '0.2rem', border: '1px solid #dbeafe', flexShrink: 0 }}>
@@ -1976,7 +1976,11 @@ function App() {
                               className="btn btn-secondary"
                               style={{ width: '100%', marginBottom: '0.6rem', padding: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', fontSize: '0.85rem' }}
                             >
-                              <MonitorCheck size={16} /> Diagnóstico
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                                <MonitorCheck size={16} />
+                                {camion.motivo_garantia && <ShieldAlert size={16} color="#ef4444" className="pulse-slow" />}
+                              </div>
+                              <span style={{ marginLeft: '0.2rem' }}>Diagnóstico</span>
                             </button>
 
                             {/* Restaurando Botón de Pendientes de Garantía */}
