@@ -1949,23 +1949,20 @@ function App() {
                             gap: '0.5rem'
                           }}
                         >
-                          {/* Contenedor Único Fluido */}
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
-                            <Truck size={18} color="var(--primary-red)" />
-                            <strong style={{ fontSize: '1.25rem', color: 'var(--primary-black)', marginRight: '0.4rem' }}>{camion.flota}</strong>
-                            
-                            {camion.motivo_garantia && <ShieldAlert size={18} color="#ef4444" className="pulse-slow" />}
-                            
-                            {camion.consenso > 1 && (
-                              <div title={`Consenso de ${camion.consenso} grupos`} style={{ background: '#eff6ff', color: '#2563eb', padding: '0.2rem 0.4rem', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '0.2rem', border: '1px solid #dbeafe' }}>
-                                <Users size={12} /> {camion.consenso}
-                              </div>
-                            )}
-                            
-                            {camion.atencion === 'CRÍTICA' && <Siren size={18} color="#ef4444" strokeWidth={2} />}
-                            {camion.atencion === 'ALTA' && <AlertTriangle size={18} color="#eab308" strokeWidth={2} />}
-                            {camion.atencion === 'NORMAL' && <CheckCircle2 size={18} color="#10b981" strokeWidth={2} />}
-                          </div>
+                          <Truck size={18} color="var(--primary-red)" style={{ flexShrink: 0 }} />
+                          <strong style={{ fontSize: '1.25rem', color: 'var(--primary-black)', marginRight: '0.3rem', flexShrink: 0 }}>{camion.flota}</strong>
+                          
+                          {camion.motivo_garantia && <ShieldAlert size={18} color="#ef4444" className="pulse-slow" style={{ flexShrink: 0 }} />}
+                          
+                          {camion.consenso > 1 && (
+                            <div title={`Consenso de ${camion.consenso} grupos`} style={{ background: '#eff6ff', color: '#2563eb', padding: '0.2rem 0.4rem', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '0.2rem', border: '1px solid #dbeafe', flexShrink: 0 }}>
+                              <Users size={12} /> {camion.consenso}
+                            </div>
+                          )}
+                          
+                          {camion.atencion === 'CRÍTICA' && <Siren size={18} color="#ef4444" strokeWidth={2} style={{ flexShrink: 0 }} />}
+                          {camion.atencion === 'ALTA' && <AlertTriangle size={18} color="#eab308" strokeWidth={2} style={{ flexShrink: 0 }} />}
+                          {camion.atencion === 'NORMAL' && <CheckCircle2 size={18} color="#10b981" strokeWidth={2} style={{ flexShrink: 0 }} />}
                         </div>
 
                         {isExpanded && (
