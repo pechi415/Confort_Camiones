@@ -809,6 +809,12 @@ function App() {
     sincronizarModal(camion, context);
   };
 
+  const prepararDictamen = (camion) => {
+    setCamionEditando(camion);
+    setEditingGroupContext('Mantenimiento');
+    sincronizarModal(camion, 'Mantenimiento');
+  };
+
   const sincronizarModal = (camion, context) => {
     if (!camion) return;
     
@@ -1912,14 +1918,14 @@ function App() {
                               Ingreso: {formatFechaCorta(camion.time || camion.creado_at)}
                             </div>
                             {/* Botón de Diagnóstico para Móviles / Limpieza Visual */}
-                            <button
+                             <button
                               className="btn btn-secondary"
                               onClick={() => setSelectedReport(camion)}
                               style={{
                                 width: '100%',
                                 padding: '0.5rem',
                                 fontSize: '0.75rem',
-                                marginBottom: '0.8rem',
+                                marginBottom: '0.5rem',
                                 display: 'flex',
                                 alignItems: 'center',
                                 justifyContent: 'center',
@@ -1930,6 +1936,28 @@ function App() {
                             >
                               <MonitorCheck size={14} /> Ver Diagnóstico
                             </button>
+
+                            {camion.estado === 'evaluados' && (
+                              <button
+                                className="btn btn-primary"
+                                onClick={() => prepararDictamen(camion)}
+                                style={{
+                                  width: '100%',
+                                  padding: '0.6rem',
+                                  fontSize: '0.75rem',
+                                  marginBottom: '0.8rem',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  gap: '0.4rem',
+                                  background: '#7c3aed',
+                                  border: 'none',
+                                  boxShadow: '0 4px 12px rgba(124, 58, 237, 0.2)'
+                                }}
+                              >
+                                <ShieldCheck size={14} /> Registrar Dictamen Técnico
+                              </button>
+                            )}
 
                             {/* Mostrar motivo de garantía si aplica con transparencia */}
                             {camion.estado === 'garantia' && camion.motivo_garantia && (
