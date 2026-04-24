@@ -1968,6 +1968,7 @@ function App() {
                             {camion.atencion === 'ALTA' && <AlertTriangle size={18} color="#eab308" strokeWidth={2} />}
                             {camion.atencion === 'NORMAL' && <CheckCircle2 size={18} color="#10b981" strokeWidth={2} />}
                           </div>
+                        </div>
 
                         {isExpanded && (
                           <div className="fade-in">
