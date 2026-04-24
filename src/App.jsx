@@ -3162,13 +3162,18 @@ function App() {
               style={{
                 maxWidth: '500px',
                 width: '100%',
+                maxHeight: '90vh',
+                overflowY: 'auto',
                 margin: 0,
                 position: 'relative',
-                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.25)',
-                background: 'rgba(255, 255, 255, 0.45)',
+                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.5)',
+                background: 'rgba(15, 23, 42, 0.92)',
                 backdropFilter: 'blur(20px)',
                 WebkitBackdropFilter: 'blur(20px)',
-                border: '1px solid rgba(255, 255, 255, 0.4)'
+                border: '1px solid rgba(255, 255, 255, 0.15)',
+                padding: '2rem',
+                scrollbarWidth: 'thin',
+                scrollbarColor: 'rgba(255,255,255,0.2) transparent'
               }}
               onClick={e => e.stopPropagation()}
             >
