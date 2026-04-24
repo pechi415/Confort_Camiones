@@ -1941,6 +1941,23 @@ function App() {
                         >
                           <Truck size={18} color="var(--primary-red)" />
                           <strong style={{ fontSize: '1.25rem', color: 'var(--primary-black)', letterSpacing: '-0.5px' }}>{camion.flota}</strong>
+                          {camion.motivo_garantia && (
+                            <span style={{ 
+                              background: '#ef4444', 
+                              color: 'white', 
+                              fontSize: '0.6rem', 
+                              padding: '0.15rem 0.4rem', 
+                              borderRadius: '4px', 
+                              fontWeight: '900',
+                              display: 'flex',
+                              alignItems: 'center',
+                              gap: '0.2rem',
+                              boxShadow: '0 2px 4px rgba(239, 68, 68, 0.2)',
+                              marginLeft: '0.4rem'
+                            }}>
+                              <Shield size={10} /> GARANTÍA
+                            </span>
+                          )}
                           <div style={{ marginLeft: 'auto', display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
                             {camion.consenso > 1 && (
                               <div title={`Consenso de ${camion.consenso} grupos`} style={{ background: '#eff6ff', color: '#2563eb', padding: '0.2rem 0.4rem', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '0.2rem', border: '1px solid #dbeafe' }}>
@@ -1999,8 +2016,8 @@ function App() {
                               )}
                             </div>
 
-                            {/* Indicador de Pendientes Estilo Botón - Visible en cualquier estado si tiene pendientes */}
-                            {camion.motivo_garantia && (
+                            {/* Botón de Pendientes - SOLO visible en la columna de Garantía */}
+                            {camion.estado === 'garantia' && camion.motivo_garantia && (
                               <button
                                 onClick={() => setSelectedGarantiaDetails(camion)}
                                 style={{
