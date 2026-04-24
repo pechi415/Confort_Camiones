@@ -158,6 +158,43 @@ const corregirOrtografiaIA = (texto) => {
   return t.charAt(0).toUpperCase() + t.slice(1);
 };
 
+// v4.0: Motor de Unificación Semántica para Comentarios
+const unificarComentariosIA = (texto) => {
+  if (!texto || texto === '-') return '';
+  
+  // 1. Limpieza inicial de prefijos y normalización
+  let limpio = texto.replace(/G[1-3]:\s*/g, '').trim();
+  
+  // 2. Dividir por el separador técnico | o ,
+  let partes = limpio.split(/\s*[,|]\s*/).filter(p => p.length > 2);
+  
+  if (partes.length <= 1) return limpio;
+
+  // 3. Proceso de Unificación Inteligente (Detección de Subconjuntos y Similitud)
+  let unificados = [];
+  
+  // Ordenar por longitud descendente para priorizar la descripción más completa
+  partes.sort((a, b) => b.length - a.length);
+
+  partes.forEach(parteActual => {
+    let esRedundante = unificados.some(yaUnificado => {
+      // Si la parte actual ya está contenida en algo que ya unificamos, es redundante
+      if (yaUnificado.toLowerCase().includes(parteActual.toLowerCase())) return true;
+      
+      // Similitud semántica (Levenshtein/IA)
+      const similitud = calcularSimilitudIA(parteActual, yaUnificado);
+      return similitud > 0.75; // Umbral de redundancia
+    });
+
+    if (!esRedundante) {
+      unificados.push(parteActual);
+    }
+  });
+
+  // Re-ensamblar con el separador oficial
+  return unificados.join(' | ');
+};
+
 const limpiarFallasIA = (fallasStr) => {
   if (!fallasStr) return [];
   
@@ -652,8 +689,8 @@ function App() {
           const regex = new RegExp(`${f.nombre}\\s*\\(([^)]+)\\)`);
           const match = (camion?.fallas || '').match(regex);
           let originalComment = match ? match[1] : '';
-          // Limpieza de prefijos G1:, G2:, G3: para la vista unificada de Garantía
-          originalComment = originalComment.replace(/G[1-3]:\s*/g, '').trim();
+          // Motor de IA v4.0: Unificación semántica inteligente de comentarios
+          originalComment = unificarComentariosIA(originalComment);
 
           iniciales[f.id] = { selected: false, comment: originalComment };
         }
