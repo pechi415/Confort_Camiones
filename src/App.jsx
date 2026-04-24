@@ -3205,8 +3205,8 @@ function App() {
                   </div>
                 </div>
 
-                {/* Selector de Grupo Estilo Tabs (v4.0) - Solo visible para administradores */}
-                {session.role === 'admin' && (
+                {/* Selector de Grupo Estilo Tabs (v4.0) - Visible para Admin y Supervisores */}
+                {(session.role === 'admin' || session.role === 'supervisor') && (
                   <div style={{ display: 'flex', gap: '0.5rem', borderBottom: '1px solid #f1f5f9', paddingBottom: '0.5rem' }}>
                     {['General', 'G1', 'G2', 'G3', 'Mantenimiento'].map(g => (
                       <button
