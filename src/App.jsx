@@ -1941,24 +1941,33 @@ function App() {
                         <div 
                           className="kanban-card-header"
                           onClick={() => setExpandedCardId(expandedCardId === camion.id ? null : camion.id)}
-                          style={{ padding: '0.5rem 0.7rem', display: 'flex', alignItems: 'center', justifyContent: 'flex-start', gap: '0.3rem', overflow: 'hidden', whiteSpace: 'nowrap' }}
+                          style={{ 
+                            padding: '0.8rem 1.2rem', 
+                            display: 'flex', 
+                            flexWrap: 'wrap', 
+                            alignItems: 'center', 
+                            gap: '0.6rem',
+                            rowGap: '0.4rem' 
+                          }}
                         >
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem', flexShrink: 0 }}>
-                            <Truck size={13} color="var(--primary-red)" />
-                            <strong style={{ fontSize: '0.9rem', color: 'var(--primary-black)' }}>{camion.flota}</strong>
-                            {camion.motivo_garantia && <ShieldAlert size={13} color="#ef4444" className="pulse-slow" />}
+                          {/* Bloque 1: Camión y Número */}
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', flexShrink: 0 }}>
+                            <Truck size={18} color="var(--primary-red)" />
+                            <strong style={{ fontSize: '1.2rem', color: 'var(--primary-black)' }}>{camion.flota}</strong>
                           </div>
-                          <div style={{ display: 'flex', gap: '0.15rem', alignItems: 'center', marginLeft: '0.1rem', flexShrink: 1 }}>
+
+                          {/* Bloque 2: Iconos de Alerta (Envolverán si no hay espacio) */}
+                          <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center', flexWrap: 'wrap' }}>
+                            {camion.motivo_garantia && <ShieldAlert size={18} color="#ef4444" className="pulse-slow" />}
                             {camion.consenso > 1 && (
-                              <div title={`Consenso de ${camion.consenso} grupos`} style={{ background: '#eff6ff', color: '#2563eb', padding: '0.1rem 0.3rem', borderRadius: '4px', fontSize: '0.65rem', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '0.2rem', border: '1px solid #dbeafe' }}>
-                                <Users size={11} /> {camion.consenso}
+                              <div title={`Consenso de ${camion.consenso} grupos`} style={{ background: '#eff6ff', color: '#2563eb', padding: '0.2rem 0.4rem', borderRadius: '4px', fontSize: '0.75rem', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '0.2rem', border: '1px solid #dbeafe' }}>
+                                <Users size={12} /> {camion.consenso}
                               </div>
                             )}
-                            {camion.atencion === 'CRÍTICA' && <Siren size={16} color="#ef4444" strokeWidth={2} />}
-                            {camion.atencion === 'ALTA' && <AlertTriangle size={16} color="#eab308" strokeWidth={2} />}
-                            {camion.atencion === 'NORMAL' && <CheckCircle2 size={16} color="#10b981" strokeWidth={2} />}
+                            {camion.atencion === 'CRÍTICA' && <Siren size={18} color="#ef4444" strokeWidth={2} />}
+                            {camion.atencion === 'ALTA' && <AlertTriangle size={18} color="#eab308" strokeWidth={2} />}
+                            {camion.atencion === 'NORMAL' && <CheckCircle2 size={18} color="#10b981" strokeWidth={2} />}
                           </div>
-                        </div>
 
                         {isExpanded && (
                           <div className="fade-in">
