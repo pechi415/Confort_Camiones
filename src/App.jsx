@@ -2001,12 +2001,17 @@ function App() {
                               </button>
                             )}
 
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
-                              <span style={{ fontSize: '0.75rem', fontWeight: 'bold', color: 'var(--text-muted)' }}>Prioridad:</span>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.8rem', marginTop: '0.3rem' }}>
+                              <span style={{ fontSize: '0.7rem', fontWeight: 'bold', color: '#6b7280' }}>Prioridad:</span>
                               <span className="badge" style={{
-                                background: 'white',
-                                color: camion.atencion === 'CRÍTICA' ? '#ef4444' : 'var(--text-muted)',
-                                border: '1px solid #e5e7eb'
+                                background: '#f9fafb',
+                                color: camion.atencion === 'CRÍTICA' ? '#ef4444' : '#6b7280',
+                                border: '1px solid #e5e7eb',
+                                fontSize: '0.6rem',
+                                padding: '0.2rem 0.5rem',
+                                borderRadius: '6px',
+                                textTransform: 'uppercase',
+                                letterSpacing: '0.5px'
                               }}>
                                 {camion.atencion}
                               </span>
