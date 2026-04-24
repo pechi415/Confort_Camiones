@@ -3398,13 +3398,7 @@ function App() {
                     ))}
                   </div>
                 )}
-        <div style={{ padding: '0 1.2rem', marginBottom: '1.2rem' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
-            <h2 style={{ fontSize: '1.1rem', color: '#1e293b', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-              <Wrench size={20} color="#ef4444" />
-              Pila de Mantenimiento <span style={{ fontSize: '0.7rem', opacity: 0.5 }}>v1.4.7</span>
-            </h2>
-          </div>                </div>
+
 
                 {/* Vista Específica de Dictamen Técnico */}
                 {editingGroupContext === 'Mantenimiento' && (
