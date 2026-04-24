@@ -1939,14 +1939,13 @@ function App() {
                         }}
                       >
                         <div 
-                          className={`kanban-card-header${isExpanded ? ' expanded' : ''}`}
-                          style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', padding: '0.8rem 1.2rem', cursor: 'pointer' }}
-                          onClick={() => setExpandedCardId(isExpanded ? null : camion.id)}
+                          className="kanban-card-header"
+                          onClick={() => setExpandedCardId(expandedCardId === camion.id ? null : camion.id)}
                         >
-                          <Truck size={18} color="var(--primary-red)" />
-                          <strong style={{ fontSize: '1.25rem', color: 'var(--primary-black)', letterSpacing: '-0.5px' }}>{camion.flota}</strong>
-                          {camion.motivo_garantia && <ShieldAlert size={18} color="#ef4444" className="pulse-slow" style={{ marginLeft: '0.2rem' }} />}
-                          
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
+                            <Truck size={18} color="var(--primary-red)" />
+                            <strong style={{ fontSize: '1.25rem', color: 'var(--primary-black)' }}>{camion.flota}</strong>
+                          </div>
                           <div style={{ marginLeft: 'auto', display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
                             {camion.consenso > 1 && (
                               <div title={`Consenso de ${camion.consenso} grupos`} style={{ background: '#eff6ff', color: '#2563eb', padding: '0.2rem 0.4rem', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '0.2rem', border: '1px solid #dbeafe' }}>
@@ -1960,64 +1959,50 @@ function App() {
                         </div>
 
                         {isExpanded && (
-                          <div className="fade-in" style={{ padding: '0 1.2rem 1.2rem' }}>
-                            <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.8rem' }}>
+                          <div className="fade-in">
+                            <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.5rem' }}>
                               Ingreso: {formatFechaCorta(camion.time || camion.creado_at)}
                             </div>
                             
-                            <div style={{ marginBottom: '0.8rem' }}>
-                              <button
-                                className="btn btn-secondary"
-                                onClick={() => setSelectedReport(camion)}
-                                style={{ width: '100%', padding: '0.6rem', fontSize: '0.8rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', background: '#f9fafb', border: '1px solid #e5e7eb' }}
-                              >
-                                <MonitorCheck size={16} /> Ver
-                              </button>
-                            </div>
+                            <button
+                              onClick={() => setSelectedReport(camion)}
+                              className="btn btn-secondary"
+                              style={{ width: '100%', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
+                            >
+                              <MonitorCheck size={16} /> Ver Diagnóstico
+                            </button>
 
                             {camion.estado === 'evaluados' && (
-                              <div style={{ marginBottom: '0.8rem' }}>
-                                <button
-                                  className="btn btn-primary"
-                                  onClick={() => prepararDictamen(camion)}
-                                  style={{ width: '100%', padding: '0.6rem', fontSize: '0.8rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', background: '#7c3aed', border: 'none' }}
-                                >
-                                  <ShieldCheck size={16} /> Dictamen Técnico
-                                </button>
-                              </div>
+                              <button
+                                onClick={() => prepararDictamen(camion)}
+                                className="btn btn-primary"
+                                style={{ width: '100%', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', background: '#7c3aed', border: 'none' }}
+                              >
+                                <ShieldCheck size={16} /> Dictamen Técnico
+                              </button>
                             )}
 
-                            {camion.estado === 'garantia' && camion.motivo_garantia && (
-                              <div style={{ marginBottom: '0.8rem' }}>
-                                <button
-                                  onClick={() => setSelectedGarantiaDetails(camion)}
-                                  style={{ width: '100%', padding: '0.6rem', fontSize: '0.8rem', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.2)', color: '#ef4444', borderRadius: '8px', fontWeight: 'bold' }}
-                                >
-                                  <ShieldAlert size={16} /> Ver Pendientes
-                                </button>
-                              </div>
-                            )}
-
-                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.8rem' }}>
-                              <span style={{ fontSize: '0.75rem', fontWeight: 'bold', color: '#6b7280' }}>Prioridad:</span>
+                            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                              <span style={{ fontSize: '0.75rem', fontWeight: 'bold', color: 'var(--text-muted)' }}>Prioridad:</span>
                               <span className="badge" style={{
-                                background: '#f9fafb',
-                                color: camion.atencion === 'CRÍTICA' ? '#ef4444' : (camion.atencion === 'ALTA' ? '#eab308' : '#6b7280'),
+                                background: 'white',
+                                color: camion.atencion === 'CRÍTICA' ? '#ef4444' : 'var(--text-muted)',
                                 border: '1px solid #e5e7eb'
                               }}>
                                 {camion.atencion}
                               </span>
                             </div>
 
-                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem', marginTop: '1rem', paddingTop: '0.8rem', borderTop: '1px solid #f3f4f6' }}>
-                              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>Mover a:</span>
+                            <div style={{ marginTop: '0.5rem', paddingTop: '0.5rem', borderTop: '1px solid #eee' }}>
+                              <label style={{ display: 'block', fontSize: '0.65rem', fontWeight: 'bold', color: 'var(--text-muted)', marginBottom: '0.2rem' }}>Mover a:</label>
                               <select 
                                 value={camion.estado}
                                 onChange={(e) => {
                                   const evt = { preventDefault: () => { }, dataTransfer: { getData: () => camion.id.toString() } };
                                   handleDrop(evt, e.target.value);
                                 }}
-                                style={{ flex: 1, maxWidth: '120px', padding: '0.3rem', borderRadius: '4px', border: '1px solid #d1d5db', fontSize: '0.8rem', background: '#f9fafb' }}
+                                className="input-field"
+                                style={{ width: '100%', padding: '0.4rem', fontSize: '0.8rem' }}
                               >
                                 {columnasKanban.map(opts => (
                                   <option key={opts.id} value={opts.id}>{opts.titulo.replace(/[^\w\sñáéíóúÁÉÍÓÚ]/gi, '')}</option>
