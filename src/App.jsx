@@ -1999,8 +1999,8 @@ function App() {
                               )}
                             </div>
 
-                            {/* Indicador de Pendientes Estilo Botón */}
-                            {camion.estado === 'garantia' && camion.motivo_garantia && (
+                            {/* Indicador de Pendientes Estilo Botón - Visible en cualquier estado si tiene pendientes */}
+                            {camion.motivo_garantia && (
                               <button
                                 onClick={() => setSelectedGarantiaDetails(camion)}
                                 style={{
