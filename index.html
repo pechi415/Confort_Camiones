@@ -9,6 +9,10 @@
     <meta name="theme-color" content="#ef4444">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <!-- Meta tags para evitar cache del index.html -->
+    <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate" />
+    <meta http-equiv="Pragma" content="no-cache" />
+    <meta http-equiv="Expires" content="0" />
   </head>
   <body>
     <div id="root"></div>
@@ -29,20 +33,38 @@
           });
         });
       }
-      // Limpiar caches y Service Workers si persisten errores
-      if (window.location.search.includes('clear-cache')) {
+      // --- SISTEMA DE AUTORECUPERACIÓN v1.4.7 ---
+      window.addEventListener('error', function(e) {
+        if (e.message.includes('Script error') || e.message.includes('Loading chunk')) {
+          console.log('Error de carga detectado, limpiando cache...');
+          limpiarTodoYRecargar();
+        }
+      });
+
+      // Si después de 5 segundos no hay contenido en el root, algo falló
+      setTimeout(() => {
+        const root = document.getElementById('root');
+        if (root && root.innerHTML === "") {
+          console.warn("Pantalla blanca detectada. Forzando limpieza...");
+          limpiarTodoYRecargar();
+        }
+      }, 5000);
+
+      function limpiarTodoYRecargar() {
         if ('serviceWorker' in navigator) {
           navigator.serviceWorker.getRegistrations().then(registrations => {
-            for (let registration of registrations) {
-              registration.unregister();
-            }
+            for (let registration of registrations) registration.unregister();
+            caches.keys().then(names => {
+              for (let name of names) caches.delete(name);
+              window.location.reload(true);
+            });
           });
         }
-        caches.keys().then(names => {
-          for (let name of names) caches.delete(name);
-        });
-        setTimeout(() => {
-          window.location.href = window.location.origin + window.location.pathname;
+      }
+
+      if (window.location.search.includes('clear-cache')) {
+        limpiarTodoYRecargar();
+      }
         }, 1000);
       }
     </script>
