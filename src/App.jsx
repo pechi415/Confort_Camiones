@@ -3151,9 +3151,11 @@ function App() {
               backdropFilter: 'blur(10px)',
               zIndex: 1000,
               display: 'flex',
-              alignItems: 'center',
+              alignItems: 'flex-start',
               justifyContent: 'center',
-              padding: '1rem'
+              padding: '1.5rem',
+              overflowY: 'auto',
+              WebkitOverflowScrolling: 'touch'
             }}
             onClick={() => setSelectedReport(null)}
           >
@@ -3162,18 +3164,15 @@ function App() {
               style={{
                 maxWidth: '500px',
                 width: '100%',
-                maxHeight: '90vh',
-                overflowY: 'auto',
-                margin: 0,
+                margin: 'auto',
                 position: 'relative',
                 boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.3)',
                 background: 'rgba(215, 205, 185, 0.98)',
                 backdropFilter: 'blur(20px)',
                 WebkitBackdropFilter: 'blur(20px)',
                 border: '1px solid rgba(130, 120, 100, 0.4)',
-                padding: '2rem',
-                scrollbarWidth: 'thin',
-                scrollbarColor: 'rgba(255,255,255,0.2) transparent'
+                padding: '1.8rem',
+                borderRadius: '24px'
               }}
               onClick={e => e.stopPropagation()}
             >
