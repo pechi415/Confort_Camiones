@@ -613,9 +613,16 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 @media (max-width: 768px) {
+  /* CACHE BREAKER v1.4.2 - FORCE UPDATE */
   .kanban-column {
-    max-width: 50vw;
-    height: calc(100vh - 340px);
+    max-width: 50vw !important;
+    width: 50vw !important;
+    height: calc(100vh - 340px) !important;
+    border: 2px solid rgba(37, 99, 235, 0.4) !important; /* Borde sutil para verificar cambio */
+  }
+  
+  .kanban-column h3 {
+    color: #3b82f6 !important; /* Título Azul Eléctrico para verificar refresco */
   }
 }
 
