@@ -357,6 +357,7 @@ function App() {
   const [selectedReport, setSelectedReport] = useState(null); // Para el Modal de detalles técnicos
   const [expandedCardId, setExpandedCardId] = useState(null); // Acordeón de Kanban
   const [camionInGarantia, setCamionInGarantia] = useState(null); // Para el Modal de Motivo de Garantía
+  const [selectedGarantiaDetails, setSelectedGarantiaDetails] = useState(null); // Para ver pendientes en modal
   const [pendientesGarantia, setPendientesGarantia] = useState({});
   const [registrosLimit, setRegistrosLimit] = useState(20);
   const [expandedHistoryId, setExpandedHistoryId] = useState(null);
@@ -1998,28 +1999,29 @@ function App() {
                               )}
                             </div>
 
-                            {/* Mostrar motivo de garantía compacto */}
+                            {/* Indicador de Pendientes Estilo Botón */}
                             {camion.estado === 'garantia' && camion.motivo_garantia && (
-                              <div style={{
-                                marginBottom: '0.8rem',
-                                padding: '0.5rem 0.8rem',
-                                background: 'rgba(239, 68, 68, 0.05)',
-                                border: '1px solid rgba(239, 68, 68, 0.1)',
-                                borderRadius: '8px',
-                                display: 'flex',
-                                flexDirection: 'column',
-                                gap: '0.2rem'
-                              }}>
-                                <div style={{ fontSize: '0.65rem', fontWeight: 'bold', color: '#ef4444', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                                  <ShieldAlert size={12} /> Pendientes:
-                                </div>
-                                <div style={{ fontSize: '0.75rem', color: '#7f1d1d', lineHeight: '1.3', fontWeight: '500' }}>
-                                  {camion.motivo_garantia?.split?.(' | ')?.length > 2 
-                                    ? `${camion.motivo_garantia.split(' | ').slice(0, 2).join(' | ')} ... (+${camion.motivo_garantia.split(' | ').length - 2})`
-                                    : (camion.motivo_garantia || '')
-                                  }
-                                </div>
-                              </div>
+                              <button
+                                onClick={() => setSelectedGarantiaDetails(camion)}
+                                style={{
+                                  width: '100%',
+                                  padding: '0.5rem',
+                                  fontSize: '0.7rem',
+                                  marginBottom: '0.8rem',
+                                  display: 'flex',
+                                  alignItems: 'center',
+                                  justifyContent: 'center',
+                                  gap: '0.4rem',
+                                  background: 'rgba(239, 68, 68, 0.1)',
+                                  border: '1px solid rgba(239, 68, 68, 0.2)',
+                                  color: '#ef4444',
+                                  borderRadius: '8px',
+                                  fontWeight: 'bold',
+                                  cursor: 'pointer'
+                                }}
+                              >
+                                <ShieldAlert size={14} /> Ver Pendientes
+                              </button>
                             )}
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                               <span style={{ fontSize: '0.75rem', fontWeight: 'bold', color: '#6b7280' }}>Prioridad:</span>
@@ -3448,6 +3450,75 @@ function App() {
                   </button>
                 </div>
               </div>
+            </div>
+          </div>
+        )}
+        
+        {/* Modal de Detalles de Garantía (Pendientes) */}
+        {selectedGarantiaDetails && (
+          <div
+            className="fade-in"
+            style={{
+              position: 'fixed',
+              top: 0, left: 0, right: 0, bottom: 0,
+              backgroundColor: 'rgba(0,0,0,0.5)',
+              backdropFilter: 'blur(15px)',
+              zIndex: 1100,
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center',
+              padding: '1rem'
+            }}
+            onClick={() => setSelectedGarantiaDetails(null)}
+          >
+            <div
+              className="card"
+              style={{
+                maxWidth: '450px',
+                width: '100%',
+                background: 'white',
+                borderRadius: '20px',
+                padding: '2rem',
+                position: 'relative',
+                boxShadow: '0 25px 50px -12px rgba(239, 68, 68, 0.25)',
+                border: '1px solid rgba(239, 68, 68, 0.1)'
+              }}
+              onClick={e => e.stopPropagation()}
+            >
+              <div style={{ textAlign: 'center', marginBottom: '1.5rem' }}>
+                <div style={{ width: '60px', height: '60px', background: '#fef2f2', color: '#ef4444', borderRadius: '50%', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 1rem' }}>
+                  <ShieldAlert size={32} />
+                </div>
+                <h3 style={{ margin: 0, color: 'var(--primary-black)', fontSize: '1.5rem' }}>Fallas Pendientes</h3>
+                <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginTop: '0.4rem' }}>Equipo {selectedGarantiaDetails.flota}: Hallazgos de Garantía</p>
+              </div>
+
+              <div style={{ 
+                background: '#fff5f5', 
+                padding: '1.5rem', 
+                borderRadius: '12px', 
+                border: '1px solid #fee2e2',
+                color: '#991b1b',
+                lineHeight: '1.6',
+                fontSize: '1rem',
+                maxHeight: '300px',
+                overflowY: 'auto'
+              }}>
+                {(selectedGarantiaDetails.motivo_garantia || '').split(' | ').map((item, idx) => (
+                  <div key={idx} style={{ marginBottom: idx === (selectedGarantiaDetails.motivo_garantia || '').split(' | ').length - 1 ? 0 : '0.8rem', display: 'flex', gap: '0.6rem' }}>
+                    <span style={{ color: '#ef4444', fontWeight: 'bold' }}>•</span>
+                    <span>{item}</span>
+                  </div>
+                ))}
+              </div>
+
+              <button 
+                className="btn btn-primary" 
+                style={{ width: '100%', marginTop: '1.5rem', height: '50px', background: '#ef4444', border: 'none', justifyContent: 'center' }}
+                onClick={() => setSelectedGarantiaDetails(null)}
+              >
+                Cerrar Detalles
+              </button>
             </div>
           </div>
         )}
