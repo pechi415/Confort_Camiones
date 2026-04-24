@@ -3198,6 +3198,23 @@ function App() {
                 </div>
               </div>
 
+              {/* Sección de Pendientes de Garantía si existen */}
+              {selectedReport.motivo_garantia && (
+                <div style={{ marginBottom: '1.5rem', background: '#fff5f5', padding: '1rem', borderRadius: '12px', border: '1px solid #fee2e2' }}>
+                  <div style={{ fontSize: '0.7rem', fontWeight: 'bold', color: '#ef4444', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                    <ShieldAlert size={14} /> Fallas Pendientes de Garantía:
+                  </div>
+                  <div style={{ fontSize: '0.9rem', color: '#991b1b', lineHeight: '1.5' }}>
+                    {selectedReport.motivo_garantia.split(' | ').map((p, idx) => (
+                      <div key={idx} style={{ display: 'flex', gap: '0.5rem' }}>
+                        <span style={{ color: '#ef4444' }}>•</span>
+                        <span>{p}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               <div style={{ background: '#fdf2f8', padding: '0.8rem', borderRadius: '8px', border: '1px solid #fbcfe8', marginBottom: '1.5rem', textAlign: 'center' }}>
                 <span style={{ fontSize: '0.7rem', color: '#be185d', fontWeight: 'bold', marginRight: '0.5rem' }}>FECHA DE REGISTRO:</span>
                 <span style={{ fontSize: '0.85rem', color: '#831843' }}>{formatFechaCorta(selectedReport.time)}</span>
