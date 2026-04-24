@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+// VERSION_TAG: 1.4.5_ULTRA_COMPACT_FIX_FORCE
+import React, { useState, useEffect, useRef, useMemo } from 'react';
 import './index.css';
 import { LayoutDashboard, Zap, FileText, Blocks, ClipboardList, ShieldAlert, ShieldCheck, MonitorCheck, PlusCircle, Trash2, Edit3, Settings, Shield, Unlock, LockKeyhole, Lock, RefreshCcw, Users, AlertTriangle, CheckCircle2, Wrench, Activity, Truck, Search, Hourglass, SearchCheck, Award, FileSpreadsheet, MapPin, Calendar, Siren, AlertCircle, Info, History, ChevronUp } from 'lucide-react';
 
