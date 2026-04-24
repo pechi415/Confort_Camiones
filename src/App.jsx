@@ -2001,6 +2001,49 @@ function App() {
                               </button>
                             )}
 
+                            {/* Restaurando Flujo de Feedback: Aprobación y Liberación */}
+                            {camion.estado === 'feedback' && (
+                              <div style={{ marginTop: '0.2rem', marginBottom: '0.8rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
+                                <button
+                                  onClick={() => toggleAprobacion(camion.id, session.grupo || '1', camion[`aprobado_g${session.grupo || '1'}`])}
+                                  className="btn"
+                                  style={{
+                                    width: '100%',
+                                    padding: '0.5rem',
+                                    fontSize: '0.8rem',
+                                    background: camion[`aprobado_g${session.grupo || '1'}`] ? '#dcfce7' : '#f3f4f6',
+                                    color: camion[`aprobado_g${session.grupo || '1'}`] ? '#166534' : '#4b5563',
+                                    border: `1px solid ${camion[`aprobado_g${session.grupo || '1'}`] ? '#166534' : '#d1d5db'}`,
+                                    borderRadius: '8px',
+                                    fontWeight: 'bold',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: '0.5rem'
+                                  }}
+                                >
+                                  <SearchCheck size={16} /> 
+                                  {camion[`aprobado_g${session.grupo || '1'}`] ? 'V.B. Grupo ' + (session.grupo || '1') : 'Dar V.B. Técnica'}
+                                </button>
+
+                                <button
+                                  onClick={() => {
+                                    showConfirm({
+                                      type: 'confirm',
+                                      title: 'Liberación de Camión',
+                                      message: `¿Está seguro que desea liberar el Camión ${camion.flota}?\n\nEsta acción finalizará el ciclo y lo moverá al historial.`,
+                                      confirmText: 'Sí, Liberar Ahora',
+                                      onConfirm: () => liberarCamion(camion.id, camion.flota)
+                                    });
+                                  }}
+                                  className="btn btn-primary"
+                                  style={{ width: '100%', padding: '0.5rem', fontSize: '0.8rem', background: '#10b981', border: 'none', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
+                                >
+                                  <Unlock size={16} /> Liberar Camión
+                                </button>
+                              </div>
+                            )}
+
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.8rem', marginTop: '0.3rem' }}>
                               <span style={{ fontSize: '0.7rem', fontWeight: 'bold', color: '#6b7280' }}>Prioridad:</span>
                               <span className="badge" style={{
