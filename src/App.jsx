@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import './index.css';
-import { LayoutDashboard, Zap, FileText, Blocks, ClipboardList, ShieldAlert, MonitorCheck, PlusCircle, Trash2, Edit3, Settings, Shield, Unlock, LockKeyhole, Lock, RefreshCcw, Users, AlertTriangle, CheckCircle2, Wrench, Activity, Truck, Search, Hourglass, SearchCheck, Award, FileSpreadsheet, MapPin, Calendar, Siren, AlertCircle, Info, History, ChevronUp } from 'lucide-react';
+import { LayoutDashboard, Zap, FileText, Blocks, ClipboardList, ShieldAlert, ShieldCheck, MonitorCheck, PlusCircle, Trash2, Edit3, Settings, Shield, Unlock, LockKeyhole, Lock, RefreshCcw, Users, AlertTriangle, CheckCircle2, Wrench, Activity, Truck, Search, Hourglass, SearchCheck, Award, FileSpreadsheet, MapPin, Calendar, Siren, AlertCircle, Info, History, ChevronUp } from 'lucide-react';
 
 import { supabase } from './supabaseClient';
 import { jsPDF } from 'jspdf';
