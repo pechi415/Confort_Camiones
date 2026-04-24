@@ -2001,46 +2001,54 @@ function App() {
                               </button>
                             )}
 
-                            {/* Restaurando Flujo de Feedback: Aprobación y Liberación */}
+                            {/* Restaurando Flujo de Feedback: Consenso de 3 Grupos para Liberación */}
                             {camion.estado === 'feedback' && (
-                              <div style={{ marginTop: '0.2rem', marginBottom: '0.8rem', display: 'flex', flexDirection: 'column', gap: '0.5rem' }}>
-                                <button
-                                  onClick={() => toggleAprobacion(camion.id, session.grupo || '1', camion[`aprobado_g${session.grupo || '1'}`])}
-                                  className="btn"
-                                  style={{
-                                    width: '100%',
-                                    padding: '0.5rem',
-                                    fontSize: '0.8rem',
-                                    background: camion[`aprobado_g${session.grupo || '1'}`] ? '#dcfce7' : '#f3f4f6',
-                                    color: camion[`aprobado_g${session.grupo || '1'}`] ? '#166534' : '#4b5563',
-                                    border: `1px solid ${camion[`aprobado_g${session.grupo || '1'}`] ? '#166534' : '#d1d5db'}`,
-                                    borderRadius: '8px',
-                                    fontWeight: 'bold',
-                                    display: 'flex',
-                                    alignItems: 'center',
-                                    justifyContent: 'center',
-                                    gap: '0.5rem'
-                                  }}
-                                >
-                                  <SearchCheck size={16} /> 
-                                  {camion[`aprobado_g${session.grupo || '1'}`] ? 'V.B. Grupo ' + (session.grupo || '1') : 'Dar V.B. Técnica'}
-                                </button>
+                              <div style={{ marginTop: '0.2rem', marginBottom: '0.8rem', display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
+                                <label style={{ fontSize: '0.65rem', fontWeight: 'bold', color: '#6b7280', marginBottom: '-0.3rem', marginLeft: '0.2rem' }}>Vistos Buenos (Consenso):</label>
+                                <div style={{ display: 'flex', gap: '0.4rem' }}>
+                                  {[1, 2, 3].map(gNum => (
+                                    <button
+                                      key={gNum}
+                                      onClick={() => toggleAprobacion(camion.id, gNum, camion[`aprobado_g${gNum}`])}
+                                      style={{
+                                        flex: 1,
+                                        padding: '0.45rem',
+                                        fontSize: '0.75rem',
+                                        background: camion[`aprobado_g${gNum}`] ? '#dcfce7' : '#f3f4f6',
+                                        color: camion[`aprobado_g${gNum}`] ? '#166534' : '#6b7280',
+                                        border: `1px solid ${camion[`aprobado_g${gNum}`] ? '#166534' : '#d1d5db'}`,
+                                        borderRadius: '8px',
+                                        fontWeight: 'bold',
+                                        transition: 'all 0.2s'
+                                      }}
+                                    >
+                                      G{gNum}
+                                    </button>
+                                  ))}
+                                </div>
 
-                                <button
-                                  onClick={() => {
-                                    showConfirm({
-                                      type: 'confirm',
-                                      title: 'Liberación de Camión',
-                                      message: `¿Está seguro que desea liberar el Camión ${camion.flota}?\n\nEsta acción finalizará el ciclo y lo moverá al historial.`,
-                                      confirmText: 'Sí, Liberar Ahora',
-                                      onConfirm: () => liberarCamion(camion.id, camion.flota)
-                                    });
-                                  }}
-                                  className="btn btn-primary"
-                                  style={{ width: '100%', padding: '0.5rem', fontSize: '0.8rem', background: '#10b981', border: 'none', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
-                                >
-                                  <Unlock size={16} /> Liberar Camión
-                                </button>
+                                {/* El botón de liberación solo aparece con CONSENSO (2 o más grupos) */}
+                                {([camion.aprobado_g1, camion.aprobado_g2, camion.aprobado_g3].filter(Boolean).length >= 2) ? (
+                                  <button
+                                    onClick={() => {
+                                      showConfirm({
+                                        type: 'confirm',
+                                        title: 'Confirmar Liberación',
+                                        message: `El camión ${camion.flota} tiene el consenso necesario.\n\n¿Desea finalizar el proceso?`,
+                                        confirmText: 'Sí, Liberar Camión',
+                                        onConfirm: () => liberarCamion(camion.id, camion.flota)
+                                      });
+                                    }}
+                                    className="btn btn-primary"
+                                    style={{ width: '100%', padding: '0.6rem', fontSize: '0.8rem', background: '#10b981', border: 'none', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', marginTop: '0.2rem' }}
+                                  >
+                                    <Unlock size={16} /> Liberar Camión
+                                  </button>
+                                ) : (
+                                  <div style={{ padding: '0.5rem', background: '#fff7ed', border: '1px solid #ffedd5', borderRadius: '8px', fontSize: '0.65rem', color: '#9a3412', textAlign: 'center' }}>
+                                    Esperando consenso (min. 2 grupos)
+                                  </div>
+                                )}
                               </div>
                             )}
 
