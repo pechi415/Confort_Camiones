@@ -1945,6 +1945,7 @@ function App() {
                           <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
                             <Truck size={18} color="var(--primary-red)" />
                             <strong style={{ fontSize: '1.25rem', color: 'var(--primary-black)' }}>{camion.flota}</strong>
+                            {camion.motivo_garantia && <ShieldAlert size={18} color="#ef4444" className="pulse-slow" />}
                           </div>
                           <div style={{ marginLeft: 'auto', display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
                             {camion.consenso > 1 && (
@@ -1971,6 +1972,16 @@ function App() {
                             >
                               <MonitorCheck size={16} /> Ver Diagnóstico
                             </button>
+
+                            {/* Restaurando Botón de Pendientes de Garantía */}
+                            {camion.estado === 'garantia' && camion.motivo_garantia && (
+                              <button
+                                onClick={() => setSelectedGarantiaDetails(camion)}
+                                style={{ width: '100%', marginBottom: '0.5rem', padding: '0.5rem', fontSize: '0.8rem', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.2)', color: '#ef4444', borderRadius: '8px', fontWeight: 'bold', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem' }}
+                              >
+                                <ShieldAlert size={16} /> Ver Pendientes
+                              </button>
+                            )}
 
                             {camion.estado === 'evaluados' && (
                               <button
