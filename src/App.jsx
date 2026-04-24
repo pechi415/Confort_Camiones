@@ -1812,7 +1812,10 @@ function App() {
                     {(camionesAccessibles || []).filter(c => c && c.estado !== 'liberado').slice(0, 6).map((camion) => (
                       <div key={camion?.id || Math.random()} className="kanban-card card-overlay" style={{ background: 'white', borderRadius: '12px', padding: '1rem', borderLeft: `6px solid ${camion?.atencion === 'CRÍTICA' ? '#ef4444' : (camion?.atencion === 'ALTA' ? 'var(--secondary-yellow)' : '#10b981')}` }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.8rem' }}>
-                          <span style={{ fontSize: '1.1rem', fontWeight: '800', color: 'var(--primary-black)' }}>CAMIÓN {camion?.flota || 'S/N'}</span>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            <span style={{ fontSize: '1.1rem', fontWeight: '800', color: 'var(--primary-black)' }}>CAMIÓN {camion?.flota || 'S/N'}</span>
+                            {camion?.motivo_garantia && <ShieldAlert size={16} color="#ef4444" className="pulse-slow" />}
+                          </div>
                           <span className={`badge badge-${camion?.estado || 'default'}`} style={{ fontSize: '0.65rem' }}>{(camion?.estado || 'N/A').toUpperCase()}</span>
                         </div>
                         <div style={{ display: 'flex', flexDirection: 'column', gap: '0.4rem', fontSize: '0.85rem', color: 'var(--text-muted)' }}>
