@@ -1913,8 +1913,8 @@ function App() {
               onScroll={(e) => {
                 const scrollLeft = e.target.scrollLeft;
                 const width = e.target.clientWidth;
-                // Calculamos el índice basado en el ancho de la columna 72vw + gap
-                const index = Math.round(scrollLeft / (width * 0.75)); 
+                // Calculamos el índice basado en el nuevo ancho de columna (50vw)
+                const index = Math.round(scrollLeft / (width * 0.53)); // 0.5 + un pequeño margen para el gap
                 if (index >= 0 && index <= 5) setCurrentKanbanCol(index);
               }}
               style={{
