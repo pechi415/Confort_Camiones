@@ -1918,46 +1918,46 @@ function App() {
                               Ingreso: {formatFechaCorta(camion.time || camion.creado_at)}
                             </div>
                             {/* Botón de Diagnóstico para Móviles / Limpieza Visual */}
-                             <button
-                              className="btn btn-secondary"
-                              onClick={() => setSelectedReport(camion)}
-                              style={{
-                                width: '100%',
-                                padding: '0.5rem',
-                                fontSize: '0.75rem',
-                                marginBottom: '0.5rem',
-                                display: 'flex',
-                                alignItems: 'center',
-                                justifyContent: 'center',
-                                gap: '0.4rem',
-                                border: '1px solid #e5e7eb',
-                                background: '#f9fafb'
-                              }}
-                            >
-                              <MonitorCheck size={14} /> Ver Diagnóstico
-                            </button>
-
-                            {camion.estado === 'evaluados' && (
+                             <div style={{ display: 'flex', gap: '0.4rem', marginTop: '0.8rem' }}>
                               <button
-                                className="btn btn-primary"
-                                onClick={() => prepararDictamen(camion)}
+                                className="btn btn-secondary"
+                                onClick={() => setSelectedReport(camion)}
                                 style={{
-                                  width: '100%',
-                                  padding: '0.6rem',
-                                  fontSize: '0.75rem',
-                                  marginBottom: '0.8rem',
+                                  flex: 1,
+                                  padding: '0.5rem',
+                                  fontSize: '0.7rem',
                                   display: 'flex',
                                   alignItems: 'center',
                                   justifyContent: 'center',
-                                  gap: '0.4rem',
-                                  background: '#7c3aed',
-                                  border: 'none',
-                                  boxShadow: '0 4px 12px rgba(124, 58, 237, 0.2)'
+                                  gap: '0.3rem',
+                                  border: '1px solid #e5e7eb',
+                                  background: '#f9fafb'
                                 }}
                               >
-                                <ShieldCheck size={14} /> Registrar Dictamen Técnico
+                                <MonitorCheck size={13} /> Ver
                               </button>
-                            )}
+
+                              {camion.estado === 'evaluados' && (
+                                <button
+                                  className="btn btn-primary"
+                                  onClick={() => prepararDictamen(camion)}
+                                  style={{
+                                    flex: 2,
+                                    padding: '0.5rem',
+                                    fontSize: '0.7rem',
+                                    display: 'flex',
+                                    alignItems: 'center',
+                                    justifyContent: 'center',
+                                    gap: '0.3rem',
+                                    background: '#7c3aed',
+                                    border: 'none',
+                                    boxShadow: '0 2px 8px rgba(124, 58, 237, 0.15)'
+                                  }}
+                                >
+                                  <ShieldCheck size={13} /> Dictamen Técnico
+                                </button>
+                              )}
+                            </div>
 
                             {/* Mostrar motivo de garantía si aplica con transparencia */}
                             {camion.estado === 'garantia' && camion.motivo_garantia && (
