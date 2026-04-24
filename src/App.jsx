@@ -1941,14 +1941,14 @@ function App() {
                         <div 
                           className="kanban-card-header"
                           onClick={() => setExpandedCardId(expandedCardId === camion.id ? null : camion.id)}
-                          style={{ padding: '0.6rem 1.2rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
+                          style={{ padding: '0.6rem 0.8rem', display: 'flex', alignItems: 'center', justifyContent: 'flex-start', gap: '0.5rem' }}
                         >
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginLeft: '0.5rem' }}>
-                            <Truck size={15} color="var(--primary-red)" />
-                            <strong style={{ fontSize: '1.05rem', color: 'var(--primary-black)' }}>{camion.flota}</strong>
-                            {camion.motivo_garantia && <ShieldAlert size={15} color="#ef4444" className="pulse-slow" />}
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                            <Truck size={14} color="var(--primary-red)" />
+                            <strong style={{ fontSize: '1rem', color: 'var(--primary-black)' }}>{camion.flota}</strong>
+                            {camion.motivo_garantia && <ShieldAlert size={14} color="#ef4444" className="pulse-slow" />}
                           </div>
-                          <div style={{ display: 'flex', gap: '0.3rem', alignItems: 'center' }}>
+                          <div style={{ display: 'flex', gap: '0.2rem', alignItems: 'center', marginLeft: '0.2rem' }}>
                             {camion.consenso > 1 && (
                               <div title={`Consenso de ${camion.consenso} grupos`} style={{ background: '#eff6ff', color: '#2563eb', padding: '0.1rem 0.3rem', borderRadius: '4px', fontSize: '0.65rem', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '0.2rem', border: '1px solid #dbeafe' }}>
                                 <Users size={11} /> {camion.consenso}
