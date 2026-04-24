@@ -3186,16 +3186,16 @@ function App() {
               </div>
 
               <div style={{ marginBottom: '1.5rem' }}>
-                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 'bold', color: '#6b7280', marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Descripción de Fallas y Comentarios:</label>
-                <div style={{ background: '#f8fafc', padding: '1.2rem', borderRadius: '8px', border: '1px solid #e2e8f0', color: '#1e293b', lineHeight: '1.6', fontSize: '0.95rem' }}>
+                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 'bold', color: 'rgba(255,255,255,0.7)', marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Descripción de Fallas y Comentarios:</label>
+                <div style={{ background: 'rgba(255, 255, 255, 0.2)', padding: '1.2rem', borderRadius: '12px', border: '1px solid rgba(255, 255, 255, 0.15)', color: '#ffffff', lineHeight: '1.6', fontSize: '0.95rem', backdropFilter: 'blur(4px)' }}>
                   {limpiarFallasIA(selectedReport.fallas).map(f => `${f.falla}${f.obs !== '-' ? ` (${f.obs})` : ''}`).join(' | ')}
                 </div>
               </div>
 
               {selectedReport.dictamen_tecnico && (
                 <div style={{ marginBottom: '1.5rem' }}>
-                  <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 'bold', color: '#7c3aed', marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>🔧 Dictamen Técnico de Mantenimiento:</label>
-                  <div style={{ background: '#f5f3ff', padding: '1.2rem', borderRadius: '8px', border: '1px solid #ddd6fe', color: '#4c1d95', lineHeight: '1.6', fontSize: '0.95rem', fontWeight: '500' }}>
+                  <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 'bold', color: '#ddd6fe', marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>🔧 Dictamen Técnico de Mantenimiento:</label>
+                  <div style={{ background: 'rgba(139, 92, 246, 0.15)', padding: '1.2rem', borderRadius: '12px', border: '1px solid rgba(139, 92, 246, 0.3)', color: '#ffffff', lineHeight: '1.6', fontSize: '0.95rem', fontWeight: '500', backdropFilter: 'blur(4px)' }}>
                     {corregirOrtografiaIA(selectedReport.dictamen_tecnico)}
                   </div>
                 </div>
@@ -3203,14 +3203,14 @@ function App() {
 
               {/* Sección de Pendientes de Garantía reubicada debajo del Dictamen */}
               {selectedReport.motivo_garantia && (
-                <div style={{ marginBottom: '1.5rem', background: '#fff5f5', padding: '1rem', borderRadius: '12px', border: '1px solid #fee2e2' }}>
-                  <div style={{ fontSize: '0.7rem', fontWeight: 'bold', color: '#ef4444', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                <div style={{ marginBottom: '1.5rem', background: 'rgba(239, 68, 68, 0.15)', padding: '1rem', borderRadius: '12px', border: '1px solid rgba(239, 68, 68, 0.3)', backdropFilter: 'blur(4px)' }}>
+                  <div style={{ fontSize: '0.7rem', fontWeight: 'bold', color: '#fca5a5', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
                     <ShieldAlert size={14} /> Fallas Pendientes de Garantía:
                   </div>
-                  <div style={{ fontSize: '0.9rem', color: '#991b1b', lineHeight: '1.5' }}>
+                  <div style={{ fontSize: '0.9rem', color: '#ffffff', lineHeight: '1.5' }}>
                     {selectedReport.motivo_garantia.split(' | ').map((p, idx) => (
                       <div key={idx} style={{ display: 'flex', gap: '0.5rem' }}>
-                        <span style={{ color: '#ef4444' }}>•</span>
+                        <span style={{ color: '#fca5a5' }}>•</span>
                         <span>{p}</span>
                       </div>
                     ))}
@@ -3219,19 +3219,19 @@ function App() {
               )}
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
-                <div style={{ background: '#f0f9ff', padding: '1rem', borderRadius: '8px', border: '1px solid #bae6fd' }}>
-                  <span style={{ display: 'block', fontSize: '0.7rem', color: '#0369a1', fontWeight: 'bold' }}>REPORTE POR (SUPERVISOR):</span>
-                  <span style={{ fontSize: '0.85rem', color: '#0c4a6e', fontWeight: 'bold' }}>{(selectedReport.supervisor || 'N/A').split(/\s*[,|]\s*/).join(' | ')}</span>
+                <div style={{ background: 'rgba(3, 105, 161, 0.1)', padding: '1rem', borderRadius: '12px', border: '1px solid rgba(3, 105, 161, 0.25)', backdropFilter: 'blur(4px)' }}>
+                  <span style={{ display: 'block', fontSize: '0.7rem', color: '#7dd3fc', fontWeight: 'bold' }}>REPORTE POR (SUPERVISOR):</span>
+                  <span style={{ fontSize: '0.85rem', color: '#ffffff', fontWeight: 'bold' }}>{(selectedReport.supervisor || 'N/A').split(/\s*[,|]\s*/).join(' | ')}</span>
                 </div>
-                <div style={{ background: '#f8fafc', padding: '1rem', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
-                  <span style={{ display: 'block', fontSize: '0.7rem', color: '#64748b', fontWeight: 'bold' }}>OPERADOR PERMANENTE:</span>
-                  <span style={{ fontSize: '0.85rem', color: '#1e293b' }}>{(selectedReport.operador || 'No asignado').split(/\s*[,|]\s*/).join(' | ')}</span>
+                <div style={{ background: 'rgba(100, 116, 139, 0.1)', padding: '1rem', borderRadius: '12px', border: '1px solid rgba(100, 116, 139, 0.25)', backdropFilter: 'blur(4px)' }}>
+                  <span style={{ display: 'block', fontSize: '0.7rem', color: '#cbd5e1', fontWeight: 'bold' }}>OPERADOR PERMANENTE:</span>
+                  <span style={{ fontSize: '0.85rem', color: '#ffffff' }}>{(selectedReport.operador || 'No asignado').split(/\s*[,|]\s*/).join(' | ')}</span>
                 </div>
               </div>
 
-              <div style={{ background: '#fdf2f8', padding: '0.8rem', borderRadius: '8px', border: '1px solid #fbcfe8', marginBottom: '1.5rem', textAlign: 'center' }}>
-                <span style={{ fontSize: '0.7rem', color: '#be185d', fontWeight: 'bold', marginRight: '0.5rem' }}>FECHA DE REGISTRO:</span>
-                <span style={{ fontSize: '0.85rem', color: '#831843' }}>{formatFechaCorta(selectedReport.time)}</span>
+              <div style={{ background: 'rgba(190, 24, 93, 0.1)', padding: '0.8rem', borderRadius: '12px', border: '1px solid rgba(190, 24, 93, 0.25)', marginBottom: '1.5rem', textAlign: 'center', backdropFilter: 'blur(4px)' }}>
+                <span style={{ fontSize: '0.7rem', color: '#f9a8d4', fontWeight: 'bold', marginRight: '0.5rem' }}>FECHA DE REGISTRO:</span>
+                <span style={{ fontSize: '0.85rem', color: '#ffffff' }}>{formatFechaCorta(selectedReport.time)}</span>
               </div>
 
               <button
