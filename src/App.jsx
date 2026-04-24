@@ -2009,7 +2009,7 @@ function App() {
                                   {[1, 2, 3].map(gNum => (
                                     <button
                                       key={gNum}
-                                      onClick={() => toggleAprobacion(camion.id, gNum, camion[`aprobado_g${gNum}`])}
+                                      onClick={() => toggleAprobacion(camion.id, `g${gNum}`, camion[`aprobado_g${gNum}`])}
                                       style={{
                                         flex: 1,
                                         padding: '0.45rem',
@@ -2019,7 +2019,8 @@ function App() {
                                         border: `1px solid ${camion[`aprobado_g${gNum}`] ? '#166534' : '#d1d5db'}`,
                                         borderRadius: '8px',
                                         fontWeight: 'bold',
-                                        transition: 'all 0.2s'
+                                        transition: 'all 0.2s',
+                                        cursor: 'pointer'
                                       }}
                                     >
                                       G{gNum}
