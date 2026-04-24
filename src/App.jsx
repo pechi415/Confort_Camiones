@@ -3204,37 +3204,45 @@ function App() {
                     <Truck size={24} color="var(--primary-red)" />
                   </div>
                   <div>
-                    <h3 style={{ margin: 0, color: 'var(--primary-black)', fontSize: '1.3rem' }}>Edición del Diagnóstico</h3>
-                    <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-muted)' }}>Corrija fallas y operador para el equipo <b>{camionEditando?.flota}</b></p>
+                    <h3 style={{ margin: 0, color: 'var(--primary-black)', fontSize: '1.3rem' }}>
+                      {editingGroupContext === 'Mantenimiento' ? 'Dictamen Técnico' : 'Edición del Diagnóstico'}
+                    </h3>
+                    <p style={{ margin: 0, fontSize: '0.8rem', color: 'var(--text-muted)' }}>
+                      {editingGroupContext === 'Mantenimiento' 
+                        ? `Registrando hallazgos para el equipo ${camionEditando?.flota}`
+                        : `Corrija fallas y operador para el equipo ${camionEditando?.flota}`}
+                    </p>
                   </div>
                 </div>
                 <button onClick={() => setCamionEditando(null)} style={{ background: 'transparent', border: 'none', color: '#9ca3af', cursor: 'pointer', fontSize: '1.8rem' }}>×</button>
               </div>
 
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
-                {/* Campos Principales */}
-                <div style={{ display: 'grid', gridTemplateColumns: '80px 1fr', gap: '1rem' }}>
-                  <div>
-                    <label className="input-label">N° Flota</label>
-                    <input type="text" className="input-field" value={camionEditando?.flota || ''} disabled style={{ background: '#f8fafc', fontWeight: 'bold' }} />
+                {/* Campos Principales (Ocultos en Dictamen) */}
+                {editingGroupContext !== 'Mantenimiento' && (
+                  <div style={{ display: 'grid', gridTemplateColumns: '80px 1fr', gap: '1rem' }}>
+                    <div>
+                      <label className="input-label">N° Flota</label>
+                      <input type="text" className="input-field" value={camionEditando?.flota || ''} disabled style={{ background: '#f8fafc', fontWeight: 'bold' }} />
+                    </div>
+                    <div>
+                      <label className="input-label">
+                        {editingGroupContext === 'General' ? 'Nombres de Operadores (Completo)' : `Nombre del Operador`}
+                      </label>
+                      <input
+                        type="text"
+                        className="input-field"
+                        value={operadorEdit}
+                        onChange={e => setOperadorEdit(e.target.value)}
+                        placeholder={editingGroupContext === 'General' ? "Nombres de todos los conductores..." : "Nombre del conductor para este grupo..."}
+                        style={{ background: 'rgba(255,255,255,0.5)', border: '1px solid rgba(0,0,0,0.1)' }}
+                      />
+                    </div>
                   </div>
-                  <div>
-                    <label className="input-label">
-                      {editingGroupContext === 'General' ? 'Nombres de Operadores (Completo)' : `Nombre del Operador`}
-                    </label>
-                    <input
-                      type="text"
-                      className="input-field"
-                      value={operadorEdit}
-                      onChange={e => setOperadorEdit(e.target.value)}
-                      placeholder={editingGroupContext === 'General' ? "Nombres de todos los conductores..." : "Nombre del conductor para este grupo..."}
-                      style={{ background: 'rgba(255,255,255,0.5)', border: '1px solid rgba(0,0,0,0.1)' }}
-                    />
-                  </div>
-                </div>
+                )}
 
-                {/* Selector de Grupo Estilo Tabs (v4.0) - Visible para Admin y Supervisores */}
-                {(session.role === 'admin' || session.role === 'supervisor') && (
+                {/* Selector de Grupo Estilo Tabs (v4.0) - Oculto en Dictamen */}
+                {editingGroupContext !== 'Mantenimiento' && (session.role === 'admin' || session.role === 'supervisor') && (
                   <div style={{ display: 'flex', gap: '0.5rem', borderBottom: '1px solid #f1f5f9', paddingBottom: '0.5rem' }}>
                     {['General', 'G1', 'G2', 'G3', 'Mantenimiento'].map(g => (
                       <button
@@ -3380,11 +3388,13 @@ function App() {
                   <button className="btn btn-secondary" style={{ flex: 1, height: '48px' }} onClick={() => setCamionEditando(null)}>Descartar Cambios</button>
                   <button
                     className="btn btn-primary"
-                    style={{
-                      flex: 2,
+                    onClick={guardarEdicionAvanzada}
+                    style={{ 
+                      flex: 2, 
                       height: '48px',
-                      background: 'var(--primary-red)',
-                      borderColor: 'var(--primary-red)',
+                      justifyContent: 'center',
+                      background: editingGroupContext === 'Mantenimiento' ? '#7c3aed' : 'var(--primary-red)',
+                      borderColor: editingGroupContext === 'Mantenimiento' ? '#7c3aed' : 'var(--primary-red)',
                       boxShadow: '0 10px 15px -3px rgba(227, 25, 55, 0.3)'
                     }}
                     onClick={guardarEdicionAvanzada}
