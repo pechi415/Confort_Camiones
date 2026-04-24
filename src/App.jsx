@@ -611,13 +611,28 @@ function App() {
   // FETCH INICIAL AL MONTAR LA APP
   useEffect(() => {
     const fetchDatabase = async () => {
-      // 1. Traer Usuarios en segundo plano para el Administrador
-      const { data: usersInfo } = await supabase.from('usuarios').select('*');
-      if (usersInfo) setDbUsuarios(usersInfo);
+      try {
+        console.log("Iniciando fetch de base de datos...");
+        // 1. Traer Usuarios
+        const { data: usersInfo, error: errU } = await supabase.from('usuarios').select('*');
+        if (errU) console.error("Error Supabase Usuarios:", errU);
+        if (usersInfo) setDbUsuarios(usersInfo);
 
-      // 2. Traer la Pila de Kanban
-      const { data: flotaInfo } = await supabase.from('camiones').select('*');
-      if (flotaInfo) setCamionesRegistrados(flotaInfo);
+        // 2. Traer la Pila de Kanban
+        const { data: flotaInfo, error: errF } = await supabase.from('camiones').select('*');
+        if (errF) {
+          console.error("Error Supabase Camiones:", errF);
+          addToast("Error de conexión: " + errF.message, "error");
+        }
+        if (flotaInfo) {
+          console.log("Camiones cargados:", flotaInfo.length);
+          setCamionesRegistrados(flotaInfo);
+        } else {
+          setCamionesRegistrados([]);
+        }
+      } catch (err) {
+        console.error("Fallo crítico fetch:", err);
+      }
     };
     fetchDatabase();
   }, [session]); // Recarga si el estado auth cambia.
@@ -1873,7 +1888,7 @@ function App() {
         {activeTab === 'cola' && (
           <div className="fade-in" style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
             <div className="kanban-title-stack" style={{ marginBottom: '1.5rem' }}>
-              <h2 style={{ color: 'var(--primary-black)', margin: '0 0 0.4rem 0', lineHeight: '1.2' }}>🔧 Pila de Mantenimiento (Control Taller)</h2>
+              <h2 style={{ color: 'var(--primary-black)', margin: '0 0 0.4rem 0', lineHeight: '1.2' }}>🔧 Pila de Mantenimiento <span style={{ fontSize: '0.7rem', opacity: 0.5 }}>v1.4.7</span></h2>
               <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', display: 'block' }}>Arrastra los camiones para avanzar su estado</span>
             </div>
 
@@ -3383,6 +3398,13 @@ function App() {
                     ))}
                   </div>
                 )}
+        <div style={{ padding: '0 1.2rem', marginBottom: '1.2rem' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+            <h2 style={{ fontSize: '1.1rem', color: '#1e293b', fontWeight: '800', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <Wrench size={20} color="#ef4444" />
+              Pila de Mantenimiento <span style={{ fontSize: '0.7rem', opacity: 0.5 }}>v1.4.7</span>
+            </h2>
+          </div>                </div>
 
                 {/* Vista Específica de Dictamen Técnico */}
                 {editingGroupContext === 'Mantenimiento' && (
