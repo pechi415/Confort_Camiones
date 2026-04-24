@@ -146,7 +146,8 @@ const corregirOrtografiaIA = (texto) => {
     'obviamente': 'obviamente', 'naturalmente': 'naturalmente', 'realmente': 'realmente',
     'verdaderamente': 'verdaderamente', 'seguramente': 'seguramente', 'posiblemente': 'posiblemente',
     'probablemente': 'probablemente', 'acaso': 'acaso', 'ojala': 'ojalá', 'amen': 'amén',
-    'si': 'sí', 'no': 'no', 'así': 'así', 'peor': 'peor', 'mejor': 'mejor'
+    'si': 'sí', 'no': 'no', 'así': 'así', 'peor': 'peor', 'mejor': 'mejor',
+    'bascula': 'báscula', 'danos': 'daños'
   };
 
   Object.keys(diccionario).forEach(error => {
