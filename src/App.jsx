@@ -3207,11 +3207,11 @@ function App() {
                     <Truck size={28} strokeWidth={2.5} />
                   </div>
                   <div>
-                    <h3 style={{ margin: 0, color: '#1e293b', fontSize: '1.4rem', fontWeight: '900', letterSpacing: '-0.02em' }}>Ficha Técnica • {selectedReport?.flota || 'S/N'}</h3>
-                    <p style={{ margin: 0, fontSize: '0.9rem', color: '#64748b', fontWeight: '700' }}>Mina {selectedReport?.mina || '--'} • Grupo {selectedReport?.grupo || '--'}</p>
+                    <h3 style={{ margin: 0, color: '#1e293b', fontSize: '1.4rem', fontWeight: '900', letterSpacing: '-0.02em' }}>Ficha Técnica • {selectedReport.flota}</h3>
+                    <p style={{ margin: 0, fontSize: '0.9rem', color: '#64748b', fontWeight: '700' }}>Mina {selectedReport.mina} • Grupo {formatGrupo(selectedReport.grupo)}</p>
                   </div>
                 </div>
-                <button onClick={() => setSelectedReport(null)} style={{ background: 'rgba(0,0,0,0.1)', border: 'none', color: '#1e293b', cursor: 'pointer', width: '36px', height: '36px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.4rem', fontWeight: 'bold' }}>×</button>
+                <button onClick={() => setSelectedReport(null)} style={{ background: 'rgba(255,255,255,0.15)', border: 'none', color: '#ffffff', cursor: 'pointer', width: '36px', height: '36px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.4rem', fontWeight: 'bold' }}>×</button>
               </div>
 
               {/* Sección: Descripción de Fallas */}
@@ -3221,7 +3221,7 @@ function App() {
                   <label style={{ fontSize: 'clamp(0.8rem, 3vw, 0.95rem)', fontWeight: '900', color: '#0369a1', textTransform: 'uppercase', letterSpacing: '0.05em', whiteSpace: 'nowrap' }}>Descripción de Fallas:</label>
                 </div>
                 <div style={{ background: 'rgba(255, 255, 255, 0.3)', padding: '1.2rem', borderRadius: '18px', border: '1px solid rgba(0, 0, 0, 0.08)', color: '#0f172a', lineHeight: '1.6', fontSize: '1rem', fontWeight: '400', backdropFilter: 'blur(5px)', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.05)' }}>
-                  {selectedReport?.fallas || 'Sin fallas registradas'}
+                  {limpiarFallasIA(selectedReport.fallas).map(f => `${f.falla}${f.obs !== '-' ? ` (${f.obs})` : ''}`).join(' | ')}
                 </div>
               </div>
 
@@ -3233,7 +3233,7 @@ function App() {
                     <label style={{ fontSize: 'clamp(0.8rem, 3vw, 0.95rem)', fontWeight: '900', color: '#6d28d9', textTransform: 'uppercase', letterSpacing: '0.05em', whiteSpace: 'nowrap' }}>Dictamen Técnico:</label>
                   </div>
                   <div style={{ background: 'rgba(124, 58, 237, 0.08)', padding: '1.2rem', borderRadius: '18px', border: '1px solid rgba(124, 58, 237, 0.25)', color: '#4c1d95', lineHeight: '1.6', fontSize: '1.05rem', fontWeight: '400', backdropFilter: 'blur(5px)' }}>
-                    {selectedReport?.dictamen_tecnico || '--'}
+                    {corregirOrtografiaIA(selectedReport.dictamen_tecnico)}
                   </div>
                 </div>
               )}
@@ -3276,17 +3276,8 @@ function App() {
                 <span style={{ fontSize: '1rem', color: '#1e293b', fontWeight: '900' }}>{formatFechaCorta(selectedReport.time)}</span>
               </div>
 
-              <button
-                type="submit"
-                disabled={loading}
-                className="btn btn-primary"
-                style={{ width: '100%', marginTop: '1rem', padding: '1rem', fontSize: '1.1rem' }}
-              >
-                {loading ? <RefreshCcw className="animate-spin" /> : 'Ingresar al Sistema'}
-              </button>
-              
               <div style={{ marginTop: '1.5rem', textAlign: 'center', opacity: 0.5, fontSize: '0.8rem', color: '#1e293b' }}>
-                VERSIÓN DIAGNÓSTICO: 1.4.6_ULTRA_COMPACT
+                DOCUMENTO TÉCNICO OFICIAL DRUMMOND
               </div>
 
               <button
