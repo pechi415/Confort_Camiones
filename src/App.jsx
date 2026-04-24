@@ -2010,20 +2010,29 @@ function App() {
                                     <button
                                       key={gNum}
                                       onClick={() => toggleAprobacion(camion.id, `g${gNum}`, camion[`aprobado_g${gNum}`])}
+                                      title={camion[`aprobado_g${gNum}`] ? `Grupo ${gNum} Aprobó` : `Aprobar Grupo ${gNum}`}
                                       style={{
                                         flex: 1,
                                         padding: '0.45rem',
+                                        height: '32px',
                                         fontSize: '0.75rem',
                                         background: camion[`aprobado_g${gNum}`] ? '#dcfce7' : '#f3f4f6',
                                         color: camion[`aprobado_g${gNum}`] ? '#166534' : '#6b7280',
                                         border: `1px solid ${camion[`aprobado_g${gNum}`] ? '#166534' : '#d1d5db'}`,
                                         borderRadius: '8px',
                                         fontWeight: 'bold',
-                                        transition: 'all 0.2s',
-                                        cursor: 'pointer'
+                                        transition: 'all 0.25s cubic-bezier(0.4, 0, 0.2, 1)',
+                                        cursor: 'pointer',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center'
                                       }}
                                     >
-                                      G{gNum}
+                                      {camion[`aprobado_g${gNum}`] ? (
+                                        <CheckCircle2 size={18} className="fade-in" />
+                                      ) : (
+                                        `G${gNum}`
+                                      )}
                                     </button>
                                   ))}
                                 </div>
