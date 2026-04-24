@@ -1942,21 +1942,15 @@ function App() {
                           <Truck size={18} color="var(--primary-red)" />
                           <strong style={{ fontSize: '1.25rem', color: 'var(--primary-black)', letterSpacing: '-0.5px' }}>{camion.flota}</strong>
                           {camion.motivo_garantia && (
-                            <span style={{ 
-                              background: '#ef4444', 
-                              color: 'white', 
-                              fontSize: '0.6rem', 
-                              padding: '0.15rem 0.4rem', 
-                              borderRadius: '4px', 
-                              fontWeight: '900',
+                            <div title="Este equipo es un RETORNO POR GARANTÍA" style={{ 
+                              color: '#ef4444', 
                               display: 'flex',
                               alignItems: 'center',
-                              gap: '0.2rem',
-                              boxShadow: '0 2px 4px rgba(239, 68, 68, 0.2)',
+                              justifyContent: 'center',
                               marginLeft: '0.4rem'
                             }}>
-                              <Shield size={10} /> GARANTÍA
-                            </span>
+                              <ShieldAlert size={18} className="pulse-slow" />
+                            </div>
                           )}
                           <div style={{ marginLeft: 'auto', display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
                             {camion.consenso > 1 && (
@@ -1975,7 +1969,7 @@ function App() {
                               Ingreso: {formatFechaCorta(camion.time || camion.creado_at)}
                             </div>
                             {/* Botón de Diagnóstico para Móviles / Limpieza Visual */}
-                             <div style={{ display: 'flex', gap: '0.4rem', marginTop: '0.8rem' }}>
+                             <div style={{ display: 'flex', gap: '0.4rem', marginTop: '0.8rem', marginBottom: '0.8rem' }}>
                               <button
                                 className="btn btn-secondary"
                                 onClick={() => setSelectedReport(camion)}
