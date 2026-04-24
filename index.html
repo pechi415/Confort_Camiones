@@ -16,7 +16,23 @@
     <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-          navigator.serviceWorker.register('/sw.js');
+          navigator.serviceWorker.register('/sw.js').then(reg => {
+            reg.onupdatefound = () => {
+              const installingWorker = reg.installing;
+              installingWorker.onstatechange = () => {
+                if (installingWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                  // Nueva versión encontrada, recargar
+                  window.location.reload();
+                }
+              };
+            };
+          });
+        });
+      }
+      // Limpiar caches antiguos si persisten errores
+      if (window.location.search.includes('clear-cache')) {
+        caches.keys().then(names => {
+          for (let name of names) caches.delete(name);
         });
       }
     </script>
