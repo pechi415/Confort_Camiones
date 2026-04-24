@@ -2041,12 +2041,12 @@ function App() {
                                       });
                                     }}
                                     className="btn btn-primary"
-                                    style={{ width: '100%', padding: '0.6rem', fontSize: '0.8rem', background: '#10b981', border: 'none', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', marginTop: '0.2rem' }}
+                                    style={{ width: '100%', padding: '0.45rem', fontSize: '0.75rem', background: '#10b981', border: 'none', borderRadius: '8px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.4rem', marginTop: '0.2rem', whiteSpace: 'nowrap' }}
                                   >
-                                    <Unlock size={16} /> Liberar Camión
+                                    <Unlock size={15} /> Liberar Camión
                                   </button>
                                 ) : (
-                                  <div style={{ padding: '0.5rem', background: '#fff7ed', border: '1px solid #ffedd5', borderRadius: '8px', fontSize: '0.65rem', color: '#9a3412', textAlign: 'center' }}>
+                                  <div style={{ padding: '0.4rem', background: '#fff7ed', border: '1px solid #ffedd5', borderRadius: '8px', fontSize: '0.65rem', color: '#9a3412', textAlign: 'center' }}>
                                     Esperando consenso (min. 2 grupos)
                                   </div>
                                 )}
