@@ -198,88 +198,93 @@ const unificarComentariosIA = (texto) => {
 };
 
 const limpiarFallasIA = (fallasStr) => {
-  if (!fallasStr) return [];
-  
-  // v1.9.81 Motor de Separación por Profundidad (Ignora delimitadores dentro de paréntesis)
-  const result = [];
-  let depth = 0;
-  let start = 0;
-
-  for (let i = 0; i < fallasStr.length; i++) {
-    const char = fallasStr[i];
-    if (char === '(') depth++;
-    if (char === ')') depth--;
-
-    // Si encontramos un delimitador (|, / o coma) y estamos en nivel 0 (fuera de paréntesis)
-    if (depth === 0 && (char === '|' || char === '/' || char === ',')) {
-      processItem(fallasStr.substring(start, i).trim());
-      start = i + 1;
-    }
-  }
-  // Procesar la última parte
-  processItem(fallasStr.substring(start).trim());
-
-  function processItem(text) {
-      if (!text || text === '-') return;
-      
-      const openParen = text.indexOf('(');
-      const closeParen = text.lastIndexOf(')');
-      
-      if (openParen !== -1 && closeParen !== -1 && closeParen > openParen) {
-          const rawObs = text.substring(openParen + 1, closeParen).trim();
-          // v1.9.86 Limpieza recursiva de observaciones internas (para datos históricos)
-          const obsParts = rawObs.split(/\s*[|/]\s*/).filter(Boolean).map(p => p.replace(/^(?:G\d+|General)\s*[:\-]\s*/i, '').trim());
-          const cleanObsParts = [];
-          
-          obsParts.forEach(part => {
-              const duplicate = cleanObsParts.find(existing => 
-                  calcularSimilitudIA(existing, part) > 0.4 || 
-                  existing.toLowerCase().trim().includes(part.toLowerCase().trim()) || 
-                  part.toLowerCase().trim().includes(existing.toLowerCase().trim())
-              );
-              if (!duplicate) {
-                  cleanObsParts.push(part);
-              } else if (part.length > duplicate.length) {
-                  const idx = cleanObsParts.indexOf(duplicate);
-                  cleanObsParts[idx] = part;
-              }
-          });
-
-          result.push({
-              falla: text.substring(0, openParen).trim(),
-              obs: cleanObsParts.join(' | ') || '-'
-          });
-      } else {
-          result.push({
-              falla: text.trim(),
-              obs: '-'
-          });
-      }
-  }
-
-  // Deduplicación e Inteligencia IA Humana de Comentarios (v1.9.95)
-  return result.reduce((acc, current) => {
-    const x = acc.find(item => item.falla.toLowerCase().trim() === current.falla.toLowerCase().trim());
-    if (!x) return acc.concat([current]);
+  try {
+    if (!fallasStr) return [];
     
-    if (current.obs !== '-' && x.obs !== '-') {
-      const similitud = calcularSimilitudIA(x.obs, current.obs);
-      // Umbral ajustado para la nueva normalización semántica
-      if (similitud > 0.45) {
-        // Nos quedamos con el más detallado (el más largo)
-        if (current.obs.length > x.obs.length) {
-          x.obs = current.obs;
-        }
-      } else {
-        if (!x.obs.includes(current.obs)) {
-          x.obs = `${x.obs} | ${current.obs}`;
-        }
+    // v1.9.81 Motor de Separación por Profundidad (Ignora delimitadores dentro de paréntesis)
+    const result = [];
+    let depth = 0;
+    let start = 0;
+
+    for (let i = 0; i < fallasStr.length; i++) {
+      const char = fallasStr[i];
+      if (char === '(') depth++;
+      if (char === ')') depth--;
+
+      // Si encontramos un delimitador (|, / o coma) y estamos en nivel 0 (fuera de paréntesis)
+      if (depth === 0 && (char === '|' || char === '/' || char === ',')) {
+        processItem(fallasStr.substring(start, i).trim());
+        start = i + 1;
       }
-    } else if (current.obs !== '-' && x.obs === '-') {
-      x.obs = current.obs;
     }
-    return acc;
-  }, []);
+    // Procesar la última parte
+    processItem(fallasStr.substring(start).trim());
+
+    function processItem(text) {
+        if (!text || text === '-') return;
+        
+        const openParen = text.indexOf('(');
+        const closeParen = text.lastIndexOf(')');
+        
+        if (openParen !== -1 && closeParen !== -1 && closeParen > openParen) {
+            const rawObs = text.substring(openParen + 1, closeParen).trim();
+            // v1.9.86 Limpieza recursiva de observaciones internas (para datos históricos)
+            const obsParts = rawObs.split(/\s*[|/]\s*/).filter(Boolean).map(p => p.replace(/^(?:G\d+|General)\s*[:\-]\s*/i, '').trim());
+            const cleanObsParts = [];
+            
+            obsParts.forEach(part => {
+                const duplicate = cleanObsParts.find(existing => 
+                    calcularSimilitudIA(existing, part) > 0.4 || 
+                    existing.toLowerCase().trim().includes(part.toLowerCase().trim()) || 
+                    part.toLowerCase().trim().includes(existing.toLowerCase().trim())
+                );
+                if (!duplicate) {
+                    cleanObsParts.push(part);
+                } else if (part.length > duplicate.length) {
+                    const idx = cleanObsParts.indexOf(duplicate);
+                    cleanObsParts[idx] = part;
+                }
+            });
+
+            result.push({
+                falla: text.substring(0, openParen).trim(),
+                obs: cleanObsParts.join(' | ') || '-'
+            });
+        } else {
+            result.push({
+                falla: text.trim(),
+                obs: '-'
+            });
+        }
+    }
+
+    // Deduplicación e Inteligencia IA Humana de Comentarios (v1.9.95)
+    return result.reduce((acc, current) => {
+      const x = acc.find(item => item.falla.toLowerCase().trim() === current.falla.toLowerCase().trim());
+      if (!x) return acc.concat([current]);
+      
+      if (current.obs !== '-' && x.obs !== '-') {
+        const similitud = calcularSimilitudIA(x.obs, current.obs);
+        // Umbral ajustado para la nueva normalización semántica
+        if (similitud > 0.45) {
+          // Nos quedamos con el más detallado (el más largo)
+          if (current.obs.length > x.obs.length) {
+            x.obs = current.obs;
+          }
+        } else {
+          if (!x.obs.includes(current.obs)) {
+            x.obs = `${x.obs} | ${current.obs}`;
+          }
+        }
+      } else if (current.obs !== '-' && x.obs === '-') {
+        x.obs = current.obs;
+      }
+      return acc;
+    }, []);
+  } catch (err) {
+    console.error("Error en limpiarFallasIA:", err);
+    return [{ falla: String(fallasStr), obs: '-' }];
+  }
 };
 
 
@@ -3216,7 +3221,14 @@ function App() {
                   <label style={{ fontSize: 'clamp(0.8rem, 3vw, 0.95rem)', fontWeight: '900', color: '#0369a1', textTransform: 'uppercase', letterSpacing: '0.05em', whiteSpace: 'nowrap' }}>Descripción de Fallas:</label>
                 </div>
                 <div style={{ background: 'rgba(255, 255, 255, 0.3)', padding: '1.2rem', borderRadius: '18px', border: '1px solid rgba(0, 0, 0, 0.08)', color: '#0f172a', lineHeight: '1.6', fontSize: '1rem', fontWeight: '400', backdropFilter: 'blur(5px)', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.05)' }}>
-                  {limpiarFallasIA(selectedReport.fallas).map(f => `${f.falla}${f.obs !== '-' ? ` (${f.obs})` : ''}`).join(' | ')}
+                  {(() => {
+                    try {
+                      const fallas = limpiarFallasIA(selectedReport.fallas);
+                      return fallas.map(f => `${f.falla}${f.obs !== '-' ? ` (${f.obs})` : ''}`).join(' | ');
+                    } catch(e) {
+                      return selectedReport.fallas || 'Sin fallas registradas';
+                    }
+                  })()}
                 </div>
               </div>
 
