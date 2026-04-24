@@ -3184,7 +3184,7 @@ function App() {
                     <Truck size={28} strokeWidth={2.5} />
                   </div>
                   <div>
-                    <h3 style={{ margin: 0, color: '#ffffff', fontSize: '1.4rem', fontWeight: '900', letterSpacing: '-0.02em' }}>Ficha Técnica - {selectedReport.flota}</h3>
+                    <h3 style={{ margin: 0, color: '#ffffff', fontSize: '1.4rem', fontWeight: '900', letterSpacing: '-0.02em' }}>Ficha Técnica • {selectedReport.flota}</h3>
                     <p style={{ margin: 0, fontSize: '0.9rem', color: '#cbd5e1', fontWeight: '700' }}>Mina {selectedReport.mina} • Grupo {formatGrupo(selectedReport.grupo)}</p>
                   </div>
                 </div>
