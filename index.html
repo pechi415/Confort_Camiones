@@ -29,11 +29,21 @@
           });
         });
       }
-      // Limpiar caches antiguos si persisten errores
+      // Limpiar caches y Service Workers si persisten errores
       if (window.location.search.includes('clear-cache')) {
+        if ('serviceWorker' in navigator) {
+          navigator.serviceWorker.getRegistrations().then(registrations => {
+            for (let registration of registrations) {
+              registration.unregister();
+            }
+          });
+        }
         caches.keys().then(names => {
           for (let name of names) caches.delete(name);
         });
+        setTimeout(() => {
+          window.location.href = window.location.origin + window.location.pathname;
+        }, 1000);
       }
     </script>
   </body>
