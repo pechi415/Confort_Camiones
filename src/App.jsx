@@ -1941,12 +1941,12 @@ function App() {
                         <div 
                           className="kanban-card-header"
                           onClick={() => setExpandedCardId(expandedCardId === camion.id ? null : camion.id)}
-                          style={{ padding: '0.6rem 1rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
+                          style={{ padding: '0.6rem 1.2rem', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}
                         >
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
-                            <Truck size={16} color="var(--primary-red)" />
-                            <strong style={{ fontSize: '1.1rem', color: 'var(--primary-black)' }}>{camion.flota}</strong>
-                            {camion.motivo_garantia && <ShieldAlert size={16} color="#ef4444" className="pulse-slow" />}
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginLeft: '0.5rem' }}>
+                            <Truck size={15} color="var(--primary-red)" />
+                            <strong style={{ fontSize: '1.05rem', color: 'var(--primary-black)' }}>{camion.flota}</strong>
+                            {camion.motivo_garantia && <ShieldAlert size={15} color="#ef4444" className="pulse-slow" />}
                           </div>
                           <div style={{ display: 'flex', gap: '0.3rem', alignItems: 'center' }}>
                             {camion.consenso > 1 && (
