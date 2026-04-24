@@ -312,7 +312,7 @@ h1, h2, h3, h4, h5, h6 {
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
   border-radius: 18px;
-  padding: 1rem;
+  padding: 0.6rem;
   border: 1px solid rgba(255, 255, 255, 0.35);
   display: flex;
   flex-direction: column;
@@ -614,7 +614,7 @@ h1, h2, h3, h4, h5, h6 {
 
 @media (max-width: 768px) {
   .kanban-column {
-    max-width: 58vw;
+    max-width: 50vw;
     height: calc(100vh - 340px);
   }
 }
