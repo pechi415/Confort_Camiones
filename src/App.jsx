@@ -651,7 +651,9 @@ function App() {
           // Extraemos el comentario original si existe (texto entre paréntesis después del nombre)
           const regex = new RegExp(`${f.nombre}\\s*\\(([^)]+)\\)`);
           const match = (camion?.fallas || '').match(regex);
-          const originalComment = match ? match[1] : '';
+          let originalComment = match ? match[1] : '';
+          // Limpieza de prefijos G1:, G2:, G3: para la vista unificada de Garantía
+          originalComment = originalComment.replace(/G[1-3]:\s*/g, '').trim();
 
           iniciales[f.id] = { selected: false, comment: originalComment };
         }
