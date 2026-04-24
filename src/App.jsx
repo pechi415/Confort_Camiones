@@ -3195,7 +3195,7 @@ function App() {
               <div style={{ marginBottom: '1.6rem' }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.7rem' }}>
                   <AlertCircle size={16} color="#38bdf8" strokeWidth={2.5} />
-                  <label style={{ fontSize: '0.8rem', fontWeight: '900', color: '#38bdf8', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Descripción de Fallas y Comentarios:</label>
+                  <label style={{ fontSize: '0.95rem', fontWeight: '900', color: '#0369a1', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Descripción de Fallas y Comentarios:</label>
                 </div>
                 <div style={{ background: 'rgba(255, 255, 255, 0.3)', padding: '1.2rem', borderRadius: '18px', border: '1px solid rgba(0, 0, 0, 0.08)', color: '#0f172a', lineHeight: '1.6', fontSize: '1rem', fontWeight: '400', backdropFilter: 'blur(5px)', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.05)' }}>
                   {limpiarFallasIA(selectedReport.fallas).map(f => `${f.falla}${f.obs !== '-' ? ` (${f.obs})` : ''}`).join(' | ')}
@@ -3207,7 +3207,7 @@ function App() {
                 <div style={{ marginBottom: '1.6rem' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.7rem' }}>
                     <ShieldCheck size={16} color="#c084fc" strokeWidth={2.5} />
-                    <label style={{ fontSize: '0.8rem', fontWeight: '900', color: '#c084fc', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Dictamen Técnico de Mantenimiento:</label>
+                    <label style={{ fontSize: '0.95rem', fontWeight: '900', color: '#6d28d9', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Dictamen Técnico de Mantenimiento:</label>
                   </div>
                   <div style={{ background: 'rgba(124, 58, 237, 0.08)', padding: '1.2rem', borderRadius: '18px', border: '1px solid rgba(124, 58, 237, 0.25)', color: '#4c1d95', lineHeight: '1.6', fontSize: '1.05rem', fontWeight: '400', backdropFilter: 'blur(5px)' }}>
                     {corregirOrtografiaIA(selectedReport.dictamen_tecnico)}
@@ -3220,7 +3220,7 @@ function App() {
                 <div style={{ marginBottom: '1.6rem' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginBottom: '0.7rem' }}>
                     <ShieldAlert size={16} color="#f87171" strokeWidth={2.5} />
-                    <label style={{ fontSize: '0.8rem', fontWeight: '900', color: '#f87171', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Fallas Pendientes de Garantía:</label>
+                    <label style={{ fontSize: '0.95rem', fontWeight: '900', color: '#b91c1c', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Fallas Pendientes de Garantía:</label>
                   </div>
                   <div style={{ background: 'rgba(239, 68, 68, 0.1)', padding: '1.2rem', borderRadius: '18px', border: '1px solid rgba(239, 68, 68, 0.2)', backdropFilter: 'blur(5px)' }}>
                     <div style={{ fontSize: '1rem', color: '#991b1b', lineHeight: '1.6', fontWeight: '400' }}>
