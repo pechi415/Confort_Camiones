@@ -3166,11 +3166,11 @@ function App() {
                 overflowY: 'auto',
                 margin: 0,
                 position: 'relative',
-                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.7)',
-                background: 'rgba(51, 65, 85, 0.95)',
-                backdropFilter: 'blur(30px)',
-                WebkitBackdropFilter: 'blur(30px)',
-                border: '1px solid rgba(255, 255, 255, 0.1)',
+                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.2)',
+                background: 'rgba(245, 242, 235, 0.98)',
+                backdropFilter: 'blur(20px)',
+                WebkitBackdropFilter: 'blur(20px)',
+                border: '1px solid rgba(160, 150, 130, 0.3)',
                 padding: '2rem',
                 scrollbarWidth: 'thin',
                 scrollbarColor: 'rgba(255,255,255,0.2) transparent'
@@ -3184,8 +3184,8 @@ function App() {
                     <Truck size={28} strokeWidth={2.5} />
                   </div>
                   <div>
-                    <h3 style={{ margin: 0, color: '#ffffff', fontSize: '1.4rem', fontWeight: '900', letterSpacing: '-0.02em' }}>Ficha Técnica • {selectedReport.flota}</h3>
-                    <p style={{ margin: 0, fontSize: '0.9rem', color: '#cbd5e1', fontWeight: '700' }}>Mina {selectedReport.mina} • Grupo {formatGrupo(selectedReport.grupo)}</p>
+                    <h3 style={{ margin: 0, color: '#1e293b', fontSize: '1.4rem', fontWeight: '900', letterSpacing: '-0.02em' }}>Ficha Técnica • {selectedReport.flota}</h3>
+                    <p style={{ margin: 0, fontSize: '0.9rem', color: '#64748b', fontWeight: '700' }}>Mina {selectedReport.mina} • Grupo {formatGrupo(selectedReport.grupo)}</p>
                   </div>
                 </div>
                 <button onClick={() => setSelectedReport(null)} style={{ background: 'rgba(255,255,255,0.15)', border: 'none', color: '#ffffff', cursor: 'pointer', width: '36px', height: '36px', borderRadius: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.4rem', fontWeight: 'bold' }}>×</button>
@@ -3197,7 +3197,7 @@ function App() {
                   <AlertCircle size={16} color="#38bdf8" strokeWidth={2.5} />
                   <label style={{ fontSize: '0.8rem', fontWeight: '900', color: '#38bdf8', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Descripción de Fallas y Comentarios:</label>
                 </div>
-                <div style={{ background: 'rgba(15, 23, 42, 0.4)', padding: '1.2rem', borderRadius: '18px', border: '1px solid rgba(56, 189, 248, 0.25)', color: '#ffffff', lineHeight: '1.6', fontSize: '1rem', fontWeight: '400', backdropFilter: 'blur(10px)', boxShadow: 'inset 0 2px 8px rgba(0,0,0,0.2)' }}>
+                <div style={{ background: 'rgba(255, 255, 255, 0.5)', padding: '1.2rem', borderRadius: '18px', border: '1px solid rgba(0, 0, 0, 0.05)', color: '#1e293b', lineHeight: '1.6', fontSize: '1rem', fontWeight: '400', backdropFilter: 'blur(5px)', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.05)' }}>
                   {limpiarFallasIA(selectedReport.fallas).map(f => `${f.falla}${f.obs !== '-' ? ` (${f.obs})` : ''}`).join(' | ')}
                 </div>
               </div>
@@ -3209,7 +3209,7 @@ function App() {
                     <ShieldCheck size={16} color="#c084fc" strokeWidth={2.5} />
                     <label style={{ fontSize: '0.8rem', fontWeight: '900', color: '#c084fc', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Dictamen Técnico de Mantenimiento:</label>
                   </div>
-                  <div style={{ background: 'rgba(15, 23, 42, 0.3)', padding: '1.2rem', borderRadius: '18px', border: '1px solid rgba(167, 139, 250, 0.3)', color: '#f5f3ff', lineHeight: '1.6', fontSize: '1.05rem', fontWeight: '400', backdropFilter: 'blur(10px)' }}>
+                  <div style={{ background: 'rgba(167, 139, 250, 0.1)', padding: '1.2rem', borderRadius: '18px', border: '1px solid rgba(167, 139, 250, 0.3)', color: '#4c1d95', lineHeight: '1.6', fontSize: '1.05rem', fontWeight: '400', backdropFilter: 'blur(5px)' }}>
                     {corregirOrtografiaIA(selectedReport.dictamen_tecnico)}
                   </div>
                 </div>
@@ -3222,11 +3222,11 @@ function App() {
                     <ShieldAlert size={16} color="#f87171" strokeWidth={2.5} />
                     <label style={{ fontSize: '0.8rem', fontWeight: '900', color: '#f87171', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Fallas Pendientes de Garantía:</label>
                   </div>
-                  <div style={{ background: 'rgba(153, 27, 27, 0.2)', padding: '1.2rem', borderRadius: '18px', border: '1px solid rgba(248, 113, 113, 0.2)', backdropFilter: 'blur(10px)' }}>
-                    <div style={{ fontSize: '1rem', color: '#fee2e2', lineHeight: '1.6', fontWeight: '400' }}>
+                  <div style={{ background: 'rgba(239, 68, 68, 0.1)', padding: '1.2rem', borderRadius: '18px', border: '1px solid rgba(239, 68, 68, 0.2)', backdropFilter: 'blur(5px)' }}>
+                    <div style={{ fontSize: '1rem', color: '#991b1b', lineHeight: '1.6', fontWeight: '400' }}>
                       {selectedReport.motivo_garantia.split(' | ').map((p, idx) => (
                         <div key={idx} style={{ display: 'flex', gap: '0.7rem', marginBottom: '0.5rem' }}>
-                          <span style={{ color: '#f87171', fontSize: '1.2rem' }}>•</span>
+                          <span style={{ color: '#ef4444', fontSize: '1.2rem' }}>•</span>
                           <span>{p}</span>
                         </div>
                       ))}
@@ -3237,21 +3237,20 @@ function App() {
 
               {/* Grid de Responsables */}
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.8rem' }}>
-                <div style={{ background: 'rgba(3, 105, 161, 0.3)', padding: '1.1rem', borderRadius: '18px', border: '1px solid rgba(125, 211, 252, 0.3)', backdropFilter: 'blur(4px)' }}>
-                  <span style={{ display: 'block', fontSize: '0.7rem', color: '#7dd3fc', fontWeight: '900', textTransform: 'uppercase', marginBottom: '0.6rem', letterSpacing: '0.05em' }}>Supervisor:</span>
-                  <span style={{ fontSize: '0.9rem', color: '#ffffff', fontWeight: '400', lineHeight: '1.4' }}>{(selectedReport.supervisor || 'N/A').split(/\s*[,|]\s*/).join(' | ')}</span>
+                <div style={{ background: 'rgba(3, 105, 161, 0.1)', padding: '1.1rem', borderRadius: '18px', border: '1px solid rgba(3, 105, 161, 0.2)', backdropFilter: 'blur(4px)' }}>
+                  <span style={{ display: 'block', fontSize: '0.7rem', color: '#0369a1', fontWeight: '900', textTransform: 'uppercase', marginBottom: '0.6rem', letterSpacing: '0.05em' }}>Supervisor:</span>
+                  <span style={{ fontSize: '0.9rem', color: '#1e293b', fontWeight: '400', lineHeight: '1.4' }}>{(selectedReport.supervisor || 'N/A').split(/\s*[,|]\s*/).join(' | ')}</span>
                 </div>
-                <div style={{ background: 'rgba(71, 85, 105, 0.3)', padding: '1.1rem', borderRadius: '18px', border: '1px solid rgba(203, 213, 225, 0.3)', backdropFilter: 'blur(4px)' }}>
-                  <span style={{ display: 'block', fontSize: '0.7rem', color: '#cbd5e1', fontWeight: '900', textTransform: 'uppercase', marginBottom: '0.6rem', letterSpacing: '0.05em' }}>Operador:</span>
-                  <span style={{ fontSize: '0.9rem', color: '#ffffff', fontWeight: '400', lineHeight: '1.4' }}>{(selectedReport.operador || 'No asignado').split(/\s*[,|]\s*/).join(' | ')}</span>
+                <div style={{ background: 'rgba(71, 85, 105, 0.1)', padding: '1.1rem', borderRadius: '18px', border: '1px solid rgba(71, 85, 105, 0.2)', backdropFilter: 'blur(4px)' }}>
+                  <span style={{ display: 'block', fontSize: '0.7rem', color: '#475569', fontWeight: '900', textTransform: 'uppercase', marginBottom: '0.6rem', letterSpacing: '0.05em' }}>Operador:</span>
+                  <span style={{ fontSize: '0.9rem', color: '#1e293b', fontWeight: '400', lineHeight: '1.4' }}>{(selectedReport.operador || 'No asignado').split(/\s*[,|]\s*/).join(' | ')}</span>
                 </div>
               </div>
 
-              {/* Pie del Modal - Reforzado */}
-              <div style={{ background: 'rgba(15, 23, 42, 0.5)', padding: '1rem', borderRadius: '18px', border: '1px solid rgba(255, 255, 255, 0.1)', marginBottom: '1.6rem', textAlign: 'center', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.8rem' }}>
-                <Calendar size={18} color="#94a3b8" />
-                <span style={{ fontSize: '0.8rem', color: '#94a3b8', fontWeight: '800', textTransform: 'uppercase' }}>Registro:</span>
-                <span style={{ fontSize: '1rem', color: '#ffffff', fontWeight: '900' }}>{formatFechaCorta(selectedReport.time)}</span>
+              <div style={{ background: 'rgba(0, 0, 0, 0.03)', padding: '1rem', borderRadius: '18px', border: '1px solid rgba(0, 0, 0, 0.05)', marginBottom: '1.6rem', textAlign: 'center', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '0.8rem' }}>
+                <Calendar size={18} color="#64748b" />
+                <span style={{ fontSize: '0.8rem', color: '#64748b', fontWeight: '800', textTransform: 'uppercase' }}>Registro:</span>
+                <span style={{ fontSize: '1rem', color: '#1e293b', fontWeight: '900' }}>{formatFechaCorta(selectedReport.time)}</span>
               </div>
 
               <button
