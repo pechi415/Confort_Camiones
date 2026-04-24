@@ -1939,118 +1939,91 @@ function App() {
                         }}
                       >
                         <div 
-                          className={`kanban-card-header ${isExpanded ? 'active' : ''}`}
-                          style={{ 
-                            display: 'flex', 
-                            alignItems: 'center', 
-                            justifyContent: 'space-between',
-                            padding: '0.8rem 1rem', 
-                            cursor: 'pointer',
-                            background: isExpanded ? 'rgba(0,0,0,0.02)' : 'transparent',
-                            transition: 'background 0.2s'
-                          }}
+                          className={`kanban-card-header${isExpanded ? ' expanded' : ''}`}
+                          style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', padding: '0.8rem 1.2rem', cursor: 'pointer' }}
                           onClick={() => setExpandedCardId(isExpanded ? null : camion.id)}
                         >
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                            <Truck size={16} color="var(--primary-red)" />
-                            <strong style={{ fontSize: '1.2rem', color: 'var(--primary-black)' }}>{camion.flota}</strong>
-                            {camion.motivo_garantia && <ShieldAlert size={16} color="#ef4444" className="pulse-slow" />}
-                          </div>
+                          <Truck size={18} color="var(--primary-red)" />
+                          <strong style={{ fontSize: '1.25rem', color: 'var(--primary-black)', letterSpacing: '-0.5px' }}>{camion.flota}</strong>
+                          {camion.motivo_garantia && <ShieldAlert size={18} color="#ef4444" className="pulse-slow" style={{ marginLeft: '0.2rem' }} />}
                           
-                          <div style={{ display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
+                          <div style={{ marginLeft: 'auto', display: 'flex', gap: '0.4rem', alignItems: 'center' }}>
                             {camion.consenso > 1 && (
-                              <div style={{ background: '#eff6ff', color: '#2563eb', padding: '0.1rem 0.3rem', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 'bold' }}>
-                                {camion.consenso}
+                              <div title={`Consenso de ${camion.consenso} grupos`} style={{ background: '#eff6ff', color: '#2563eb', padding: '0.2rem 0.4rem', borderRadius: '4px', fontSize: '0.7rem', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '0.2rem', border: '1px solid #dbeafe' }}>
+                                <Users size={12} /> {camion.consenso}
                               </div>
                             )}
-                            {camion.atencion === 'CRÍTICA' && <Siren size={16} color="#ef4444" />}
-                            {camion.atencion === 'ALTA' && <AlertTriangle size={16} color="#eab308" />}
+                            {camion.atencion === 'CRÍTICA' && <span><Siren size={18} color="#ef4444" strokeWidth={2} /></span>}
+                            {camion.atencion === 'ALTA' && <span><AlertTriangle size={18} color="#eab308" strokeWidth={2} /></span>}
+                            {camion.atencion === 'NORMAL' && <span><CheckCircle2 size={18} color="#10b981" strokeWidth={2} /></span>}
                           </div>
                         </div>
 
                         {isExpanded && (
-                          <div className="fade-in" style={{ padding: '0 1rem 1rem 1rem' }}>
-                            <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)', marginBottom: '0.8rem', borderBottom: '1px solid #f3f4f6', paddingBottom: '0.5rem' }}>
-                              Ingreso: <strong>{formatFechaCorta(camion.time || camion.creado_at)}</strong>
+                          <div className="fade-in" style={{ padding: '0 1.2rem 1.2rem' }}>
+                            <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '0.8rem' }}>
+                              Ingreso: {formatFechaCorta(camion.time || camion.creado_at)}
                             </div>
-
-                            {/* Acciones principales */}
-                            <div style={{ display: 'flex', gap: '0.4rem', marginBottom: '0.8rem' }}>
+                            
+                            <div style={{ marginBottom: '0.8rem' }}>
                               <button
                                 className="btn btn-secondary"
                                 onClick={() => setSelectedReport(camion)}
-                                style={{ flex: 1, padding: '0.4rem', fontSize: '0.7rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.3rem', background: 'white' }}
+                                style={{ width: '100%', padding: '0.6rem', fontSize: '0.8rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', background: '#f9fafb', border: '1px solid #e5e7eb' }}
                               >
-                                <MonitorCheck size={13} /> Ver
+                                <MonitorCheck size={16} /> Ver
                               </button>
-                              {camion.estado === 'evaluados' && (
+                            </div>
+
+                            {camion.estado === 'evaluados' && (
+                              <div style={{ marginBottom: '0.8rem' }}>
                                 <button
                                   className="btn btn-primary"
                                   onClick={() => prepararDictamen(camion)}
-                                  style={{ flex: 2, padding: '0.4rem', fontSize: '0.7rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.3rem', background: '#7c3aed', border: 'none' }}
+                                  style={{ width: '100%', padding: '0.6rem', fontSize: '0.8rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', background: '#7c3aed', border: 'none' }}
                                 >
-                                  <ShieldCheck size={13} /> Dictamen
+                                  <ShieldCheck size={16} /> Dictamen Técnico
                                 </button>
-                              )}
-                            </div>
-
-                            {/* Botón de Pendientes - SÓLO en columna de Garantía */}
-                            {camion.estado === 'garantia' && camion.motivo_garantia && (
-                              <button
-                                onClick={() => setSelectedGarantiaDetails(camion)}
-                                style={{ width: '100%', padding: '0.4rem', fontSize: '0.7rem', marginBottom: '0.8rem', background: 'rgba(239, 68, 68, 0.05)', border: '1px solid rgba(239, 68, 68, 0.1)', color: '#ef4444', borderRadius: '6px', fontWeight: 'bold' }}
-                              >
-                                <ShieldAlert size={14} /> Ver Pendientes
-                              </button>
+                              </div>
                             )}
 
-                            {/* Prioridad y Estados Especiales */}
+                            {camion.estado === 'garantia' && camion.motivo_garantia && (
+                              <div style={{ marginBottom: '0.8rem' }}>
+                                <button
+                                  onClick={() => setSelectedGarantiaDetails(camion)}
+                                  style={{ width: '100%', padding: '0.6rem', fontSize: '0.8rem', background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.2)', color: '#ef4444', borderRadius: '8px', fontWeight: 'bold' }}
+                                >
+                                  <ShieldAlert size={16} /> Ver Pendientes
+                                </button>
+                              </div>
+                            )}
+
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.8rem' }}>
-                              <span style={{ fontSize: '0.65rem', fontWeight: 'bold', color: '#94a3b8', textTransform: 'uppercase' }}>Prioridad:</span>
+                              <span style={{ fontSize: '0.75rem', fontWeight: 'bold', color: '#6b7280' }}>Prioridad:</span>
                               <span className="badge" style={{
-                                background: '#f8fafc',
-                                color: camion.atencion === 'CRÍTICA' ? '#ef4444' : (camion.atencion === 'ALTA' ? '#eab308' : '#64748b'),
-                                border: '1px solid #e2e8f0',
-                                fontSize: '0.65rem',
-                                padding: '0.2rem 0.6rem'
+                                background: '#f9fafb',
+                                color: camion.atencion === 'CRÍTICA' ? '#ef4444' : (camion.atencion === 'ALTA' ? '#eab308' : '#6b7280'),
+                                border: '1px solid #e5e7eb'
                               }}>
                                 {camion.atencion}
                               </span>
                             </div>
 
-                            {/* Vistos Buenos (SÓLO en Feedback) */}
-                            {camion.estado === 'feedback' && (
-                              <div style={{ marginTop: '0.8rem', paddingTop: '0.8rem', borderTop: '1px dashed #e5e7eb' }}>
-                                <span style={{ fontSize: '0.7rem', fontWeight: 'bold', color: '#64748b', display: 'block', marginBottom: '0.4rem', textTransform: 'uppercase' }}>Vistos Buenos (V.B):</span>
-                                <div style={{ display: 'flex', gap: '0.4rem', marginBottom: '0.8rem' }}>
-                                  <button onClick={() => toggleAprobacion(camion.id, 'g1', !!camion.aprobado_g1)} style={{ border: 'none', flex: 1, fontSize: '0.6rem', padding: '0.3rem', borderRadius: '4px', background: camion.aprobado_g1 ? '#dcfce7' : '#f3f4f6', color: camion.aprobado_g1 ? '#166534' : '#64748b' }}>{camion.aprobado_g1 ? '✓ G1' : '? G1'}</button>
-                                  <button onClick={() => toggleAprobacion(camion.id, 'g2', !!camion.aprobado_g2)} style={{ border: 'none', flex: 1, fontSize: '0.6rem', padding: '0.3rem', borderRadius: '4px', background: camion.aprobado_g2 ? '#dcfce7' : '#f3f4f6', color: camion.aprobado_g2 ? '#166534' : '#64748b' }}>{camion.aprobado_g2 ? '✓ G2' : '? G2'}</button>
-                                  <button onClick={() => toggleAprobacion(camion.id, 'g3', !!camion.aprobado_g3)} style={{ border: 'none', flex: 1, fontSize: '0.6rem', padding: '0.3rem', borderRadius: '4px', background: camion.aprobado_g3 ? '#dcfce7' : '#f3f4f6', color: camion.aprobado_g3 ? '#166534' : '#64748b' }}>{camion.aprobado_g3 ? '✓ G3' : '? G3'}</button>
-                                </div>
-                                {([camion.aprobado_g1, camion.aprobado_g2, camion.aprobado_g3].filter(Boolean).length >= 2) && (
-                                  <button className="btn btn-primary" onClick={() => liberarCamion(camion.id, camion.flota)} style={{ width: '100%', padding: '0.4rem', fontSize: '0.7rem', background: '#10b981', border: 'none' }}>🚛 LIBERAR</button>
-                                )}
-                              </div>
-                            )}
-
-                            {/* Selector de Movimiento (SÓLO Admin/Supervisor) */}
-                            {(session?.role?.toLowerCase() === 'admin' || session?.role?.toLowerCase() === 'supervisor' || session?.rol?.toLowerCase() === 'admin' || session?.rol?.toLowerCase() === 'supervisor') && (
-                              <div style={{ marginTop: '0.8rem', paddingTop: '0.8rem', borderTop: '1px solid #f3f4f6', display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem' }}>
-                                <label style={{ fontSize: '0.6rem', fontWeight: 'bold', color: '#94a3b8', textTransform: 'uppercase', whiteSpace: 'nowrap' }}>Mover a:</label>
-                                <select 
-                                  value={camion.estado}
-                                  onChange={(e) => {
-                                    const evt = { preventDefault: () => { }, dataTransfer: { getData: () => camion.id.toString() } };
-                                    handleDrop(evt, e.target.value);
-                                  }}
-                                  style={{ flex: 1, maxWidth: '110px', padding: '0.2rem 0.4rem', fontSize: '0.75rem', borderRadius: '6px', border: '1px solid #e2e8f0', background: 'white', outline: 'none', cursor: 'pointer', fontWeight: '600' }}
-                                >
-                                  {columnasKanban.map(opts => (
-                                    <option key={opts.id} value={opts.id}>{opts.titulo.replace(/[^\w\sñáéíóúÁÉÍÓÚ]/gi, '')}</option>
-                                  ))}
-                                </select>
-                              </div>
-                            )}
+                            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '0.5rem', marginTop: '1rem', paddingTop: '0.8rem', borderTop: '1px solid #f3f4f6' }}>
+                              <span style={{ fontSize: '0.75rem', color: 'var(--text-muted)', whiteSpace: 'nowrap' }}>Mover a:</span>
+                              <select 
+                                value={camion.estado}
+                                onChange={(e) => {
+                                  const evt = { preventDefault: () => { }, dataTransfer: { getData: () => camion.id.toString() } };
+                                  handleDrop(evt, e.target.value);
+                                }}
+                                style={{ flex: 1, maxWidth: '120px', padding: '0.3rem', borderRadius: '4px', border: '1px solid #d1d5db', fontSize: '0.8rem', background: '#f9fafb' }}
+                              >
+                                {columnasKanban.map(opts => (
+                                  <option key={opts.id} value={opts.id}>{opts.titulo.replace(/[^\w\sñáéíóúÁÉÍÓÚ]/gi, '')}</option>
+                                ))}
+                              </select>
+                            </div>
                           </div>
                         )}
                       </div>
