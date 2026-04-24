@@ -525,15 +525,7 @@ h1, h2, h3, h4, h5, h6 {
     box-shadow: 0 -10px 40px rgba(0, 0, 0, 0.2);
   }
 
-  /* Re-activación de blur selectivo v1.9.56 */
-  .glass-card, .card, .kanban-card, .modal-pop {
-    backdrop-filter: blur(10px);
-    -webkit-backdrop-filter: blur(10px);
-    background: rgba(255, 255, 255, 0.88) !important;
-  }
-  .glass-card, .card, .kanban-card, .modal-pop {
-    background: rgba(255, 255, 255, 0.92) !important; /* Más opaco para compensar falta de blur */
-  }
+  /* Eliminadas reglas que sobreescribían el diseño personalizado de las tarjetas */
 
   /* Efecto de Sobreposición (Stacking) solicitado */
   .stacked-card {
