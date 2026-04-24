@@ -2390,7 +2390,18 @@ function App() {
               <button
                 className="btn btn-primary"
                 onClick={() => { setIsCreandoUsuario(!isCreandoUsuario); setUsuarioEditando(null); }}
-                style={{ backgroundColor: isCreandoUsuario ? '#6b7280' : 'var(--primary-red)', border: 'none', display: 'flex', alignItems: 'center', gap: '0.4rem' }}
+                style={{ 
+                  background: 'rgba(227, 25, 55, 0.75)', 
+                  backdropFilter: 'blur(10px)', 
+                  WebkitBackdropFilter: 'blur(10px)',
+                  border: '1px solid rgba(255, 255, 255, 0.3)',
+                  padding: '0.6rem 1.2rem', 
+                  fontSize: '0.85rem',
+                  boxShadow: '0 4px 15px rgba(227, 25, 55, 0.2)',
+                  display: 'flex', 
+                  alignItems: 'center', 
+                  gap: '0.4rem' 
+                }}
               >
                 {isCreandoUsuario ? 'Cancelar Formulario' : <><PlusCircle size={16} /> Registrar Operador</>}
               </button>
