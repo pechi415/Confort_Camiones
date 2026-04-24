@@ -1,4 +1,4 @@
-const CACHE_NAME = 'drummond-confort-v2';
+const CACHE_NAME = 'drummond-confort-v3';
 const assets = [
   '/',
   '/index.html',

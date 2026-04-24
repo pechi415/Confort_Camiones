@@ -2014,9 +2014,9 @@ function App() {
                                   <ShieldAlert size={12} /> Pendientes:
                                 </div>
                                 <div style={{ fontSize: '0.75rem', color: '#7f1d1d', lineHeight: '1.3', fontWeight: '500' }}>
-                                  {camion.motivo_garantia.split(' | ').length > 2 
+                                  {camion.motivo_garantia?.split?.(' | ')?.length > 2 
                                     ? `${camion.motivo_garantia.split(' | ').slice(0, 2).join(' | ')} ... (+${camion.motivo_garantia.split(' | ').length - 2})`
-                                    : camion.motivo_garantia
+                                    : (camion.motivo_garantia || '')
                                   }
                                 </div>
                               </div>
