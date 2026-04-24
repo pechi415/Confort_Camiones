@@ -235,18 +235,18 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .btn-primary {
-  background-color: rgba(227, 25, 55, 0.7);
-  backdrop-filter: blur(10px);
-  -webkit-backdrop-filter: blur(10px);
+  background-color: rgba(227, 25, 55, 0.5);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
   color: white;
-  border: 1px solid rgba(255, 255, 255, 0.4);
-  box-shadow: 0 4px 12px rgba(227, 25, 55, 0.2);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 4px 15px rgba(227, 25, 55, 0.15);
 }
 
 .btn-primary:hover {
-  background-color: rgba(202, 9, 38, 0.85);
+  background-color: rgba(227, 25, 55, 0.7);
   transform: translateY(-1px);
-  box-shadow: 0 6px 16px rgba(227, 25, 55, 0.3);
+  box-shadow: 0 6px 20px rgba(227, 25, 55, 0.25);
 }
 
 .btn-secondary {
