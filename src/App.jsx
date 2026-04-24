@@ -2139,7 +2139,7 @@ function App() {
                         </td>
                         <td data-label="Fallas" className="collapsible-col" style={{ fontSize: '0.88rem', color: 'var(--text-main)', lineHeight: '1.3', minWidth: '220px' }}>
                           <div style={{ width: '100%', whiteSpace: 'normal', wordBreak: 'break-word' }}>
-                            {limpiarFallasIA(registro.fallas).map(f => `${f.falla}${f.obs !== '-' ? ` (${f.obs})` : ''}`).join(', ')}
+                            {limpiarFallasIA(registro.fallas).map(f => `${f.falla}${f.obs !== '-' ? ` (${f.obs})` : ''}`).join(' | ')}
                           </div>
                         </td>
                         <td data-label="Ingreso" style={{ fontSize: '0.85rem' }}>{formatFechaCorta(registro.time || registro.creado_at)}</td>
@@ -2149,7 +2149,7 @@ function App() {
                         </td>
                         <td data-label="Operador" className="collapsible-col" style={{ fontSize: '0.85rem', whiteSpace: 'nowrap' }}>
                           <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
-                            {(registro.operador || 'N/A').split(', ').map((op, idx) => {
+                            {(registro.operador || 'N/A').split(/\s*[,|]\s*/).map((op, idx) => {
                               const parts = op.split(': ');
                               const grupoLabel = parts.length > 1 ? parts[0] : '';
                               const nombreOp = parts.length > 1 ? parts[1] : parts[0];
@@ -3096,18 +3096,18 @@ function App() {
               <div style={{ marginBottom: '1.5rem' }}>
                 <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 'bold', color: '#6b7280', marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Descripción de Fallas y Comentarios:</label>
                 <div style={{ background: '#f8fafc', padding: '1.2rem', borderRadius: '8px', border: '1px solid #e2e8f0', color: '#1e293b', lineHeight: '1.6', fontSize: '0.95rem' }}>
-                  {limpiarFallasIA(selectedReport.fallas).map(f => `${f.falla}${f.obs !== '-' ? ` (${f.obs})` : ''}`).join(', ')}
+                  {limpiarFallasIA(selectedReport.fallas).map(f => `${f.falla}${f.obs !== '-' ? ` (${f.obs})` : ''}`).join(' | ')}
                 </div>
               </div>
 
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
                 <div style={{ background: '#f0f9ff', padding: '1rem', borderRadius: '8px', border: '1px solid #bae6fd' }}>
                   <span style={{ display: 'block', fontSize: '0.7rem', color: '#0369a1', fontWeight: 'bold' }}>REPORTE POR (SUPERVISOR):</span>
-                  <span style={{ fontSize: '0.85rem', color: '#0c4a6e', fontWeight: 'bold' }}>{(selectedReport.supervisor || 'N/A').split(', ').join(' | ')}</span>
+                  <span style={{ fontSize: '0.85rem', color: '#0c4a6e', fontWeight: 'bold' }}>{(selectedReport.supervisor || 'N/A').split(/\s*[,|]\s*/).join(' | ')}</span>
                 </div>
                 <div style={{ background: '#f8fafc', padding: '1rem', borderRadius: '8px', border: '1px solid #e2e8f0' }}>
                   <span style={{ display: 'block', fontSize: '0.7rem', color: '#64748b', fontWeight: 'bold' }}>OPERADOR PERMANENTE:</span>
-                  <span style={{ fontSize: '0.85rem', color: '#1e293b' }}>{(selectedReport.operador || 'No asignado').split(', ').join(' | ')}</span>
+                  <span style={{ fontSize: '0.85rem', color: '#1e293b' }}>{(selectedReport.operador || 'No asignado').split(/\s*[,|]\s*/).join(' | ')}</span>
                 </div>
               </div>
 
