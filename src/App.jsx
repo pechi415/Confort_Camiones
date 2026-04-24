@@ -3166,11 +3166,11 @@ function App() {
                 overflowY: 'auto',
                 margin: 0,
                 position: 'relative',
-                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.6)',
-                background: 'rgba(15, 23, 42, 0.95)',
-                backdropFilter: 'blur(25px)',
-                WebkitBackdropFilter: 'blur(25px)',
-                border: '1px solid rgba(255, 255, 255, 0.12)',
+                boxShadow: '0 25px 50px -12px rgba(0, 0, 0, 0.7)',
+                background: 'rgba(30, 39, 46, 0.95)',
+                backdropFilter: 'blur(30px)',
+                WebkitBackdropFilter: 'blur(30px)',
+                border: '1px solid rgba(255, 255, 255, 0.1)',
                 padding: '2rem',
                 scrollbarWidth: 'thin',
                 scrollbarColor: 'rgba(255,255,255,0.2) transparent'
@@ -3197,7 +3197,7 @@ function App() {
                   <AlertCircle size={16} color="#38bdf8" strokeWidth={2.5} />
                   <label style={{ fontSize: '0.8rem', fontWeight: '900', color: '#38bdf8', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Descripción de Fallas y Comentarios:</label>
                 </div>
-                <div style={{ background: 'rgba(30, 41, 59, 0.5)', padding: '1.2rem', borderRadius: '18px', border: '1px solid rgba(56, 189, 248, 0.2)', color: '#f8fafc', lineHeight: '1.6', fontSize: '1rem', fontWeight: '400', backdropFilter: 'blur(10px)', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.2)' }}>
+                <div style={{ background: 'rgba(255, 255, 255, 0.08)', padding: '1.2rem', borderRadius: '18px', border: '1px solid rgba(255, 255, 255, 0.1)', color: '#ffffff', lineHeight: '1.6', fontSize: '1rem', fontWeight: '400', backdropFilter: 'blur(10px)', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.1)' }}>
                   {limpiarFallasIA(selectedReport.fallas).map(f => `${f.falla}${f.obs !== '-' ? ` (${f.obs})` : ''}`).join(' | ')}
                 </div>
               </div>
@@ -3209,7 +3209,7 @@ function App() {
                     <ShieldCheck size={16} color="#c084fc" strokeWidth={2.5} />
                     <label style={{ fontSize: '0.8rem', fontWeight: '900', color: '#c084fc', textTransform: 'uppercase', letterSpacing: '0.1em' }}>Dictamen Técnico de Mantenimiento:</label>
                   </div>
-                  <div style={{ background: 'rgba(67, 56, 202, 0.15)', padding: '1.2rem', borderRadius: '18px', border: '1px solid rgba(192, 132, 252, 0.25)', color: '#f5f3ff', lineHeight: '1.6', fontSize: '1.05rem', fontWeight: '400', backdropFilter: 'blur(10px)' }}>
+                  <div style={{ background: 'rgba(255, 255, 255, 0.05)', padding: '1.2rem', borderRadius: '18px', border: '1px solid rgba(167, 139, 250, 0.2)', color: '#f5f3ff', lineHeight: '1.6', fontSize: '1.05rem', fontWeight: '400', backdropFilter: 'blur(10px)' }}>
                     {corregirOrtografiaIA(selectedReport.dictamen_tecnico)}
                   </div>
                 </div>
