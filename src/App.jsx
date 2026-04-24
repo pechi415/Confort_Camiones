@@ -1998,22 +1998,28 @@ function App() {
                               )}
                             </div>
 
-                            {/* Mostrar motivo de garantía si aplica con transparencia */}
+                            {/* Mostrar motivo de garantía compacto */}
                             {camion.estado === 'garantia' && camion.motivo_garantia && (
                               <div style={{
                                 marginBottom: '0.8rem',
-                                padding: '0.6rem',
-                                background: 'rgba(254, 226, 226, 0.4)',
-                                backdropFilter: 'blur(5px)',
-                                border: '1px solid rgba(239, 68, 68, 0.2)',
-                                borderRadius: '8px'
+                                padding: '0.5rem 0.8rem',
+                                background: 'rgba(239, 68, 68, 0.05)',
+                                border: '1px solid rgba(239, 68, 68, 0.1)',
+                                borderRadius: '8px',
+                                display: 'flex',
+                                flexDirection: 'column',
+                                gap: '0.2rem'
                               }}>
-                                <div style={{ fontSize: '0.7rem', fontWeight: 'bold', color: '#be123c', marginBottom: '0.2rem', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                                  <ShieldAlert size={12} /> FALLAS PENDIENTES:
+                                <div style={{ fontSize: '0.65rem', fontWeight: 'bold', color: '#ef4444', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
+                                  <ShieldAlert size={12} /> Pendientes:
                                 </div>
-                                <div style={{ fontSize: '0.75rem', color: '#9f1239', lineHeight: '1.2' }}>{camion.motivo_garantia?.split(', ').join(' | ')}</div>
+                                <div style={{ fontSize: '0.75rem', color: '#7f1d1d', lineHeight: '1.3', fontWeight: '500' }}>
+                                  {camion.motivo_garantia.split(' | ').length > 2 
+                                    ? `${camion.motivo_garantia.split(' | ').slice(0, 2).join(' | ')} ... (+${camion.motivo_garantia.split(' | ').length - 2})`
+                                    : camion.motivo_garantia
+                                  }
+                                </div>
                               </div>
-
                             )}
                             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
                               <span style={{ fontSize: '0.75rem', fontWeight: 'bold', color: '#6b7280' }}>Prioridad:</span>
