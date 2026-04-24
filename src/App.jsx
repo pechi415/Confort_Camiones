@@ -286,10 +286,11 @@ function App() {
   const [grupo, setGrupo] = useState(reportForm.grupo);
   const [selectedDanos, setSelectedDanos] = useState(reportForm.selectedDanos);
   const [observaciones, setObservaciones] = useState(reportForm.observaciones);
-  const [editingGroupContext, setEditingGroupContext] = useState(null); // Contexto de grupo activo en edición (v4.0)
+  const [editingGroupContext, setEditingGroupContext] = useState(null); // Contexto de grupo activo en edición (General, G1, G2, G3, Mantenimiento)
   const [selectedDanosEdit, setSelectedDanosEdit] = useState({});
   const [observacionesEdit, setObservacionesEdit] = useState({});
   const [operadorEdit, setOperadorEdit] = useState(''); 
+  const [dictamenEdit, setDictamenEdit] = useState('');
   const [camionEditando, setCamionEditando] = useState(null); // Movido aquí para evitar WSoD (v5.3.1)  
 
 
@@ -814,6 +815,7 @@ function App() {
     setSelectedDanosEdit({});
     setObservacionesEdit({});
     setOperadorEdit('');
+    setDictamenEdit(camion.dictamen_tecnico || '');
 
     const danos = {};
     const obs = {};
@@ -1016,6 +1018,7 @@ function App() {
       fallas: finalFallasItems.join(' | '),
       puntos: totalPuntos,
       atencion: atencion,
+      dictamen_tecnico: dictamenEdit,
       detalles_grupos: detallesFinales
     };
 
@@ -3100,6 +3103,15 @@ function App() {
                 </div>
               </div>
 
+              {selectedReport.dictamen_tecnico && (
+                <div style={{ marginBottom: '1.5rem' }}>
+                  <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 'bold', color: '#7c3aed', marginBottom: '0.5rem', textTransform: 'uppercase', letterSpacing: '0.05em' }}>🔧 Dictamen Técnico de Mantenimiento:</label>
+                  <div style={{ background: '#f5f3ff', padding: '1.2rem', borderRadius: '8px', border: '1px solid #ddd6fe', color: '#4c1d95', lineHeight: '1.6', fontSize: '0.95rem', fontWeight: '500' }}>
+                    {selectedReport.dictamen_tecnico}
+                  </div>
+                </div>
+              )}
+
               <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '1rem', marginBottom: '1.5rem' }}>
                 <div style={{ background: '#f0f9ff', padding: '1rem', borderRadius: '8px', border: '1px solid #bae6fd' }}>
                   <span style={{ display: 'block', fontSize: '0.7rem', color: '#0369a1', fontWeight: 'bold' }}>REPORTE POR (SUPERVISOR):</span>
@@ -3196,7 +3208,7 @@ function App() {
                 {/* Selector de Grupo Estilo Tabs (v4.0) - Solo visible para administradores */}
                 {session.role === 'admin' && (
                   <div style={{ display: 'flex', gap: '0.5rem', borderBottom: '1px solid #f1f5f9', paddingBottom: '0.5rem' }}>
-                    {['General', 'G1', 'G2', 'G3'].map(g => (
+                    {['General', 'G1', 'G2', 'G3', 'Mantenimiento'].map(g => (
                       <button
                         key={g}
                         onClick={() => {
@@ -3207,7 +3219,7 @@ function App() {
                           padding: '0.5rem 1rem',
                           borderRadius: '8px',
                           border: 'none',
-                          background: editingGroupContext === g ? 'var(--primary-red)' : 'transparent',
+                          background: editingGroupContext === g ? (g === 'Mantenimiento' ? '#7c3aed' : 'var(--primary-red)') : 'transparent',
                           color: editingGroupContext === g ? 'white' : '#64748b',
                           fontSize: '0.8rem',
                           fontWeight: 'bold',
@@ -3216,91 +3228,118 @@ function App() {
                           display: 'block'
                         }}
                       >
-                        {g === 'General' ? 'General (Unificado)' : `Reporte ${g}`}
+                        {g === 'General' ? 'General (Unificado)' : g === 'Mantenimiento' ? 'Dictamen Técnico' : `Reporte ${g}`}
                       </button>
                     ))}
                   </div>
                 )}
 
-                {/* Checklist de Fallas Estilo Premium */}
-                <div style={{ marginTop: '0.5rem' }}>
-                  <label className="input-label" style={{ marginBottom: '0.5rem', display: 'block' }}>
-                    {editingGroupContext === 'General' ? 'Reporte de Fallas General' : `Fallas Reportadas`}
-                  </label>
-
-
-                  <div style={{
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '0.8rem'
-                  }}>
-                    {fallas.map(falla => (
-                      <div
-                        key={falla.id}
-                        style={{
-                          background: selectedDanosEdit[falla.id] ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.4)',
-                          padding: '0.8rem 1.5rem',
-                          borderRadius: '50px',
-                          border: selectedDanosEdit[falla.id] ? '1px solid var(--primary-red)' : '1px solid rgba(0,0,0,0.05)',
-                          transition: 'all 0.3s ease',
-                          boxShadow: selectedDanosEdit[falla.id] ? '0 4px 12px rgba(227, 25, 55, 0.05)' : 'none'
-                        }}
-                      >
-                        <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-                          <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                            <input
-                              type="checkbox"
-                              checked={!!selectedDanosEdit[falla.id]}
-                              onChange={() => handleDanoToggleEdit(falla.id)}
-                              style={{
-                                width: '24px',
-                                height: '24px',
-                                appearance: 'none',
-                                WebkitAppearance: 'none',
-                                borderRadius: '50%',
-                                border: `2px solid ${selectedDanosEdit[falla.id] ? 'var(--primary-red)' : '#d1d5db'}`,
-                                backgroundColor: selectedDanosEdit[falla.id] ? 'var(--primary-red)' : 'white',
-                                cursor: 'pointer',
-                                transition: 'all 0.2s ease'
-                              }}
-                            />
-                            {selectedDanosEdit[falla.id] && (
-                              <div style={{
-                                position: 'absolute',
-                                width: '10px',
-                                height: '10px',
-                                borderRadius: '50%',
-                                backgroundColor: 'white',
-                                pointerEvents: 'none'
-                              }} />
-                            )}
-                          </div>
-                          <span style={{ fontSize: '0.95rem', fontWeight: selectedDanosEdit[falla.id] ? '600' : '400', flex: 1, color: 'var(--primary-black)' }}>
-                            {falla.nombre}
-                          </span>
-                        </div>
-                        {selectedDanosEdit[falla.id] && (
-                          <div className="fade-in" style={{ marginTop: '0.8rem', paddingLeft: '2.2rem' }}>
-                            <input
-                              type="text"
-                              className="input-field"
-                              style={{
-                                padding: '0.6rem 0.8rem',
-                                fontSize: '0.85rem',
-                                background: 'white',
-                                borderRadius: '8px',
-                                border: '1px solid #e2e8f0'
-                              }}
-                              placeholder={`Observación detallada de la falla...`}
-                              value={observacionesEdit[falla.id] || ''}
-                              onChange={(e) => handleObsChangeEdit(falla.id, e.target.value)}
-                            />
-                          </div>
-                        )}
-                      </div>
-                    ))}
+                {/* Vista Específica de Dictamen Técnico */}
+                {editingGroupContext === 'Mantenimiento' && (
+                  <div className="fade-in" style={{ marginTop: '1rem', background: '#f5f3ff', padding: '1.5rem', borderRadius: '12px', border: '1px solid #ddd6fe' }}>
+                    <label className="input-label" style={{ color: '#7c3aed', marginBottom: '1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                      <ShieldCheck size={20} /> Hallazgos Técnicos de Mantenimiento
+                    </label>
+                    <textarea
+                      className="input-field"
+                      style={{ 
+                        width: '100%', 
+                        minHeight: '150px', 
+                        padding: '1rem', 
+                        fontSize: '0.9rem', 
+                        borderRadius: '8px',
+                        border: '1px solid #c4b5fd',
+                        background: 'white'
+                      }}
+                      placeholder="Escriba aquí el dictamen técnico final, causas encontradas y reparaciones sugeridas..."
+                      value={dictamenEdit}
+                      onChange={(e) => setDictamenEdit(e.target.value)}
+                    />
+                    <p style={{ marginTop: '0.8rem', fontSize: '0.8rem', color: '#6d28d9', fontStyle: 'italic' }}>
+                      * Este diagnóstico será visible para todos los grupos en la Ficha Técnica.
+                    </p>
                   </div>
-                </div>
+                )}
+
+                {/* Checklist de Fallas Estilo Premium (Solo si no es Dictamen) */}
+                {editingGroupContext !== 'Mantenimiento' && (
+                  <div style={{ marginTop: '0.5rem' }}>
+                    <label className="input-label" style={{ marginBottom: '0.5rem', display: 'block' }}>
+                      {editingGroupContext === 'General' ? 'Reporte de Fallas General' : `Fallas Reportadas`}
+                    </label>
+                    <div style={{
+                      display: 'flex',
+                      flexDirection: 'column',
+                      gap: '0.8rem'
+                    }}>
+                      {fallas.map(falla => (
+                        <div
+                          key={falla.id}
+                          style={{
+                            background: selectedDanosEdit[falla.id] ? 'rgba(255,255,255,0.9)' : 'rgba(255,255,255,0.4)',
+                            padding: '0.8rem 1.5rem',
+                            borderRadius: '50px',
+                            border: selectedDanosEdit[falla.id] ? '1px solid var(--primary-red)' : '1px solid rgba(0,0,0,0.05)',
+                            transition: 'all 0.3s ease',
+                            boxShadow: selectedDanosEdit[falla.id] ? '0 4px 12px rgba(227, 25, 55, 0.05)' : 'none'
+                          }}
+                        >
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+                            <div style={{ position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                              <input
+                                type="checkbox"
+                                checked={!!selectedDanosEdit[falla.id]}
+                                onChange={() => handleDanoToggleEdit(falla.id)}
+                                style={{
+                                  width: '24px',
+                                  height: '24px',
+                                  appearance: 'none',
+                                  WebkitAppearance: 'none',
+                                  borderRadius: '50%',
+                                  border: `2px solid ${selectedDanosEdit[falla.id] ? 'var(--primary-red)' : '#d1d5db'}`,
+                                  backgroundColor: selectedDanosEdit[falla.id] ? 'var(--primary-red)' : 'white',
+                                  cursor: 'pointer',
+                                  transition: 'all 0.2s ease'
+                                }}
+                              />
+                              {selectedDanosEdit[falla.id] && (
+                                <div style={{
+                                  position: 'absolute',
+                                  width: '10px',
+                                  height: '10px',
+                                  borderRadius: '50%',
+                                  backgroundColor: 'white',
+                                  pointerEvents: 'none'
+                                }} />
+                              )}
+                            </div>
+                            <span style={{ fontSize: '0.95rem', fontWeight: selectedDanosEdit[falla.id] ? '600' : '400', flex: 1, color: 'var(--primary-black)' }}>
+                              {falla.nombre}
+                            </span>
+                          </div>
+                          {selectedDanosEdit[falla.id] && (
+                            <div className="fade-in" style={{ marginTop: '0.8rem', paddingLeft: '2.2rem' }}>
+                              <input
+                                type="text"
+                                className="input-field"
+                                style={{
+                                  padding: '0.6rem 0.8rem',
+                                  fontSize: '0.85rem',
+                                  background: 'white',
+                                  borderRadius: '8px',
+                                  border: '1px solid #e2e8f0'
+                                }}
+                                placeholder={`Observación detallada de la falla...`}
+                                value={observacionesEdit[falla.id] || ''}
+                                onChange={(e) => handleObsChangeEdit(falla.id, e.target.value)}
+                              />
+                            </div>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 {/* Footer del Modal */}
                 <div style={{
