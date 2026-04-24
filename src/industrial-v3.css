@@ -621,12 +621,14 @@ h1, h2, h3, h4, h5, h6 {
   }
   
   .kanban-column h3, .kanban-column h2 {
-    color: #3b82f6 !important; /* Azul Eléctrico para verificar */
+    color: var(--primary-black) !important;
   }
 
   .kanban-card {
-    background: rgba(215, 205, 185, 0.95) !important; /* Beige Técnico de Verificación */
-    border: 1px solid rgba(0, 0, 0, 0.1) !important;
+    background: rgba(255, 255, 255, 0.45) !important;
+    backdrop-filter: blur(12px) saturate(180%) !important;
+    -webkit-backdrop-filter: blur(12px) saturate(180%) !important;
+    border: 1px solid rgba(255, 255, 255, 0.3) !important;
   }
 }
 
