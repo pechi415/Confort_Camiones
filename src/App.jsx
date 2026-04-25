@@ -2044,18 +2044,18 @@ function App() {
                                   display: 'flex', 
                                   alignItems: 'center', 
                                   justifyContent: 'center', 
-                                  gap: '0.4rem', 
+                                  gap: '0.3rem', 
                                   background: 'rgba(124, 58, 237, 0.08)', 
                                   border: '1px solid rgba(124, 58, 237, 0.15)',
                                   color: '#7c3aed',
-                                  padding: '0.4rem',
+                                  padding: '0.35rem',
                                   borderRadius: '10px',
-                                  fontSize: '0.78rem',
-                                  fontWeight: '800',
+                                  fontSize: '0.7rem',
+                                  fontWeight: '900',
                                   whiteSpace: 'nowrap'
                                 }}
                               >
-                                <ClipboardList size={14} strokeWidth={2.5} /> Dictamen Técnico
+                                <MonitorCheck size={14} strokeWidth={2.5} /> DICTAMEN TÉCNICO
                               </button>
                             )}
 
