@@ -613,34 +613,48 @@ function App() {
   // Kanban State (Nube real Supabase)
   const [camionesRegistrados, setCamionesRegistrados] = useState([]);
 
-  // FETCH INICIAL AL MONTAR LA APP
+  // FETCH INICIAL Y REALTIME (v1.4.9)
   useEffect(() => {
     const fetchDatabase = async () => {
       try {
         console.log("Iniciando fetch de base de datos...");
-        // 1. Traer Usuarios
         const { data: usersInfo, error: errU } = await supabase.from('usuarios').select('*');
         if (errU) console.error("Error Supabase Usuarios:", errU);
         if (usersInfo) setDbUsuarios(usersInfo);
 
-        // 2. Traer la Pila de Kanban
         const { data: flotaInfo, error: errF } = await supabase.from('camiones').select('*');
-        if (errF) {
-          console.error("Error Supabase Camiones:", errF);
-          addToast("Error de conexión: " + errF.message, "error");
-        }
-        if (flotaInfo) {
-          console.log("Camiones cargados:", flotaInfo.length);
-          setCamionesRegistrados(flotaInfo);
-        } else {
-          setCamionesRegistrados([]);
-        }
+        if (errF) console.error("Error Supabase Camiones:", errF);
+        if (flotaInfo) setCamionesRegistrados(flotaInfo);
       } catch (err) {
         console.error("Fallo crítico fetch:", err);
       }
     };
+
     fetchDatabase();
-  }, [session]); // Recarga si el estado auth cambia.
+
+    // --- MOTOR REALTIME ---
+    // Suscripción a cambios en Camiones (Tablero Kanban)
+    const channelCamiones = supabase
+      .channel('realtime_camiones')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'camiones' }, (payload) => {
+        console.log('Cambio detectado en Camiones:', payload);
+        fetchDatabase(); // Recarga inteligente ante cualquier cambio
+      })
+      .subscribe();
+
+    // Suscripción a cambios en Usuarios
+    const channelUsuarios = supabase
+      .channel('realtime_usuarios')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'usuarios' }, (payload) => {
+        fetchDatabase();
+      })
+      .subscribe();
+
+    return () => {
+      supabase.removeChannel(channelCamiones);
+      supabase.removeChannel(channelUsuarios);
+    };
+  }, [session]);
 
   // Filtro de Seguridad Global por Mina (v1.6.0)
   const camionesAccessibles = camionesRegistrados.filter(c => {
