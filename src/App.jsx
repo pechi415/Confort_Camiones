@@ -2055,7 +2055,7 @@ function App() {
                                   whiteSpace: 'nowrap'
                                 }}
                               >
-                                <ShieldCheck size={14} /> Dictamen Técnico
+                                <ClipboardList size={14} strokeWidth={2.5} /> Dictamen Técnico
                               </button>
                             )}
 
