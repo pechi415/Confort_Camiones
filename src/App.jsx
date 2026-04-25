@@ -2038,8 +2038,21 @@ function App() {
                             {camion.estado === 'evaluados' && (
                               <button
                                 onClick={() => prepararDictamen(camion)}
-                                className="btn btn-primary"
-                                style={{ width: '100%', marginBottom: '0.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '0.5rem', background: '#7c3aed', border: 'none' }}
+                                style={{ 
+                                  width: '100%', 
+                                  marginBottom: '0.5rem', 
+                                  display: 'flex', 
+                                  alignItems: 'center', 
+                                  justifyContent: 'center', 
+                                  gap: '0.5rem', 
+                                  background: 'rgba(124, 58, 237, 0.08)', 
+                                  border: '1px solid rgba(124, 58, 237, 0.2)',
+                                  color: '#7c3aed',
+                                  padding: '0.6rem',
+                                  borderRadius: '12px',
+                                  fontSize: '0.85rem',
+                                  fontWeight: '800'
+                                }}
                               >
                                 <ShieldCheck size={16} /> Dictamen Técnico
                               </button>
