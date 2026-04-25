@@ -2044,17 +2044,18 @@ function App() {
                                   display: 'flex', 
                                   alignItems: 'center', 
                                   justifyContent: 'center', 
-                                  gap: '0.5rem', 
+                                  gap: '0.4rem', 
                                   background: 'rgba(124, 58, 237, 0.08)', 
-                                  border: '1px solid rgba(124, 58, 237, 0.2)',
+                                  border: '1px solid rgba(124, 58, 237, 0.15)',
                                   color: '#7c3aed',
-                                  padding: '0.6rem',
-                                  borderRadius: '12px',
-                                  fontSize: '0.85rem',
-                                  fontWeight: '800'
+                                  padding: '0.4rem',
+                                  borderRadius: '10px',
+                                  fontSize: '0.78rem',
+                                  fontWeight: '800',
+                                  whiteSpace: 'nowrap'
                                 }}
                               >
-                                <ShieldCheck size={16} /> Dictamen Técnico
+                                <ShieldCheck size={14} /> Dictamen Técnico
                               </button>
                             )}
 
