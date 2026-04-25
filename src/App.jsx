@@ -636,9 +636,14 @@ function App() {
     // Suscripción a cambios en Camiones (Tablero Kanban)
     const channelCamiones = supabase
       .channel('realtime_camiones')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'camiones' }, (payload) => {
-        console.log('Cambio detectado en Camiones:', payload);
-        fetchDatabase(); // Recarga inteligente ante cualquier cambio
+      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'camiones' }, (payload) => {
+        setCamionesRegistrados(prev => [...prev, payload.new]);
+      })
+      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'camiones' }, (payload) => {
+        setCamionesRegistrados(prev => prev.map(c => c.id === payload.new.id ? payload.new : c));
+      })
+      .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'camiones' }, (payload) => {
+        setCamionesRegistrados(prev => prev.filter(c => c.id !== payload.old.id));
       })
       .subscribe();
 
