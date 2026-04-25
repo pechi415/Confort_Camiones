@@ -2050,14 +2050,13 @@ function App() {
                                   color: '#7c3aed',
                                   padding: '0.35rem 0.5rem',
                                   borderRadius: '10px',
-                                  fontSize: '0.62rem',
-                                  fontWeight: '900',
-                                  letterSpacing: '-0.01em',
+                                  fontSize: '0.78rem',
+                                  fontWeight: '800',
                                   whiteSpace: 'nowrap'
                                 }}
                               >
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                                  <CheckCircle2 size={12} strokeWidth={3} /> <span>DICTAMEN TÉCNICO</span>
+                                  <CheckCircle2 size={13} strokeWidth={2.5} /> <span>Dictamen Técnico</span>
                                 </div>
                               </button>
                             )}
