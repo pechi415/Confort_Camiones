@@ -2044,19 +2044,20 @@ function App() {
                                   display: 'flex', 
                                   alignItems: 'center', 
                                   justifyContent: 'center', 
-                                  gap: '0.5rem', 
+                                  gap: '0.4rem', 
                                   background: 'rgba(124, 58, 237, 0.08)', 
                                   border: '1px solid rgba(124, 58, 237, 0.15)',
                                   color: '#7c3aed',
-                                  padding: '0.4rem',
+                                  padding: '0.35rem 0.5rem',
                                   borderRadius: '10px',
-                                  fontSize: '0.72rem',
+                                  fontSize: '0.62rem',
                                   fontWeight: '900',
+                                  letterSpacing: '-0.01em',
                                   whiteSpace: 'nowrap'
                                 }}
                               >
                                 <div style={{ display: 'flex', alignItems: 'center', gap: '0.3rem' }}>
-                                  <CheckCircle2 size={14} strokeWidth={3} /> <span>DICTAMEN TÉCNICO</span>
+                                  <CheckCircle2 size={12} strokeWidth={3} /> <span>DICTAMEN TÉCNICO</span>
                                 </div>
                               </button>
                             )}
