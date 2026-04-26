@@ -1806,12 +1806,12 @@ function App() {
           <div className="dashboard-view fade-in">
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1rem', flexWrap: 'wrap', gap: '1rem' }}>
               <h2 style={{ fontSize: '1.4rem', color: 'var(--primary-black)', margin: 0 }}><LayoutDashboard strokeWidth={1.5} size={24} style={{ marginBottom: '-0.3rem', color: '#2563eb' }} />  Resumen de Control</h2>
-              <div style={{ display: 'flex', gap: '0.8rem', flexWrap: 'wrap' }}>
-                <span className="badge dashboard-kpi-badge" style={{ fontSize: '0.85rem', padding: '0.6rem 1.2rem', display: 'flex', alignItems: 'center', gap: '0.4rem', border: '1px solid #6366f1', background: 'rgba(99, 102, 241, 0.15)', color: '#4f46e5', boxShadow: '0 2px 4px rgba(99, 102, 241, 0.1)' }}>
-                  <Zap size={16} strokeWidth={2} /> <span>Ciclo Promedio: <strong>{calcularPromedioCiclo()}</strong></span>
+              <div className="dashboard-kpi-container" style={{ display: 'flex', gap: '0.5rem', flexWrap: 'nowrap', width: '100%', justifyContent: 'flex-start' }}>
+                <span className="badge dashboard-kpi-badge" style={{ fontSize: '0.75rem', padding: '0.5rem 0.8rem', display: 'flex', alignItems: 'center', gap: '0.3rem', border: '1px solid #6366f1', background: 'rgba(99, 102, 241, 0.15)', color: '#4f46e5', boxShadow: '0 2px 4px rgba(99, 102, 241, 0.1)', whiteSpace: 'nowrap', flex: 1 }}>
+                  <Zap size={14} strokeWidth={2} /> <span>Ciclo: <strong>{calcularPromedioCiclo()}</strong></span>
                 </span>
-                <span className="badge badge-liberado dashboard-kpi-badge" style={{ fontSize: '0.85rem', padding: '0.6rem 1.2rem', display: 'flex', alignItems: 'center', gap: '0.4rem', border: '1px solid #10b981', background: 'rgba(16, 185, 129, 0.15)', color: '#059669', boxShadow: '0 2px 4px rgba(16, 185, 129, 0.1)' }}>
-                  <Award size={16} strokeWidth={2} /> <span>Entregados: <strong>{conteoLiberados}</strong></span>
+                <span className="badge badge-liberado dashboard-kpi-badge" style={{ fontSize: '0.75rem', padding: '0.5rem 0.8rem', display: 'flex', alignItems: 'center', gap: '0.3rem', border: '1px solid #10b981', background: 'rgba(16, 185, 129, 0.15)', color: '#059669', boxShadow: '0 2px 4px rgba(16, 185, 129, 0.1)', whiteSpace: 'nowrap', flex: 1 }}>
+                  <Award size={14} strokeWidth={2} /> <span>Entregados: <strong>{conteoLiberados}</strong></span>
                 </span>
               </div>
             </div>
