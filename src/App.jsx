@@ -1065,17 +1065,20 @@ function App() {
           for (let i = 0; i < rawFallas.length; i++) {
               if (rawFallas[i] === '(') depth++;
               if (rawFallas[i] === ')') depth--;
-              if (depth === 0 && rawFallas[i] === ',') {
+              // v6.1: Corregido separador a "|" (antes era ",")
+              if (depth === 0 && rawFallas[i] === '|') {
                   parts.push(rawFallas.substring(lastSplit, i).trim());
                   lastSplit = i + 1;
               }
           }
           parts.push(rawFallas.substring(lastSplit).trim());
           parts.forEach(p => {
-              if (!p || p === '-') return;
+              if (!p || p === '-' || p.includes('Ficha Técnica')) return;
               const match = p.match(/^(.*?)(?:\s*\((.*?)\))?$/);
               if (match) {
-                  const nombre = match[1].trim();
+                  const nombreRaw = match[1].trim();
+                  // Limpieza de seguridad: si el nombre trae restos de otras fallas por error previo
+                  const nombre = nombreRaw.split('|')[0].trim(); 
                   const combined = match[2] || '';
                   if (!fallasMap[nombre]) fallasMap[nombre] = {};
                   if (combined) {
@@ -1083,7 +1086,7 @@ function App() {
                           const gMatch = seg.match(/^(G\d+|General)\s*[:\-]\s*(.*)$/i);
                           if (gMatch && !detallesFinales[gMatch[1].toUpperCase()]) {
                               fallasMap[nombre][gMatch[1].toUpperCase()] = gMatch[2] || '';
-                          } else if (!gMatch) {
+                          } else if (!gMatch && seg.length > 1) {
                               fallasMap[nombre]['General'] = seg;
                           }
                       });
@@ -1107,8 +1110,9 @@ function App() {
 
       const uniqueFallas = new Set();
       Object.keys(fallasMap).forEach(fNome => {
-          const fObj = fallas.find(f => f.nombre === fNome);
+          const fObj = fallas.find(f => f.nombre === fNome || fNome.includes(f.nombre));
           if (fObj) {
+              const realName = fObj.nombre;
               uniqueFallas.add(fObj.id);
               const obsMap = fallasMap[fNome];
               const segments = [];
@@ -1116,14 +1120,16 @@ function App() {
               ['G1', 'G2', 'G3'].forEach(g => {
                   if (obsMap.hasOwnProperty(g)) {
                       const note = obsMap[g];
-                      segments.push(note ? `${g}: ${note}` : g);
+                      if (note && note !== g) segments.push(`${g}: ${note}`);
                   }
               });
               
               if (segments.length > 0) {
-                  finalFallasItems.push(`${fNome} (${segments.join(' | ')})`);
+                  // Unificación de comentarios para evitar redundancia interna
+                  const finalObs = unificarComentariosIA(segments.join(' | '));
+                  finalFallasItems.push(`${realName} (${finalObs})`);
               } else {
-                  finalFallasItems.push(`${fNome}`);
+                  finalFallasItems.push(`${realName}`);
               }
           }
       });
