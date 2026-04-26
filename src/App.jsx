@@ -10,6 +10,17 @@ import * as XLSX from 'xlsx';
 
 const LOGO_DRUMMOND = "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";
 
+const fallas = [
+  { id: 'tolva', nombre: 'Golpe de tolva', impacto: 25 },
+  { id: 'suspensiones', nombre: 'Suspensiones', impacto: 25 },
+  { id: 'nose_cone', nombre: 'Nose Cone', impacto: 15 },
+  { id: 'barra', nombre: 'Barra estabilizadora (Hueso de perro)', impacto: 15 },
+  { id: 'transmision', nombre: 'Transmisión al modular', impacto: 10 },
+  { id: 'ruido', nombre: 'Ruido y polución en cabina', impacto: 5 },
+  { id: 'varillaje', nombre: 'Varillaje de dirección', impacto: 5 },
+  { id: 'otro', nombre: 'Otro', impacto: 0 },
+];
+
 // v3.0: Motor de IA de Trazabilidad - Normalización Semántica Avanzada
 const normalizarNombre = (n) => {
   if (!n) return '';
@@ -208,14 +219,14 @@ const unificarComentariosIA = (texto) => {
   });
 
   // Re-ensamblar limpiando los prefijos para una lectura más cómoda en pantalla sin indicar el grupo
-  return unificados.map(p => p.replace(/^(?:G\d+|General)\s*[:\-]\s*/i, '').trim()).join(' | ');
+  // v6.3: Limpieza Global (Elimina G1:, G2: etc. incluso si no están al inicio por arrastre histórico)
+  return unificados.map(p => p.replace(/(?:G\d+|General)\s*[:\-]\s*/gi, '').trim()).join(' | ');
 };
 
 const limpiarFallasIA = (fallasStr) => {
   try {
     if (!fallasStr) return [];
     
-    // v1.9.81 Motor de Separación por Profundidad (Ignora delimitadores dentro de paréntesis)
     const result = [];
     let depth = 0;
     let start = 0;
@@ -225,55 +236,68 @@ const limpiarFallasIA = (fallasStr) => {
       if (char === '(') depth++;
       if (char === ')') depth--;
 
-      // Si encontramos un delimitador (|, / o coma) y estamos en nivel 0 (fuera de paréntesis)
       if (depth === 0 && (char === '|' || char === '/' || char === ',')) {
         processItem(fallasStr.substring(start, i).trim());
         start = i + 1;
       }
     }
-    // Procesar la última parte
     processItem(fallasStr.substring(start).trim());
 
     function processItem(text) {
         if (!text || text === '-') return;
         
-        const openParen = text.indexOf('(');
-        const closeParen = text.lastIndexOf(')');
+        let nameCandidate = text;
+        const obsParts = [];
+
+        // v2.0.4: Motor de Extracción Progresiva (Prioriza Nombres de Items Conocidos)
+        // Intentamos encontrar si el string empieza con algún nombre de la lista oficial
+        const itemEncontrado = fallas.find(f => text.toLowerCase().startsWith(f.nombre.toLowerCase()));
         
-        if (openParen !== -1 && closeParen !== -1 && closeParen > openParen) {
-            const rawObs = text.substring(openParen + 1, closeParen).trim();
-            // v6.3: Conservar prefijos originales y aumentar umbral para mostrar en las tarjetas
-            const obsParts = rawObs.split(/\s*[|/]\s*/).filter(Boolean);
-            const cleanObsParts = [];
-            
-            obsParts.forEach(partOriginal => {
-                const partPuro = partOriginal.replace(/^(?:G\d+|General)\s*[:\-]\s*/i, '').trim();
-                
-                const duplicate = cleanObsParts.find(existingOriginal => {
-                    const existingPuro = existingOriginal.replace(/^(?:G\d+|General)\s*[:\-]\s*/i, '').trim();
-                    return calcularSimilitudIA(existingPuro, partPuro) > 0.70 || 
-                           existingPuro.toLowerCase().includes(partPuro.toLowerCase()) || 
-                           partPuro.toLowerCase().includes(existingPuro.toLowerCase());
-                });
-
-                if (!duplicate) {
-                    cleanObsParts.push(partPuro);
-                } else if (partPuro.length > duplicate.length) {
-                    const idx = cleanObsParts.indexOf(duplicate);
-                    cleanObsParts[idx] = partPuro;
+        if (itemEncontrado) {
+            nameCandidate = itemEncontrado.nombre;
+            const resto = text.substring(itemEncontrado.nombre.length).trim();
+            // Extraer observaciones del "resto"
+            if (resto) {
+                const matches = [...resto.matchAll(/\(([^)]+)\)/g)];
+                if (matches.length > 0) {
+                    matches.forEach(m => {
+                        const content = m[1].replace(/(?:G\d+|General)\s*[:\-]\s*/gi, '').trim();
+                        if (content && content !== '-') obsParts.push(content);
+                    });
+                } else {
+                    const limpio = resto.replace(/(?:G\d+|General)\s*[:\-]\s*/gi, '').trim();
+                    if (limpio && limpio !== '-') obsParts.push(limpio);
                 }
-            });
-
-            result.push({
-                falla: text.substring(0, openParen).trim(),
-                obs: cleanObsParts.join(' | ') || '-'
-            });
+            }
         } else {
-            result.push({
-                falla: text.trim(),
-                obs: '-'
-            });
+            // Lógica genérica para items no encontrados (fallback)
+            const regexParens = /\(([^)]+)\)/g;
+            const matches = [...text.matchAll(regexParens)];
+            
+            if (matches.length > 0) {
+                matches.forEach(m => {
+                    const content = m[1];
+                    if (content.match(/(?:G\d+|General)\s*[:\-]/i)) {
+                        const pPuro = content.replace(/(?:G\d+|General)\s*[:\-]\s*/gi, '').trim();
+                        if (pPuro && pPuro !== '-') obsParts.push(pPuro);
+                        nameCandidate = nameCandidate.replace(m[0], '').trim();
+                    }
+                });
+                
+                if (obsParts.length === 0) {
+                    const lastMatch = matches[matches.length - 1];
+                    obsParts.push(lastMatch[1].trim());
+                    nameCandidate = text.substring(0, lastMatch.index).trim();
+                }
+            }
         }
+
+        const finalObs = [...new Set(obsParts)].filter(o => o && o !== '-');
+
+        result.push({
+            falla: nameCandidate || text,
+            obs: finalObs.join(' | ') || '-'
+        });
     }
 
     // Deduplicación e Inteligencia IA Humana de Comentarios (v6.0: Prioridad a la Trazabilidad Total)
@@ -617,16 +641,7 @@ function App() {
     return aliasCandidato;
   };
 
-  const fallas = [
-    { id: 'tolva', nombre: 'Golpe de tolva', impacto: 25 },
-    { id: 'suspensiones', nombre: 'Suspensiones', impacto: 25 },
-    { id: 'nose_cone', nombre: 'Nose Cone', impacto: 15 },
-    { id: 'barra', nombre: 'Barra estabilizadora (Hueso de perro)', impacto: 15 },
-    { id: 'transmision', nombre: 'Transmisión al modular', impacto: 10 },
-    { id: 'ruido', nombre: 'Ruido y polución en cabina', impacto: 5 },
-    { id: 'varillaje', nombre: 'Varillaje de dirección', impacto: 5 },
-    { id: 'otro', nombre: 'Otro', impacto: 0 },
-  ];
+
 
   const handleDanoToggle = (id) => {
     setSelectedDanos(prev => ({ ...prev, [id]: !prev[id] }));
@@ -990,19 +1005,30 @@ function App() {
 
         parts.forEach(p => {
           if (!p || p === '-') return;
-          const match = p.match(/^(.*?)(?:\s*\((.*?)\))?$/);
-          if (match) {
-            const nombreExtraido = match[1].trim().toLowerCase();
-            const combinedObs = match[2] || '';
-            const fallaObj = fallas.find(f => {
-              const fNom = f.nombre.trim().toLowerCase();
-              return fNom === nombreExtraido || fNom.includes(nombreExtraido) || nombreExtraido.includes(fNom);
-            });
-            if (fallaObj) {
-              danos[fallaObj.id] = true;
-              if (combinedObs) {
-                // v6.7: Unificamos activamente al abrir el modal para limpiar redundancias históricas
-                obs[fallaObj.id] = unificarComentariosIA(combinedObs);
+          
+          // v7.0: Motor de Emparejamiento de Precisión (No se deja engañar por paréntesis en nombres)
+          const fallaObj = fallas.find(f => p.toLowerCase().startsWith(f.nombre.toLowerCase()));
+          
+          if (fallaObj) {
+            danos[fallaObj.id] = true;
+            // El comentario es todo lo que viene después del nombre del item
+            let combinedObs = p.substring(fallaObj.nombre.length).trim();
+            // Limpiar paréntesis y G1/G2 del comentario extraído
+            combinedObs = combinedObs.replace(/^\(|\)$/g, '').replace(/(?:G\d+|General)\s*[:\-]\s*/gi, '').trim();
+            
+            if (combinedObs && combinedObs !== '-') {
+              obs[fallaObj.id] = unificarComentariosIA(combinedObs);
+            }
+          } else {
+            // Fallback para items desconocidos
+            const match = p.match(/^(.*?)(?:\s*\((.*?)\))?$/);
+            if (match) {
+              const nombreExtraido = match[1].trim().toLowerCase();
+              const obsExtraid = match[2] || '';
+              const genericMatch = fallas.find(f => f.nombre.toLowerCase().includes(nombreExtraido));
+              if (genericMatch) {
+                danos[genericMatch.id] = true;
+                if (obsExtraid) obs[genericMatch.id] = unificarComentariosIA(obsExtraid);
               }
             }
           }
