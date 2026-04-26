@@ -1,4 +1,4 @@
-// VERSION_TAG: 1.4.5_ULTRA_COMPACT_FIX_FORCE
+// VERSION_TAG: 2.0.0_STABLE_GOLD_READY
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import './industrial-v3.css';
 import { LayoutDashboard, Zap, FileText, Blocks, ClipboardList, ShieldAlert, ShieldCheck, MonitorCheck, PlusCircle, Trash2, Edit3, Settings, Shield, Unlock, LockKeyhole, Lock, RefreshCcw, Users, AlertTriangle, CheckCircle2, Wrench, Activity, Truck, Search, Hourglass, SearchCheck, Award, FileSpreadsheet, MapPin, Calendar, Siren, AlertCircle, Info, History, ChevronUp, LogOut } from 'lucide-react';
@@ -655,11 +655,13 @@ function App() {
 
   // Kanban State (Nube real Supabase)
   const [camionesRegistrados, setCamionesRegistrados] = useState([]);
+  const [loadingData, setLoadingData] = useState(true);
 
   // FETCH INICIAL Y REALTIME (v1.4.9)
   useEffect(() => {
     const fetchDatabase = async () => {
       try {
+        setLoadingData(true);
         console.log("Iniciando fetch de base de datos...");
         const { data: usersInfo, error: errU } = await supabase.from('usuarios').select('*');
         if (errU) console.error("Error Supabase Usuarios:", errU);
@@ -667,9 +669,11 @@ function App() {
 
         const { data: flotaInfo, error: errF } = await supabase.from('camiones').select('*');
         if (errF) console.error("Error Supabase Camiones:", errF);
-        if (flotaInfo) setCamionesRegistrados(flotaInfo);
+        if (flotaInfo) setCamionesRegistrados(flotaInfo || []);
       } catch (err) {
         console.error("Fallo crítico fetch:", err);
+      } finally {
+        setLoadingData(false);
       }
     };
 
@@ -704,15 +708,17 @@ function App() {
     };
   }, [session]);
 
-  // Filtro de Seguridad Global por Mina (v1.6.0)
-  const camionesAccessibles = camionesRegistrados.filter(c => {
-    if (session?.mina === 'Global' || session?.role === 'admin') return true;
-    return c.mina === session?.mina;
-  });
+  // Filtro de Seguridad Global por Mina (v1.6.0) - Optimizado v2.0
+  const camionesAccessibles = useMemo(() => {
+    return camionesRegistrados.filter(c => {
+      if (session?.mina === 'Global' || session?.role === 'admin') return true;
+      return c.mina === session?.mina;
+    });
+  }, [camionesRegistrados, session]);
 
-  const conteoLiberados = camionesAccessibles.filter(c => c.estado === 'liberado').length;
+  const conteoLiberados = useMemo(() => camionesAccessibles.filter(c => c.estado === 'liberado').length, [camionesAccessibles]);
   
-  const calcularPromedioCiclo = () => {
+  const promedioCiclo = useMemo(() => {
     const liberadosValidos = camionesAccessibles.filter(c => c.estado === 'liberado' && c.finalizado_at && (c.ingreso_evaluar_at || c.time || c.creado_at));
     if (liberadosValidos.length === 0) return "---";
     
@@ -736,16 +742,16 @@ function App() {
     const hours = Math.floor(promMs / 3600000);
     const mins = Math.floor((promMs % 3600000) / 60000);
     return hours >= 24 ? `${Math.floor(hours/24)}d ${hours%24}h` : (hours > 0 ? `${hours}h ${mins}m` : `${mins}m`);
-  };
+  }, [camionesAccessibles]);
 
-  const kpis = [
+  const kpis = useMemo(() => [
     { id: 'espera', titulo: 'Lista de Espera', icon: <Hourglass strokeWidth={1.5} size={20} />, valor: camionesAccessibles.filter(c => c.estado === 'espera').length.toString(), color: '#9ca3af', subtitulo: 'Pre-Programa' },
     { id: 'evaluar', titulo: 'Por Evaluar', icon: <Search strokeWidth={1.5} size={20} />, valor: camionesAccessibles.filter(c => c.estado === 'evaluar').length.toString(), color: 'var(--secondary-blue)', subtitulo: 'En Programa' },
     { id: 'evaluados', titulo: 'Evaluados', icon: <SearchCheck strokeWidth={1.5} size={20} />, valor: camionesAccessibles.filter(c => c.estado === 'evaluados').length.toString(), color: '#8b5cf6', subtitulo: 'En Programa' },
     { id: 'taller', titulo: 'En Taller', icon: <Wrench strokeWidth={1.5} size={20} />, valor: camionesAccessibles.filter(c => c.estado === 'taller').length.toString(), color: 'var(--secondary-yellow)', subtitulo: 'Ejecución' },
     { id: 'feedback', titulo: 'Feedback', icon: <CheckCircle2 strokeWidth={1.5} size={20} />, valor: camionesAccessibles.filter(c => c.estado === 'feedback').length.toString(), color: '#10b981', subtitulo: 'Validación' },
-    { id: 'garantia', titulo: 'Garantía', icon: <ShieldAlert strokeWidth={1.5} size={20} />, valor: camionesAccessibles.filter(c => c.estado === 'garantia').length.toString(), color: 'var(--primary-red)', subtitulo: 'Retorno VIP' }
-  ];
+    { id: 'garantia', titulo: 'Garantía', icon: <ShieldAlert strokeWidth={1.5} size={20} />, valor: camionesAccessibles.filter(c => c.estado === 'garantia').length.toString(), color: 'var(--primary-red)', subtitulo: 'Retorno VIP' },
+  ], [camionesAccessibles]);
 
   const columnasKanban = [
     { id: 'espera', titulo: 'Lista de Espera', icon: <Hourglass strokeWidth={1.5} size={18} />, color: '#9ca3af' },
@@ -1424,6 +1430,7 @@ function App() {
     e.preventDefault();
     if (usuarioLogin && passwordLogin) {
       const usernameReq = usuarioLogin.toLowerCase().trim();
+      addToast(`⏳ Autenticando acceso para ${usernameReq}...`, "info");
 
       // Conexión Oficial con Servidor Supabase
       const { data: usuarioSupabase, error } = await supabase
@@ -1434,13 +1441,13 @@ function App() {
         .single();
 
       if (error || !usuarioSupabase) {
-        return alert(`❌ Credenciales incorrectas. Verifique el usuario "${usernameReq}" y su contraseña en el servidor de Drummond.`);
+        return addToast(`❌ Credenciales incorrectas para "${usernameReq}".`, "error");
       }
 
       const usuarioActivo = usuarioSupabase;
 
       if (usuarioActivo.estado === 'Inactivo') {
-        return alert(`❌ ACCESO DENEGADO: La cuenta "${usernameReq}" figura como INACTIVA, consulte con el Administrador del Sistema.`);
+        return addToast(`❌ ACCESO DENEGADO: La cuenta "${usernameReq}" figura como INACTIVA.`, "error");
       }
 
       if (usuarioActivo.firstTime) {
@@ -1808,7 +1815,7 @@ function App() {
               <h2 style={{ fontSize: '1.4rem', color: 'var(--primary-black)', margin: 0 }}><LayoutDashboard strokeWidth={1.5} size={24} style={{ marginBottom: '-0.3rem', color: '#2563eb' }} />  Resumen de Control</h2>
               <div className="dashboard-kpi-container" style={{ display: 'flex', gap: '0.5rem', flexWrap: 'nowrap', justifyContent: 'flex-start' }}>
                 <span className="badge dashboard-kpi-badge kpi-prom-ciclo" style={{ fontSize: '0.85rem', padding: '0.6rem 1.2rem', display: 'flex', alignItems: 'center', gap: '0.4rem', border: '1px solid #6366f1', background: 'rgba(99, 102, 241, 0.15)', color: '#4f46e5', boxShadow: '0 2px 4px rgba(99, 102, 241, 0.1)', whiteSpace: 'nowrap' }}>
-                  <Zap size={16} strokeWidth={2} /> <span>Prom. Ciclo: <strong>{calcularPromedioCiclo()}</strong></span>
+                  <Zap size={16} strokeWidth={2} /> <span>Prom. Ciclo: <strong>{promedioCiclo}</strong></span>
                 </span>
                 <span className="badge badge-liberado dashboard-kpi-badge kpi-entregados" style={{ fontSize: '0.85rem', padding: '0.6rem 1.2rem', display: 'flex', alignItems: 'center', gap: '0.4rem', border: '1px solid #10b981', background: 'rgba(16, 185, 129, 0.15)', color: '#059669', boxShadow: '0 2px 4px rgba(16, 185, 129, 0.1)', whiteSpace: 'nowrap' }}>
                   <Award size={16} strokeWidth={2} /> <span>Entregados: <strong>{conteoLiberados}</strong></span>
