@@ -1769,16 +1769,16 @@ function App() {
                 <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Mina {session?.mina || 'N/A'}</div>
               </div>
               <div style={{
-                width: '40px', height: '40px',
+                width: '32px', height: '32px',
                 borderRadius: '50%', backgroundColor: '#ef4444',
                 color: 'white', display: 'flex', alignItems: 'center',
-                justifyContent: 'center', fontWeight: 'bold'
+                justifyContent: 'center', fontWeight: 'bold', fontSize: '0.8rem'
               }}>
                 {(session?.nombre || 'U').charAt(0).toUpperCase()}
               </div>
             </div>
             
-            {/* Botón Logout Rápido para Móviles (v1.9.60) */}
+            {/* Botón Logout Rápido para Móviles (v1.9.62) */}
             <button 
               className="mobile-only" 
               onClick={handleLogout}
@@ -1786,9 +1786,9 @@ function App() {
                 background: 'rgba(239, 68, 68, 0.1)',
                 border: '1px solid rgba(239, 68, 68, 0.2)',
                 color: '#ef4444',
-                padding: '0.6rem',
-                borderRadius: '10px',
-                marginLeft: '1rem',
+                padding: '0.4rem',
+                borderRadius: '8px',
+                marginLeft: '0.8rem',
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
@@ -1796,7 +1796,7 @@ function App() {
               }}
               title="Cerrar Sesión"
             >
-              <LogOut size={20} />
+              <LogOut size={18} />
             </button>
           </div>
         </header>
