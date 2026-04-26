@@ -958,7 +958,8 @@ function App() {
           const char = rawFallas[i];
           if (char === '(') depth++;
           if (char === ')') depth--;
-          if (depth === 0 && char === ',') {
+          // v6.6: Usar | en lugar de coma para parsear el string principal
+          if (depth === 0 && char === '|') {
             parts.push(rawFallas.substring(lastSplit, i).trim());
             lastSplit = i + 1;
           }
@@ -978,8 +979,8 @@ function App() {
             if (fallaObj) {
               danos[fallaObj.id] = true;
               if (combinedObs) {
-                // Limpieza de prefijos G1:, G2:, G3: y separadores para la vista unificada
-                obs[fallaObj.id] = combinedObs.replace(/G[1-3]:\s*/g, '');
+                // v6.7: Unificamos activamente al abrir el modal para limpiar redundancias históricas
+                obs[fallaObj.id] = unificarComentariosIA(combinedObs);
               }
             }
           }
