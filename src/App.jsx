@@ -2503,7 +2503,7 @@ function App() {
                     <input type="text" className="input-field" placeholder="ej: Pedro González" value={nuevoUsuarioParams.nombre} onChange={e => {
                       const nuevoNombre = e.target.value;
                       setNuevoUsuarioParams({ ...nuevoUsuarioParams, nombre: nuevoNombre, username: generarAliasBase(nuevoNombre, dbUsuarios) });
-                    }} />
+                    }} onBlur={e => setNuevoUsuarioParams({ ...nuevoUsuarioParams, nombre: normalizarNombre(e.target.value) })} />
                   </div>
                   <div style={{ flex: '1 1 200px' }}>
                     <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 'bold', marginBottom: '0.3rem' }}>Usuario Login (Generado)</label>
@@ -2550,7 +2550,7 @@ function App() {
                     if (!nuevoUsuarioParams.username || !nuevoUsuarioParams.nombre) return addToast('Por favor, completa nombre y usuario.', 'error');
 
                     const { data, error } = await supabase.from('usuarios').insert([{
-                      nombre: nuevoUsuarioParams.nombre,
+                      nombre: normalizarNombre(nuevoUsuarioParams.nombre),
                       username: nuevoUsuarioParams.username,
                       password: nuevoUsuarioParams.password,
                       role: nuevoUsuarioParams.role,
@@ -2582,7 +2582,7 @@ function App() {
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem' }}>
                   <div style={{ flex: '1 1 200px' }}>
                     <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 'bold', marginBottom: '0.3rem', color: '#701a75' }}>Corregir Nombre</label>
-                    <input type="text" className="input-field" value={usuarioEditando.nombre} onChange={e => setUsuarioEditando({ ...usuarioEditando, nombre: e.target.value })} style={{ borderColor: '#fbcfe8' }} />
+                    <input type="text" className="input-field" value={usuarioEditando.nombre} onChange={e => setUsuarioEditando({ ...usuarioEditando, nombre: e.target.value })} onBlur={e => setUsuarioEditando({ ...usuarioEditando, nombre: normalizarNombre(e.target.value) })} style={{ borderColor: '#fbcfe8' }} />
                   </div>
                   <div style={{ flex: '1 1 200px' }}>
                     <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 'bold', marginBottom: '0.3rem', color: '#701a75' }}>Nuevo Usuario Login</label>
@@ -2624,6 +2624,7 @@ function App() {
                   <button className="btn btn-primary" style={{ background: '#c026d3', borderColor: '#c026d3' }} onClick={async () => {
                     if (!usuarioEditando.username || !usuarioEditando.nombre) return addToast('No puedes dejar campos principales vacíos.', 'error');
                     if (usuarioEditando.role === 'admin') usuarioEditando.mina = 'Ambas';
+                    usuarioEditando.nombre = normalizarNombre(usuarioEditando.nombre);
 
                     const { error } = await supabase.from('usuarios').update(usuarioEditando).eq('id', usuarioEditando.id);
                     if (error) return addToast('Error al actualizar: ' + error.message, 'error');
