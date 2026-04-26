@@ -173,40 +173,41 @@ const corregirOrtografiaIA = (texto) => {
   return t.length > 0 ? t.charAt(0).toUpperCase() + t.slice(1) : t;
 };
 
-// v4.0: Motor de Unificación Semántica para Comentarios
+// v6.2: Motor de Unificación Semántica para Comentarios (Conserva Prefijos y Prioriza Trazabilidad)
 const unificarComentariosIA = (texto) => {
   if (!texto || texto === '-') return '';
   
-  // 1. Limpieza inicial de prefijos y normalización
-  let limpio = texto.replace(/G[1-3]:\s*/g, '').trim();
+  // Dividir por el separador técnico | o ,
+  let partesRaw = texto.split(/\s*[,|]\s*/).filter(p => p.length > 2);
   
-  // 2. Dividir por el separador técnico | o ,
-  let partes = limpio.split(/\s*[,|]\s*/).filter(p => p.length > 2);
-  
-  if (partes.length <= 1) return limpio;
+  if (partesRaw.length <= 1) return texto;
 
-  // 3. Proceso de Unificación Inteligente (Detección de Subconjuntos y Similitud)
   let unificados = [];
   
   // Ordenar por longitud descendente para priorizar la descripción más completa
-  partes.sort((a, b) => b.length - a.length);
+  partesRaw.sort((a, b) => b.length - a.length);
 
-  partes.forEach(parteActual => {
-    let esRedundante = unificados.some(yaUnificado => {
+  partesRaw.forEach(parteOriginal => {
+    // Limpiamos el prefijo G1/G2 solo para comparar similitud, sin afectar la original
+    const textoPuro = parteOriginal.replace(/^(?:G[1-3]|General):\s*/i, '').trim();
+    
+    let esRedundante = unificados.some(yaUnificadoOriginal => {
+      const yaUnificadoPuro = yaUnificadoOriginal.replace(/^(?:G[1-3]|General):\s*/i, '').trim();
+      
       // Si la parte actual ya está contenida en algo que ya unificamos, es redundante
-      if (yaUnificado.toLowerCase().includes(parteActual.toLowerCase())) return true;
+      if (yaUnificadoPuro.toLowerCase().includes(textoPuro.toLowerCase())) return true;
       
       // Similitud semántica (Levenshtein/IA)
-      const similitud = calcularSimilitudIA(parteActual, yaUnificado);
-      return similitud > 0.75; // Umbral de redundancia
+      const similitud = calcularSimilitudIA(textoPuro, yaUnificadoPuro);
+      return similitud > 0.85; // Umbral estricto para evitar borrar reportes diferentes
     });
 
     if (!esRedundante) {
-      unificados.push(parteActual);
+      unificados.push(parteOriginal);
     }
   });
 
-  // Re-ensamblar con el separador oficial
+  // Re-ensamblar conservando los prefijos intactos
   return unificados.join(' | ');
 };
 
