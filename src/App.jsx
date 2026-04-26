@@ -108,10 +108,11 @@ const corregirOrtografiaIA = (texto) => {
     'prueba': 'prueba', 'bien': 'bien', 'mal': 'mal', 'regular': 'regular', 'malo': 'malo',
     'bueno': 'bueno', 'excelente': 'excelente', 'urgente': 'urgente', 'prioridad': 'prioridad',
     'taller': 'taller', 'campo': 'campo', 'ruta': 'ruta', 'via': 'vía', 'rampa': 'rampa',
-    'botadero': 'botadero', 'pala': 'pala', 'cargador': 'cargador', 'tractor': 'tractor',
-    'motoniveladora': 'motoniveladora', 'tanquero': 'tanquero', 'lubricador': 'lubricador',
+    'botadero': 'botadero', 'pala': 'pala', 'cargador': 'cargador', 'tractor': 'tractor', 
+    'tanquero': 'tanquero', 'lubricador': 'lubricador',
     'mantenimiento': 'mantenimiento', 'preventivo': 'preventivo', 'correctivo': 'correctivo',
     'inspeccion': 'inspección', 'rutina': 'rutina', 'chequeo': 'chequeo', 'diario': 'diario',
+    'estan': 'están', 'estan ': 'están ', 'estan.': 'están.',
     'turno': 'turno', 'dia': 'día', 'noche': 'noche', 'mañana': 'mañana', 'tarde': 'tarde',
     'hoy': 'hoy', 'ayer': 'ayer', 'mañana': 'mañana', 'proximo': 'próximo', 'anterior': 'anterior',
     'actual': 'actual', 'nuevo': 'nuevo', 'viejo': 'viejo', 'usado': 'usado', 'limpio': 'limpio',
@@ -156,8 +157,12 @@ const corregirOrtografiaIA = (texto) => {
     t = t.replace(regex, diccionario[error]);
   });
 
+  // Limpieza de mayúsculas accidentales (v5.7) - "EStan" -> "Están"
+  t = t.replace(/\bES([A-Z])/g, 'Es$1'); 
+  t = t.replace(/\bES([a-z])/g, 'Es$1');
+
   // Capitalización de la primera letra
-  return t.charAt(0).toUpperCase() + t.slice(1);
+  return t.length > 0 ? t.charAt(0).toUpperCase() + t.slice(1) : t;
 };
 
 // v4.0: Motor de Unificación Semántica para Comentarios
@@ -612,7 +617,11 @@ function App() {
   };
 
   const handleObsChange = (id, text) => {
-    setObservaciones(prev => ({ ...prev, [id]: text }));
+  const handleObsChange = (id, text) => {
+    // v5.7: Corrección proactiva (Espacio, Punto o palabras clave de 5+ letras como EStan)
+    const textoCorregido = (text.endsWith(' ') || text.endsWith('.') || text.length >= 5) ? corregirOrtografiaIA(text) : text;
+    setObservaciones(prev => ({ ...prev, [id]: textoCorregido }));
+  };
   };
 
   // Calculadora...
@@ -986,7 +995,9 @@ function App() {
   };
 
   const handleObsChangeEdit = (id, text) => {
-    setObservacionesEdit(prev => ({ ...prev, [id]: text }));
+    // v5.7: Corrección proactiva (Espacio, Punto o palabras clave de 5+ letras como EStan)
+    const textoCorregido = (text.endsWith(' ') || text.endsWith('.') || text.length >= 5) ? corregirOrtografiaIA(text) : text;
+    setObservacionesEdit(prev => ({ ...prev, [id]: textoCorregido }));
   };
 
   const guardarEdicionAvanzada = async () => {
