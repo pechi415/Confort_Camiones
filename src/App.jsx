@@ -679,24 +679,26 @@ function App() {
 
     fetchDatabase();
 
-    // --- MOTOR REALTIME ---
-    // Suscripción a cambios en Camiones (Tablero Kanban)
+    // --- MOTOR REALTIME UNIFICADO (v2.0.2) ---
     const channelCamiones = supabase
-      .channel('realtime_camiones')
-      .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'camiones' }, (payload) => {
-        // v2.0.1: Prevención de Duplicados (Optimistic UI Guard)
-        setCamionesRegistrados(prev => {
-          if (prev.some(c => c.id === payload.new.id)) return prev;
-          return [payload.new, ...prev];
-        });
+      .channel('db_changes_camiones')
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'camiones' }, (payload) => {
+        console.log("Evento Realtime Camiones:", payload.eventType, payload);
+        
+        if (payload.eventType === 'INSERT') {
+          setCamionesRegistrados(prev => {
+            if (prev.some(c => c.id === payload.new.id)) return prev;
+            return [payload.new, ...prev];
+          });
+        } else if (payload.eventType === 'UPDATE') {
+          setCamionesRegistrados(prev => prev.map(c => c.id === payload.new.id ? payload.new : c));
+        } else if (payload.eventType === 'DELETE') {
+          setCamionesRegistrados(prev => prev.filter(c => c.id !== payload.old.id));
+        }
       })
-      .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'camiones' }, (payload) => {
-        setCamionesRegistrados(prev => prev.map(c => c.id === payload.new.id ? payload.new : c));
-      })
-      .on('postgres_changes', { event: 'DELETE', schema: 'public', table: 'camiones' }, (payload) => {
-        setCamionesRegistrados(prev => prev.filter(c => c.id !== payload.old.id));
-      })
-      .subscribe();
+      .subscribe((status) => {
+        console.log("Estado de conexión Realtime:", status);
+      });
 
     // Suscripción a cambios en Usuarios
     const channelUsuarios = supabase
@@ -817,6 +819,9 @@ function App() {
     if (nuevoEstado === 'evaluar' && targetCamion && !targetCamion.ingreso_evaluar_at) {
       dbUpdates.ingreso_evaluar_at = new Date().toISOString();
     }
+    // Actualización Optimista (v2.0.2)
+    setCamionesRegistrados(prev => prev.map(c => c.id === parseInt(idStr) ? { ...c, ...dbUpdates } : c));
+    
     await supabase.from('camiones').update(dbUpdates).eq('id', parseInt(idStr));
   };
 
