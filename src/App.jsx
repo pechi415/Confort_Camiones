@@ -1255,11 +1255,12 @@ function App() {
           placeholder: 'Escribe el nombre aquí (o deja en blanco)...',
           confirmText: 'Generar PDF',
           onConfirm: async (nombreIngresado) => {
-            // Permitimos que quede en blanco para firmar físicamente
+            // v6.9.3: Aplicamos IA de corrección ortográfica (Capitalización)
+            const nombreNormalizado = nombreIngresado ? normalizarNombre(nombreIngresado) : ' ';
+
             const registroTemporal = {
               ...registro,
-              // v6.9.2: IA de ortografía aplicada al nombre ingresado
-              operador_temporal_pdf: nombreIngresado ? normalizarNombre(nombreIngresado) : ' ',
+              operador_temporal_pdf: nombreNormalizado,
               supervisor_temporal_pdf: session.nombre || 'Supervisor'
             };
             
