@@ -347,6 +347,17 @@ function App() {
     }
   }, [editingGroupContext, camionEditando?.id]);
 
+  // v5.5: Sincronización Inteligente de Sesión con Formulario de Reporte
+  useEffect(() => {
+    if (session) {
+      // Si el formulario está en blanco o tiene los valores "fábrica", forzamos los de la sesión
+      if (!flota && !operador) {
+        if (session.mina && session.mina !== 'Global') setMina(session.mina);
+        if (session.grupo) setGrupo(session.grupo);
+      }
+    }
+  }, [session]);
+
   // Efecto para persistir cambios en tiempo real
   useEffect(() => {
     sessionStorage.setItem('drummond_activeTab', activeTab);
