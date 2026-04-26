@@ -192,14 +192,14 @@ const unificarComentariosIA = (texto) => {
     const textoPuro = parteOriginal.replace(/^(?:G[1-3]|General):\s*/i, '').trim();
     
     let esRedundante = unificados.some(yaUnificadoOriginal => {
-      const yaUnificadoPuro = yaUnificadoOriginal.replace(/^(?:G[1-3]|General):\s*/i, '').trim();
+      const yaUnificadoPuro = yaUnificadoOriginal.replace(/^(?:G\d+|General)\s*[:\-]\s*/i, '').trim();
       
       // Si la parte actual ya está contenida en algo que ya unificamos, es redundante
       if (yaUnificadoPuro.toLowerCase().includes(textoPuro.toLowerCase())) return true;
       
       // Similitud semántica (Levenshtein/IA)
       const similitud = calcularSimilitudIA(textoPuro, yaUnificadoPuro);
-      return similitud > 0.85; // Umbral estricto para evitar borrar reportes diferentes
+      return similitud > 0.70; // Umbral balanceado (restaurado post-fix del regex)
     });
 
     if (!esRedundante) {
@@ -251,7 +251,7 @@ const limpiarFallasIA = (fallasStr) => {
                 
                 const duplicate = cleanObsParts.find(existingOriginal => {
                     const existingPuro = existingOriginal.replace(/^(?:G\d+|General)\s*[:\-]\s*/i, '').trim();
-                    return calcularSimilitudIA(existingPuro, partPuro) > 0.85 || 
+                    return calcularSimilitudIA(existingPuro, partPuro) > 0.70 || 
                            existingPuro.toLowerCase().includes(partPuro.toLowerCase()) || 
                            partPuro.toLowerCase().includes(existingPuro.toLowerCase());
                 });
@@ -283,8 +283,8 @@ const limpiarFallasIA = (fallasStr) => {
       
       if (current.obs !== '-' && x.obs !== '-') {
         const similitud = calcularSimilitudIA(x.obs, current.obs);
-        // Umbral de Inteligencia Conservadora: Solo unificar si son casi idénticos (> 85%)
-        if (similitud > 0.85) {
+        // Umbral balanceado (70%) para fusionar comentarios conceptualmente idénticos
+        if (similitud > 0.70) {
           // Si son casi iguales, nos quedamos con el más detallado (el más largo)
           if (current.obs.length > x.obs.length) {
             x.obs = current.obs;
