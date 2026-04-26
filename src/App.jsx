@@ -684,7 +684,11 @@ function App() {
     const channelCamiones = supabase
       .channel('realtime_camiones')
       .on('postgres_changes', { event: 'INSERT', schema: 'public', table: 'camiones' }, (payload) => {
-        setCamionesRegistrados(prev => [...prev, payload.new]);
+        // v2.0.1: Prevención de Duplicados (Optimistic UI Guard)
+        setCamionesRegistrados(prev => {
+          if (prev.some(c => c.id === payload.new.id)) return prev;
+          return [payload.new, ...prev];
+        });
       })
       .on('postgres_changes', { event: 'UPDATE', schema: 'public', table: 'camiones' }, (payload) => {
         setCamionesRegistrados(prev => prev.map(c => c.id === payload.new.id ? payload.new : c));
