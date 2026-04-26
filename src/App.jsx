@@ -1323,17 +1323,44 @@ function App() {
         head: [['Detalle de Fallas Intervenidas', 'Comentarios Técnica / Observación']],
         body: bodyFallas,
         theme: 'striped',
-        headStyles: { fillColor: [0, 0, 0], textColor: [255, 255, 255], fontStyle: 'bold' },
+        headStyles: { fillColor: [31, 41, 55], textColor: [255, 255, 255], fontStyle: 'bold' },
         columnStyles: { 0: { cellWidth: 70 }, 1: { cellWidth: 'auto' } }
       });
 
-      const finalY = doc.lastAutoTable.finalY + 20;
-      doc.setFontSize(14);
+      let currentY = doc.lastAutoTable.finalY + 15;
+
+      // === SECCIÓN: DICTAMEN TÉCNICO FINAL (v2.2.0) ===
+      if (registro.dictamen_tecnico) {
+        doc.setFillColor(249, 250, 251); // Gris ultra-ligero
+        doc.setDrawColor(226, 232, 240);
+        
+        const dictamenTexto = corregirOrtografiaIA(registro.dictamen_tecnico);
+        const dictamenLines = doc.splitTextToSize(dictamenTexto, 160);
+        const dictamenHeight = (dictamenLines.length * 5) + 15;
+
+        // Dibujar contenedor de dictamen
+        doc.roundedRect(20, currentY, 170, dictamenHeight, 3, 3, 'FD');
+        
+        doc.setFontSize(11);
+        doc.setFont("helvetica", "bold");
+        doc.setTextColor(124, 58, 237); // Morado Técnico
+        doc.text("DICTAMEN TÉCNICO FINAL:", 25, currentY + 8);
+        
+        doc.setFontSize(9);
+        doc.setFont("helvetica", "normal");
+        doc.setTextColor(31, 41, 55);
+        doc.text(dictamenLines, 25, currentY + 15);
+
+        currentY += dictamenHeight + 15;
+      }
+
+      doc.setFontSize(12);
       doc.setFont("helvetica", "bold");
-      doc.text("HISTORIAL DE VALIDACIÓN POR GRUPOS", 20, finalY);
+      doc.setTextColor(0, 0, 0);
+      doc.text("HISTORIAL DE VALIDACIÓN POR GRUPOS", 20, currentY);
 
       tableFunc(doc, {
-        startY: finalY + 10,
+        startY: currentY + 5,
         head: [['Grupo de Turno', 'Visto Bueno (VB)', 'Estado']],
         body: [
           ['Grupo 1', registro.aprobado_g1 ? 'CONFIRMADO' : 'N/A', registro.aprobado_g1 ? 'Aceptada a Satisfacción' : 'Sin intervención'],
@@ -1341,7 +1368,7 @@ function App() {
           ['Grupo 3', registro.aprobado_g3 ? 'CONFIRMADO' : 'N/A', registro.aprobado_g3 ? 'Aceptada a Satisfacción' : 'Sin intervención'],
         ],
         theme: 'grid',
-        headStyles: { fillColor: [0, 0, 0], textColor: [255, 255, 255] }
+        headStyles: { fillColor: [31, 41, 55], textColor: [255, 255, 255] }
       });
 
       const dG = registro.detalles_grupos || {};
