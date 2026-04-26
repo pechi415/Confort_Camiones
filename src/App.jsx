@@ -26,7 +26,7 @@ function calcularSimilitudIA(s1, s2) {
   // Normalización Humana: Quitar conectores, intensificadores y unificar términos técnicos
   const normalizar = (str) => {
     return str.toLowerCase()
-      .normalize("NFD").replace(/[\u03000-\u036f]/g, "") // Quitar acentos
+      .normalize("NFD").replace(/[\u0300-\u036f]/g, "") // Quitar acentos
       .replace(/\s+/g, ' ')
       .trim()
       // Eliminar palabras de relleno e intensidad
