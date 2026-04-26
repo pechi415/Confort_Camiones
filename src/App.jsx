@@ -1896,10 +1896,7 @@ function App() {
                       <tbody>
                         {(camionesAccessibles || [])
                           .filter(c => c && c.estado !== 'liberado')
-                          .sort((a, b) => {
-                            const pesos = { 'CRÍTICA': 3, 'ALTA': 2, 'NORMAL': 1 };
-                            return (pesos[b.atencion] || 0) - (pesos[a.atencion] || 0);
-                          })
+                          .sort((a, b) => (Number(b.puntos) || 0) - (Number(a.puntos) || 0))
                           .slice(0, 6)
                           .map((camion) => (
                           <tr key={camion?.id || Math.random()}>
@@ -1953,7 +1950,11 @@ function App() {
                 ) : (
                   /* Vista exclusiva para Móvil: Tarjetas Modernas */
                   <div className="priority-cards-container" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1rem' }}>
-                    {(camionesAccessibles || []).filter(c => c && c.estado !== 'liberado').slice(0, 6).map((camion) => (
+                    {(camionesAccessibles || [])
+                      .filter(c => c && c.estado !== 'liberado')
+                      .sort((a, b) => (Number(b.puntos) || 0) - (Number(a.puntos) || 0))
+                      .slice(0, 6)
+                      .map((camion) => (
                       <div key={camion?.id || Math.random()} className="kanban-card card-overlay" style={{ background: 'white', borderRadius: '12px', padding: '1rem', borderLeft: `6px solid ${camion?.atencion === 'CRÍTICA' ? '#ef4444' : (camion?.atencion === 'ALTA' ? 'var(--secondary-yellow)' : '#10b981')}` }}>
                         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.8rem' }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
@@ -2047,7 +2048,9 @@ function App() {
               }}
             >
               {columnasKanban.map(col => {
-                const camionesColumna = camionesAccessibles.filter(c => c.estado === col.id).sort((a, b) => b.puntos - a.puntos);
+                const camionesColumna = camionesAccessibles
+                  .filter(c => c.estado === col.id)
+                  .sort((a, b) => (Number(b.puntos) || 0) - (Number(a.puntos) || 0));
 
                 return (
                   <div
