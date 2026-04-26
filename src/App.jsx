@@ -1258,7 +1258,8 @@ function App() {
             // Permitimos que quede en blanco para firmar físicamente
             const registroTemporal = {
               ...registro,
-              operador_temporal_pdf: nombreIngresado ? nombreIngresado.trim() : ' ',
+              // v6.9.2: IA de ortografía aplicada al nombre ingresado
+              operador_temporal_pdf: nombreIngresado ? normalizarNombre(nombreIngresado) : ' ',
               supervisor_temporal_pdf: session.nombre || 'Supervisor'
             };
             
