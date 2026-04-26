@@ -1184,76 +1184,19 @@ function App() {
     }
   };
 
-  const generarPDF = async (registro) => {
-    try {
-      const grupoActual = session.grupo || '1';
-      const grupoPrefix = `G${grupoActual}:`;
-      const opNames = (registro.operador || '').split(', ');
-      
-      // Verificamos si el grupo actual ya tiene un operador registrado
-      const yaTieneOperador = opNames.some(n => n.includes(grupoPrefix));
-
-      if (!yaTieneOperador) {
-        // ACTIVACIÓN DE RECEPCIÓN MULTIGRUPO
-        showConfirm({
-          type: 'prompt',
-          title: `Recepción de Camión (Grupo ${grupoActual})`,
-          message: `El Camión ${registro.flota} está siendo recibido por un grupo distinto al reporte original.\n\nPor favor, ingrese el nombre del Operador que RECIBE el camión en el Grupo ${grupoActual}:`,
-          placeholder: 'Nombre del Operador Receptor...',
-          confirmText: 'Registrar y Generar PDF',
-          onConfirm: async (nombreIngresado) => {
-            if (!nombreIngresado || nombreIngresado.trim().length < 3) {
-              return addToast("❌ Nombre de operador inválido.", "error");
-            }
-            
-            try {
-              addToast("💾 Guardando trazabilidad de recepción...", "info");
-              const nuevoOpInfo = `${grupoPrefix} ${nombreIngresado.trim()}`;
-              const nuevoSupInfo = `${grupoPrefix} ${session.nombre || 'Supervisor'}`;
-              
-              const updateData = {
-                operador: registro.operador ? `${registro.operador}, ${nuevoOpInfo}` : nuevoOpInfo,
-                supervisor: registro.supervisor ? `${registro.supervisor}, ${nuevoSupInfo}` : nuevoSupInfo
-              };
-
-              // Persistencia en Supabase
-              const { error } = await supabase.from('camiones').update(updateData).eq('id', registro.id);
-              if (error) throw error;
-
-              // Actualización de estado local para que el PDF salga con la data nueva
-              const registroActualizado = { ...registro, ...updateData };
-              setCamionesRegistrados(prev => prev.map(c => c.id === registro.id ? registroActualizado : c));
-              
-              // Proceder a renderizar el PDF con el registro actualizado
-              renderizarPDF(registroActualizado);
-            } catch (err) {
-              addToast("❌ Error al guardar datos de recepción: " + err.message, "error");
-            }
-          }
-        });
-      } else {
-        // Si el grupo ya participó, generamos el PDF directamente
-        renderizarPDF(registro);
-      }
-    } catch (err) {
-      addToast("❌ Error al iniciar generación de PDF: " + err.message, "error");
-    }
-  };
-
-  const renderizarPDF = (registro) => {
+  const generarPDF = (registro) => {
     try {
       addToast("⏳ Generando acta de trazabilidad...", "info");
       const doc = new jsPDF();
 
-      // === CABECERA PREMIUM MINIMALISTA (v1.9.97) ===
+      // === CABECERA PREMIUM MINIMALISTA ===
       doc.setFillColor(248, 250, 252);
-      doc.roundedRect(160, 10, 35, 16, 3, 3, 'F'); // Badge ultra-compacto
+      doc.roundedRect(160, 10, 35, 16, 3, 3, 'F');
       doc.setDrawColor(226, 232, 240);
       doc.roundedRect(160, 10, 35, 16, 3, 3, 'D');
 
       try {
         if (typeof LOGO_DRUMMOND !== 'undefined' && LOGO_DRUMMOND) {
-          // v1.9.101 Blindaje de Logo: Aseguramos prefijo para jsPDF
           const logoData = LOGO_DRUMMOND.startsWith('data:') ? LOGO_DRUMMOND : `data:image/png;base64,${LOGO_DRUMMOND}`;
           doc.addImage(logoData, 'PNG', 15, 8, 28, 20);
         }
@@ -1269,7 +1212,7 @@ function App() {
       doc.setFont("helvetica", "normal");
       doc.text("CONFORT CAMIONES", 65, 26);
 
-      // Info Badge Compacto
+      // Info Badge
       doc.setFontSize(7);
       doc.setFont("helvetica", "bold");
       doc.text("MINA:", 163, 16);
@@ -1281,7 +1224,7 @@ function App() {
       doc.setFont("helvetica", "normal");
       doc.text(`${registro.flota}`, 177, 22);
 
-      // Cuerpo del Reporte
+      // Cuerpo
       doc.setTextColor(0, 0, 0);
       doc.setFontSize(10);
       doc.setFont("helvetica", "normal");
@@ -1291,11 +1234,9 @@ function App() {
       doc.text(`Personal que reporta el estado (Operadores Permanentes):`, 20, 45);
       doc.setFont("helvetica", "normal");
       
-      // Filtrar para mostrar solo al reportero original (v2.1.0)
       const dG_orig = registro.detalles_grupos || {};
       const origG = registro.grupo || '1';
       const reporteroData = dG_orig[`G${origG}`] || {};
-      
       const operText = reporteroData.operador || (registro.operador || 'N/A').split(', ').find(n => n.includes(`G${origG}:`)) || (registro.operador || 'N/A').split(', ')[0];
       
       const operSplit = doc.splitTextToSize(operText, 170);
@@ -1327,40 +1268,14 @@ function App() {
         columnStyles: { 0: { cellWidth: 70 }, 1: { cellWidth: 'auto' } }
       });
 
-      let currentY = doc.lastAutoTable.finalY + 15;
-
-      // === SECCIÓN: DICTAMEN TÉCNICO FINAL (v2.2.0) ===
-      if (registro.dictamen_tecnico) {
-        doc.setFillColor(249, 250, 251); // Gris ultra-ligero
-        doc.setDrawColor(226, 232, 240);
-        
-        const dictamenTexto = corregirOrtografiaIA(registro.dictamen_tecnico);
-        const dictamenLines = doc.splitTextToSize(dictamenTexto, 160);
-        const dictamenHeight = (dictamenLines.length * 5) + 15;
-
-        // Dibujar contenedor de dictamen
-        doc.roundedRect(20, currentY, 170, dictamenHeight, 3, 3, 'FD');
-        
-        doc.setFontSize(11);
-        doc.setFont("helvetica", "bold");
-        doc.setTextColor(124, 58, 237); // Morado Técnico
-        doc.text("DICTAMEN TÉCNICO FINAL:", 25, currentY + 8);
-        
-        doc.setFontSize(9);
-        doc.setFont("helvetica", "normal");
-        doc.setTextColor(31, 41, 55);
-        doc.text(dictamenLines, 25, currentY + 15);
-
-        currentY += dictamenHeight + 15;
-      }
-
+      const finalY = doc.lastAutoTable.finalY + 15;
       doc.setFontSize(12);
       doc.setFont("helvetica", "bold");
       doc.setTextColor(0, 0, 0);
-      doc.text("HISTORIAL DE VALIDACIÓN POR GRUPOS", 20, currentY);
+      doc.text("HISTORIAL DE VALIDACIÓN POR GRUPOS", 20, finalY);
 
       tableFunc(doc, {
-        startY: currentY + 5,
+        startY: finalY + 5,
         head: [['Grupo de Turno', 'Visto Bueno (VB)', 'Estado']],
         body: [
           ['Grupo 1', registro.aprobado_g1 ? 'CONFIRMADO' : 'N/A', registro.aprobado_g1 ? 'Aceptada a Satisfacción' : 'Sin intervención'],
@@ -1376,7 +1291,6 @@ function App() {
       const opNameFiltered = dG[`G${grupoActual}`]?.operador || (registro.operador || '').split(', ').find(n => n.includes(`G${grupoActual}:`))?.replace(`G${grupoActual}:`, '').trim() || 'N/A';
 
       const signY = doc.lastAutoTable.finalY + 35;
-      
       doc.setDrawColor(0);
       doc.line(20, signY, 85, signY);
       doc.setFontSize(10);
