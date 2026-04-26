@@ -271,21 +271,24 @@ const limpiarFallasIA = (fallasStr) => {
         }
     }
 
-    // Deduplicación e Inteligencia IA Humana de Comentarios (v1.9.95)
+    // Deduplicación e Inteligencia IA Humana de Comentarios (v6.0: Prioridad a la Trazabilidad Total)
     return result.reduce((acc, current) => {
       const x = acc.find(item => item.falla.toLowerCase().trim() === current.falla.toLowerCase().trim());
       if (!x) return acc.concat([current]);
       
       if (current.obs !== '-' && x.obs !== '-') {
         const similitud = calcularSimilitudIA(x.obs, current.obs);
-        // Umbral ajustado para la nueva normalización semántica
-        if (similitud > 0.45) {
-          // Nos quedamos con el más detallado (el más largo)
+        // Umbral de Inteligencia Conservadora: Solo unificar si son casi idénticos (> 85%)
+        if (similitud > 0.85) {
+          // Si son casi iguales, nos quedamos con el más detallado (el más largo)
           if (current.obs.length > x.obs.length) {
             x.obs = current.obs;
           }
         } else {
-          if (!x.obs.includes(current.obs)) {
+          // Si son diferentes (similitud baja), SON REPORTES COMPLEMENTARIOS -> Los sumamos
+          // Evitamos duplicar la misma frase si ya está contenida
+          if (!x.obs.toLowerCase().includes(current.obs.toLowerCase()) && 
+              !current.obs.toLowerCase().includes(x.obs.toLowerCase())) {
             x.obs = `${x.obs} | ${current.obs}`;
           }
         }
