@@ -594,6 +594,21 @@ h1, h2, h3, h4, h5, h6 {
 
   /* Ancho de columna gestionado en el bloque CACHE BREAKER v1.4.7 */
 
+  .dashboard-kpi-container {
+    width: 100% !important;
+  }
+
+  .dashboard-kpi-badge {
+    flex: 1 !important;
+    font-size: 0.75rem !important;
+    padding: 0.5rem 0.8rem !important;
+  }
+
+  .dashboard-kpi-badge svg {
+    width: 14px !important;
+    height: 14px !important;
+  }
+
   .kanban-title-stack {
     display: flex;
     flex-direction: column;
