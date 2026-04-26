@@ -157,11 +157,19 @@ const corregirOrtografiaIA = (texto) => {
     t = t.replace(regex, diccionario[error]);
   });
 
-  // Limpieza de mayúsculas accidentales (v5.7) - "EStan" -> "Están"
-  t = t.replace(/\bES([A-Z])/g, 'Es$1'); 
-  t = t.replace(/\bES([a-z])/g, 'Es$1');
+  // v5.8: Motor de Normalización Universal de Mayúsculas Accidentales
+  t = t.split(' ').map(palabra => {
+    if (palabra.length <= 3) return palabra; // Ignorar acrónimos cortos (ED, PB, G1)
+    
+    // Si la palabra tiene mayúsculas "extrañas" (ej: ALexander, AlExander)
+    // Regla: Si no es TODA mayúsculas (acrónimo largo), forzamos CamelCase
+    if (palabra !== palabra.toUpperCase()) {
+      return palabra.charAt(0).toUpperCase() + palabra.slice(1).toLowerCase();
+    }
+    return palabra;
+  }).join(' ');
 
-  // Capitalización de la primera letra
+  // Capitalización de la primera letra del párrafo
   return t.length > 0 ? t.charAt(0).toUpperCase() + t.slice(1) : t;
 };
 
