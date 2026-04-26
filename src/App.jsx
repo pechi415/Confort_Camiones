@@ -423,12 +423,14 @@ function App() {
     }
   };
 
-  // Formateador de Grupos v1.9.27 (Transforma "1, 2" en "G1 | G2")
+  // Formateador de Grupos v3.0 (Transforma "1, 2" o "1|2" en "G1 | G2")
   const formatGrupo = (grupo) => {
     if (!grupo) return '--';
-    const numStr = String(grupo);
-    if (!numStr.includes(',')) return `G${numStr}`;
-    return numStr.split(/,[\s]*/).map(g => `G${g.trim()}`).join(' | ');
+    const str = String(grupo);
+    // Buscamos todos los números y les ponemos una G, luego unimos con " | "
+    const matches = str.match(/\d+/g);
+    if (!matches) return str;
+    return matches.map(g => `G${g}`).join(' | ');
   };
 
   const parseFecha = (dateStr) => {
