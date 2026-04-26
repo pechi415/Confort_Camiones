@@ -3424,7 +3424,7 @@ function App() {
                 {/* Selector de Grupo Estilo Tabs (v4.0) - Oculto en Dictamen */}
                 {editingGroupContext !== 'Mantenimiento' && (session.role === 'admin' || session.role === 'supervisor') && (
                   <div style={{ display: 'flex', gap: '0.5rem', borderBottom: '1px solid #f1f5f9', paddingBottom: '0.5rem' }}>
-                    {['General', 'G1', 'G2', 'G3', 'Mantenimiento'].map(g => (
+                    {(session.role === 'admin' ? ['General', 'G1', 'G2', 'G3', 'Mantenimiento'] : [`G${session.grupo}`]).map(g => (
                       <button
                         key={g}
                         onClick={() => {
