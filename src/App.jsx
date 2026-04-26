@@ -1184,7 +1184,47 @@ function App() {
     }
   };
 
-  const generarPDF = (registro) => {
+  const generarPDF = async (registro) => {
+    try {
+      const grupoActual = session.grupo || '1';
+      const grupoPrefix = `G${grupoActual}:`;
+      const opNames = (registro.operador || '').split(', ');
+      
+      // Verificamos si el grupo actual ya participó
+      const yaTieneOperador = opNames.some(n => n.includes(grupoPrefix));
+
+      if (!yaTieneOperador) {
+        // ACTIVACIÓN DE FIRMA TEMPORAL (Solo para el PDF, no se guarda en BD)
+        showConfirm({
+          type: 'prompt',
+          title: `Firma de Recepción (Grupo ${grupoActual})`,
+          message: `Vas a generar el PDF desde un grupo distinto al original.\n\nPor favor, ingresa el nombre del Operador que FIRMARÁ la recepción en el PDF:`,
+          placeholder: 'Nombre del Operador Receptor...',
+          confirmText: 'Generar PDF con esta Firma',
+          onConfirm: async (nombreIngresado) => {
+            if (!nombreIngresado || nombreIngresado.trim().length < 3) {
+              return addToast("❌ Nombre inválido.", "error");
+            }
+            
+            // Creamos una versión temporal del registro SOLO para el renderizado del PDF
+            const registroTemporal = {
+              ...registro,
+              operador_temporal_pdf: nombreIngresado.trim(),
+              supervisor_temporal_pdf: session.nombre || 'Supervisor'
+            };
+            
+            renderizarPDF(registroTemporal);
+          }
+        });
+      } else {
+        renderizarPDF(registro);
+      }
+    } catch (err) {
+      addToast("❌ Error al iniciar PDF: " + err.message, "error");
+    }
+  };
+
+  const renderizarPDF = (registro) => {
     try {
       addToast("⏳ Generando acta de trazabilidad...", "info");
       const doc = new jsPDF();
@@ -1286,9 +1326,10 @@ function App() {
         headStyles: { fillColor: [31, 41, 55], textColor: [255, 255, 255] }
       });
 
-      const dG = registro.detalles_grupos || {};
       const grupoActual = session.grupo || '1';
-      const opNameFiltered = dG[`G${grupoActual}`]?.operador || (registro.operador || '').split(', ').find(n => n.includes(`G${grupoActual}:`))?.replace(`G${grupoActual}:`, '').trim() || 'N/A';
+      // Usamos el nombre temporal si existe, sino el original filtrado
+      const opNameFiltered = registro.operador_temporal_pdf || (registro.detalles_grupos || {})[`G${grupoActual}`]?.operador || (registro.operador || '').split(', ').find(n => n.includes(`G${grupoActual}:`))?.replace(`G${grupoActual}:`, '').trim() || 'N/A';
+      const supNameFiltered = registro.supervisor_temporal_pdf || session.nombre || 'Supervisor';
 
       const signY = doc.lastAutoTable.finalY + 35;
       doc.setDrawColor(0);
@@ -1303,7 +1344,7 @@ function App() {
 
       doc.line(120, signY, 185, signY);
       doc.setFont("helvetica", "bold");
-      doc.text(`${session.nombre || 'Supervisor'}`, 120, signY + 5);
+      doc.text(`${supNameFiltered}`, 120, signY + 5);
       doc.setFont("helvetica", "normal");
       doc.text(`Supervisor de Camiones`, 120, signY + 10);
       doc.text(`Drummond Ltd.`, 120, signY + 15);
