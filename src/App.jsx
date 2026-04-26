@@ -242,21 +242,25 @@ const limpiarFallasIA = (fallasStr) => {
         
         if (openParen !== -1 && closeParen !== -1 && closeParen > openParen) {
             const rawObs = text.substring(openParen + 1, closeParen).trim();
-            // v1.9.86 Limpieza recursiva de observaciones internas (para datos históricos)
-            const obsParts = rawObs.split(/\s*[|/]\s*/).filter(Boolean).map(p => p.replace(/^(?:G\d+|General)\s*[:\-]\s*/i, '').trim());
+            // v6.3: Conservar prefijos originales y aumentar umbral para mostrar en las tarjetas
+            const obsParts = rawObs.split(/\s*[|/]\s*/).filter(Boolean);
             const cleanObsParts = [];
             
-            obsParts.forEach(part => {
-                const duplicate = cleanObsParts.find(existing => 
-                    calcularSimilitudIA(existing, part) > 0.4 || 
-                    existing.toLowerCase().trim().includes(part.toLowerCase().trim()) || 
-                    part.toLowerCase().trim().includes(existing.toLowerCase().trim())
-                );
+            obsParts.forEach(partOriginal => {
+                const partPuro = partOriginal.replace(/^(?:G\d+|General)\s*[:\-]\s*/i, '').trim();
+                
+                const duplicate = cleanObsParts.find(existingOriginal => {
+                    const existingPuro = existingOriginal.replace(/^(?:G\d+|General)\s*[:\-]\s*/i, '').trim();
+                    return calcularSimilitudIA(existingPuro, partPuro) > 0.85 || 
+                           existingPuro.toLowerCase().includes(partPuro.toLowerCase()) || 
+                           partPuro.toLowerCase().includes(existingPuro.toLowerCase());
+                });
+
                 if (!duplicate) {
-                    cleanObsParts.push(part);
-                } else if (part.length > duplicate.length) {
+                    cleanObsParts.push(partOriginal);
+                } else if (partOriginal.length > duplicate.length) {
                     const idx = cleanObsParts.indexOf(duplicate);
-                    cleanObsParts[idx] = part;
+                    cleanObsParts[idx] = partOriginal;
                 }
             });
 
