@@ -559,43 +559,50 @@ function App() {
     setModalConfig(prev => ({ ...prev, isOpen: false }));
   };
 
-  // Algoritmo de Inteligencia Algorítmica para detectar el 'Primer Apellido' oficial (v1.6.2)
+  // Algoritmo de Inteligencia Algorítmica para detectar el 'Primer Apellido' oficial (v1.7.0)
   const generarAliasBase = (nombreCompleto, bdActual) => {
-    const partes = nombreCompleto.trim().split(/\s+/).filter(p => p.length > 1);
-    if (!partes || partes.length === 0) return "";
+    // Limpiamos palabras de enlace comunes en apellidos hispanos para simplificar el análisis
+    const palabras = nombreCompleto.trim().split(/\s+/).filter(p => p.length > 0);
+    if (!palabras || palabras.length === 0) return "";
+
+    // Filtramos conectores temporalmente para el conteo de la estructura lógica
+    const conectores = ['de', 'la', 'del', 'los', 'las', 'y', 'san', 'santa'];
+    const partes = palabras.filter(p => !conectores.includes(p.toLowerCase()));
+    
+    if (partes.length === 0) return "";
 
     const primeraLetra = partes[0].charAt(0).toLowerCase();
     let primerApellido = "";
 
-    // Lista de nombres medios muy comunes (para ayudar a la IA a saltarlos en 3 palabras)
-    const nombresComunesV2 = ['david', 'jose', 'maria', 'carlos', 'luis', 'antonio', 'manuel', 'francisco', 'jesus', 'miguel', 'angel', 'javier', 'david', 'alberto', 'eduardo', 'fernando', 'andres', 'felipe', 'leonardo', 'ricardo'];
+    // Diccionario extendido de nombres de pila comunes en LATAM para resolver ambigüedad de 3 palabras
+    const nombresComunesV3 = [
+      'david', 'jose', 'maria', 'carlos', 'luis', 'antonio', 'manuel', 'francisco', 'jesus', 
+      'miguel', 'angel', 'javier', 'alberto', 'eduardo', 'fernando', 'andres', 'felipe', 
+      'leonardo', 'ricardo', 'juan', 'pedro', 'victor', 'julio', 'cesar', 'diego', 'jorge',
+      'hector', 'mario', 'oscar', 'ivan', 'ruben', 'hugo', 'pablo', 'gabriel', 'rafael',
+      'camilo', 'alejandro', 'esteban', 'alonso', 'alfonso', 'enrique', 'ignacio', 'roberto',
+      'arturo', 'ernesto', 'guillermo', 'mauricio', 'armando', 'raul', 'gerardo', 'ana',
+      'martha', 'elena', 'rosa', 'carmen', 'teresa', 'diana', 'claudia', 'patricia', 'sandra'
+    ];
 
     if (partes.length === 1) {
       primerApellido = partes[0].substring(1);
     } else if (partes.length === 2) {
-      // Pedro Gonzalez -> pgonzalez
+      // Ej: Pedro Gonzalez -> pgonzalez
       primerApellido = partes[1];
     } else if (partes.length === 3) {
-      // Juan David Perez -> jperez (Si la 2da es nombre común)
-      // Juan Perez Rodriguez -> jperez (Si la 2da no es nombre común)
+      // Ej: Juan David Perez (2 nombres, 1 apellido) -> jperez
+      // Ej: Juan Perez Rodriguez (1 nombre, 2 apellidos) -> jperez
       const segundaPalabra = partes[1].toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "");
-      if (nombresComunesV2.includes(segundaPalabra)) {
-        primerApellido = partes[2];
+      if (nombresComunesV3.includes(segundaPalabra)) {
+        primerApellido = partes[2]; // Es un segundo nombre
       } else {
-        primerApellido = partes[1];
-      }
-    } else if (partes.length >= 4) {
-      // Alexander Francisco Ramirez Cordoba -> aramirez
-      // Detectamos si hay conectores en la posición 1 (de, la, del)
-      const conectores = ['de', 'la', 'del', 'los', 'las'];
-      if (conectores.includes(partes[1].toLowerCase())) {
-        // Juan de la Cruz Perez...
-        primerApellido = partes[partes.length - 2];
-      } else {
-        primerApellido = partes[2];
+        primerApellido = partes[1]; // Es un apellido
       }
     } else {
-      primerApellido = partes[1];
+      // 4 o más palabras: Ej: Camilo Andres Ramos Casas -> cramos
+      // Asumimos estructura clásica: [Nombre1] [Nombre2] [Apellido1] [Apellido2]
+      primerApellido = partes[2];
     }
 
     const aliasPuro = (primeraLetra + primerApellido).toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/gi, '');
