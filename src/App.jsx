@@ -2947,7 +2947,8 @@ function App() {
                         const char = rawFallas[i];
                         if (char === '(') depth++;
                         if (char === ')') depth--;
-                        if (depth === 0 && char === ',') {
+                        // v6.4: Usar | en lugar de coma
+                        if (depth === 0 && char === '|') {
                           parts.push(rawFallas.substring(lastSplit, i).trim());
                           lastSplit = i + 1;
                         }
@@ -2955,10 +2956,11 @@ function App() {
                       parts.push(rawFallas.substring(lastSplit).trim());
 
                       parts.forEach(p => {
-                        if (!p || p === '-') return;
+                        if (!p || p === '-' || p.includes('Ficha Técnica')) return;
                         const match = p.match(/^(.*?)(?:\s*\((.*?)\))?$/);
                         if (match && match[2]) {
-                          const fObj = fallas.find(f => f.nombre === match[1].trim());
+                          const nombreLimpio = match[1].split('|')[0].trim();
+                          const fObj = fallas.find(f => f.nombre === nombreLimpio || nombreLimpio.includes(f.nombre));
                           if (fObj) obsAnteriores[fObj.id] = match[2];
                         }
                       });
@@ -2967,24 +2969,15 @@ function App() {
                     const fallasConsolidadas = Array.from(todasFallasIds).map(id => {
                       const f = fallas.find(x => x.id === id);
                       const obsViejas = obsAnteriores[id] || '';
-                      const obsNuevas = observaciones[id] ? `G${grupo}: ${observaciones[id]}` : '';
+                      // Aplicar limpieza ortográfica al nuevo comentario antes de unirlo
+                      const obsNuevaLimpia = corregirOrtografiaIA(observaciones[id] || '');
+                      const obsNuevas = obsNuevaLimpia ? `G${grupo}: ${obsNuevaLimpia}` : '';
 
-                      // Motor de Inteligencia Algorítmica (Detección Semántica / Lógica Difusa)
-                      const todasObs = [obsViejas, obsNuevas].filter(Boolean).sort((a, b) => b.length - a.length);
-                      const unicas = [];
-                      todasObs.forEach(curr => {
-                        // Si la similitud con una observación ya aceptada es > 65%, descartar por redundante
-                        const esSimil = unicas.some(larga => {
-                          const sim = calcularSimilitudIA(larga, curr);
-                          const esSub = larga.toLowerCase().includes(curr.toLowerCase());
-                          return sim > 0.65 || esSub;
-                        });
-                        if (!esSimil) unicas.push(curr);
-                      });
+                      // Motor de Unificación Centralizado v6.2
+                      const textoAUnificar = [obsViejas, obsNuevas].filter(Boolean).join(' | ');
+                      const finalObs = unificarComentariosIA(textoAUnificar);
 
-                      const combined = unicas.join(' | ');
-
-                      return f.nombre + (combined ? ` (${combined})` : '');
+                      return f.nombre + (finalObs ? ` (${finalObs})` : '');
                     }).join(' | ');
 
                     // Construimos la estructura JSON del grupo que reporta
