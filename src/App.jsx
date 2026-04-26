@@ -207,8 +207,8 @@ const unificarComentariosIA = (texto) => {
     }
   });
 
-  // Re-ensamblar conservando los prefijos intactos
-  return unificados.join(' | ');
+  // Re-ensamblar limpiando los prefijos para una lectura más cómoda en pantalla sin indicar el grupo
+  return unificados.map(p => p.replace(/^(?:G\d+|General)\s*[:\-]\s*/i, '').trim()).join(' | ');
 };
 
 const limpiarFallasIA = (fallasStr) => {
@@ -257,10 +257,10 @@ const limpiarFallasIA = (fallasStr) => {
                 });
 
                 if (!duplicate) {
-                    cleanObsParts.push(partOriginal);
-                } else if (partOriginal.length > duplicate.length) {
+                    cleanObsParts.push(partPuro);
+                } else if (partPuro.length > duplicate.length) {
                     const idx = cleanObsParts.indexOf(duplicate);
-                    cleanObsParts[idx] = partOriginal;
+                    cleanObsParts[idx] = partPuro;
                 }
             });
 
