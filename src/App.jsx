@@ -1240,7 +1240,8 @@ function App() {
     try {
       const grupoActual = session.grupo || '1';
       const grupoPrefix = `G${grupoActual}:`;
-      const opNames = (registro.operador || '').split(', ');
+      // v6.9: Separador oficial es |
+      const opNames = (registro.operador || '').split(/\s*\|\s*/);
       
       // Verificamos si el grupo actual ya participó
       const yaTieneOperador = opNames.some(n => n.includes(grupoPrefix));
@@ -1250,18 +1251,14 @@ function App() {
         showConfirm({
           type: 'prompt',
           title: `Firma de Recepción (Grupo ${grupoActual})`,
-          message: `Vas a generar el PDF desde un grupo distinto al original.\n\nPor favor, ingresa el nombre del Operador que FIRMARÁ la recepción en el PDF:`,
-          placeholder: 'Nombre del Operador Receptor...',
-          confirmText: 'Generar PDF con esta Firma',
+          message: `Vas a generar el PDF desde un grupo distinto al del reporte original.\n\nPor favor, ingresa el nombre del Operador que FIRMARÁ la recepción del equipo:`,
+          placeholder: 'Escribe el nombre aquí (o deja en blanco)...',
+          confirmText: 'Generar PDF',
           onConfirm: async (nombreIngresado) => {
-            if (!nombreIngresado || nombreIngresado.trim().length < 3) {
-              return addToast("❌ Nombre inválido.", "error");
-            }
-            
-            // Creamos una versión temporal del registro SOLO para el renderizado del PDF
+            // Permitimos que quede en blanco para firmar físicamente
             const registroTemporal = {
               ...registro,
-              operador_temporal_pdf: nombreIngresado.trim(),
+              operador_temporal_pdf: nombreIngresado ? nombreIngresado.trim() : ' ',
               supervisor_temporal_pdf: session.nombre || 'Supervisor'
             };
             
@@ -1380,7 +1377,11 @@ function App() {
 
       const grupoActual = session.grupo || '1';
       // Usamos el nombre temporal si existe, sino el original filtrado
-      const opNameFiltered = registro.operador_temporal_pdf || (registro.detalles_grupos || {})[`G${grupoActual}`]?.operador || (registro.operador || '').split(', ').find(n => n.includes(`G${grupoActual}:`))?.replace(`G${grupoActual}:`, '').trim() || 'N/A';
+      const opNameFiltered = typeof registro.operador_temporal_pdf !== 'undefined'
+          ? registro.operador_temporal_pdf
+          : ((registro.detalles_grupos || {})[`G${grupoActual}`]?.operador || (registro.operador || '').split(/\s*\|\s*/).find(n => n.includes(`G${grupoActual}:`))?.replace(`G${grupoActual}:`, '').trim() || '');
+      
+      // El supervisor OBLIGATORIAMENTE es el que está logeado (si es quien genera el PDF de entrega)
       const supNameFiltered = registro.supervisor_temporal_pdf || session.nombre || 'Supervisor';
 
       const signY = doc.lastAutoTable.finalY + 35;
