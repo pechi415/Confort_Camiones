@@ -1,7 +1,7 @@
 // VERSION_TAG: 1.4.5_ULTRA_COMPACT_FIX_FORCE
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import './industrial-v3.css';
-import { LayoutDashboard, Zap, FileText, Blocks, ClipboardList, ShieldAlert, ShieldCheck, MonitorCheck, PlusCircle, Trash2, Edit3, Settings, Shield, Unlock, LockKeyhole, Lock, RefreshCcw, Users, AlertTriangle, CheckCircle2, Wrench, Activity, Truck, Search, Hourglass, SearchCheck, Award, FileSpreadsheet, MapPin, Calendar, Siren, AlertCircle, Info, History, ChevronUp } from 'lucide-react';
+import { LayoutDashboard, Zap, FileText, Blocks, ClipboardList, ShieldAlert, ShieldCheck, MonitorCheck, PlusCircle, Trash2, Edit3, Settings, Shield, Unlock, LockKeyhole, Lock, RefreshCcw, Users, AlertTriangle, CheckCircle2, Wrench, Activity, Truck, Search, Hourglass, SearchCheck, Award, FileSpreadsheet, MapPin, Calendar, Siren, AlertCircle, Info, History, ChevronUp, LogOut } from 'lucide-react';
 
 import { supabase } from './supabaseClient';
 import { jsPDF } from 'jspdf';
@@ -1762,9 +1762,9 @@ function App() {
             {activeTab === 'cola' && 'Cola de Priorización Taller'}
             {activeTab === 'historial' && 'Historial de Mantenimientos'}
           </h1>
-          <div className="user-profile">
+          <div className="user-profile" style={{ display: 'flex', alignItems: 'center' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
-              <div style={{ textAlign: 'right' }}>
+              <div style={{ textAlign: 'right' }} className="desktop-only">
                 <div style={{ fontWeight: '700' }}>{session?.nombre || 'Usuario'}</div>
                 <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Mina {session?.mina || 'N/A'}</div>
               </div>
@@ -1777,6 +1777,27 @@ function App() {
                 {(session?.nombre || 'U').charAt(0).toUpperCase()}
               </div>
             </div>
+            
+            {/* Botón Logout Rápido para Móviles (v1.9.60) */}
+            <button 
+              className="mobile-only" 
+              onClick={handleLogout}
+              style={{
+                background: 'rgba(239, 68, 68, 0.1)',
+                border: '1px solid rgba(239, 68, 68, 0.2)',
+                color: '#ef4444',
+                padding: '0.6rem',
+                borderRadius: '10px',
+                marginLeft: '1rem',
+                cursor: 'pointer',
+                display: 'flex',
+                alignItems: 'center',
+                justifyContent: 'center'
+              }}
+              title="Cerrar Sesión"
+            >
+              <LogOut size={20} />
+            </button>
           </div>
         </header>
 
