@@ -617,11 +617,9 @@ function App() {
   };
 
   const handleObsChange = (id, text) => {
-  const handleObsChange = (id, text) => {
     // v5.7: Corrección proactiva (Espacio, Punto o palabras clave de 5+ letras como EStan)
     const textoCorregido = (text.endsWith(' ') || text.endsWith('.') || text.length >= 5) ? corregirOrtografiaIA(text) : text;
     setObservaciones(prev => ({ ...prev, [id]: textoCorregido }));
-  };
   };
 
   // Calculadora...
