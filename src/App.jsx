@@ -2095,10 +2095,11 @@ function App() {
                 display: 'flex',
                 gap: '1rem',
                 overflowX: 'auto',
-                paddingBottom: '1.5rem',
+                paddingBottom: '0.5rem', // v9.4: Espacio reducido
                 flex: 1,
                 alignItems: 'flex-start',
                 scrollSnapType: 'x mandatory',
+                overflowY: 'hidden', // v9.4: Eliminar doble barra vertical
                 // v9.3: Efecto de desvanecimiento para indicar más contenido
                 WebkitMaskImage: 'linear-gradient(to right, black 95%, transparent 100%)',
                 maskImage: 'linear-gradient(to right, black 95%, transparent 100%)'
@@ -2358,8 +2359,8 @@ function App() {
               })}
             </div>
 
-            {/* v9.3: Indicadores visibles en PC también para guiar el scroll */}
-            <div className="kanban-indicators" style={{ marginTop: '1.5rem' }}>
+            {/* v9.4: Espacio reducido para compactar el diseño */}
+            <div className="kanban-indicators" style={{ marginTop: '0.5rem' }}>
               {columnasKanban.map((_, i) => (
                 <div key={i} className={`indicator-dot ${currentKanbanCol === i ? 'active' : ''}`} />
               ))}
