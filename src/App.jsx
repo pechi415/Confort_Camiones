@@ -2154,15 +2154,15 @@ function App() {
                           className="kanban-card-header"
                           onClick={() => setExpandedCardId(expandedCardId === camion.id ? null : camion.id)}
                           style={{ 
-                            padding: '0.6rem 0.4rem', 
+                            padding: '0.6rem 0.5rem', 
                             display: 'flex', 
                             flexWrap: 'wrap', 
                             alignItems: 'center', 
-                            gap: '0.2rem'
+                            gap: '0.6rem' // v9.1: Espacio aumentado para evitar elementos pegados
                           }}
                         >
-                          <Truck size={16} color="var(--primary-red)" style={{ flexShrink: 0 }} />
-                          <strong style={{ fontSize: '1.15rem', color: 'var(--primary-black)', marginRight: '0.1rem', flexShrink: 0 }}>{camion.flota}</strong>
+                          <Truck size={18} color="var(--primary-red)" style={{ flexShrink: 0 }} />
+                          <strong style={{ fontSize: '1.2rem', color: 'var(--primary-black)', margin: '0 0.2rem', flexShrink: 0 }}>{camion.flota}</strong>
                           
                           {camion.consenso > 1 && (
                             <div title={`Consenso de ${camion.consenso} grupos`} style={{ background: '#eff6ff', color: '#2563eb', padding: '0.1rem 0.2rem', borderRadius: '4px', fontSize: '0.65rem', fontWeight: 'bold', display: 'flex', alignItems: 'center', gap: '0.1rem', border: '1px solid #dbeafe', flexShrink: 0 }}>
