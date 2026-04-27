@@ -3376,7 +3376,6 @@ function App() {
                            flexShrink: 0 
                          }}></span>
                          {f.falla}
-                         <span style={{ marginLeft: 'auto', fontSize: '0.7rem', color: '#64748b', background: 'rgba(0,0,0,0.05)', padding: '0.1rem 0.4rem', borderRadius: '6px' }}>{f.impacto} pts</span>
                       </div>
                       {f.obs !== '-' && (
                         <div style={{ 
