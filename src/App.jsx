@@ -675,9 +675,14 @@ function App() {
   };
 
   const handleObsChange = (id, text) => {
-    // v5.7: Corrección proactiva (Espacio, Punto o palabras clave de 5+ letras como EStan)
-    const textoCorregido = (text.endsWith(' ') || text.endsWith('.') || text.length >= 5) ? corregirOrtografiaIA(text) : text;
-    setObservaciones(prev => ({ ...prev, [id]: textoCorregido }));
+    // v8.3: Corrección instantánea fluida
+    let final = text;
+    if (text.endsWith(' ') || text.endsWith('.')) {
+      final = corregirOrtografiaIA(text);
+    } else if (text.length === 1) {
+      final = text.toUpperCase();
+    }
+    setObservaciones(prev => ({ ...prev, [id]: final }));
   };
 
   // Calculadora...
@@ -1087,9 +1092,14 @@ function App() {
   };
 
   const handleObsChangeEdit = (id, text) => {
-    // v5.7: Corrección proactiva (Espacio, Punto o palabras clave de 5+ letras como EStan)
-    const textoCorregido = (text.endsWith(' ') || text.endsWith('.') || text.length >= 5) ? corregirOrtografiaIA(text) : text;
-    setObservacionesEdit(prev => ({ ...prev, [id]: textoCorregido }));
+    // v8.3: Corrección instantánea fluida en Modal
+    let final = text;
+    if (text.endsWith(' ') || text.endsWith('.')) {
+      final = corregirOrtografiaIA(text);
+    } else if (text.length === 1) {
+      final = text.toUpperCase();
+    }
+    setObservacionesEdit(prev => ({ ...prev, [id]: final }));
   };
 
   const guardarEdicionAvanzada = async () => {
@@ -2887,8 +2897,12 @@ function App() {
                   className="input-field"
                   placeholder="Nombre del operador"
                   value={operador}
-                  onChange={(e) => setOperador(e.target.value)}
-                  onBlur={(e) => setOperador(normalizarNombre(e.target.value))}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    // v8.3: Capitalización instantánea (Proper Case) letra a letra
+                    const capitalized = val.replace(/(^\w|\s\w)/g, m => m.toUpperCase());
+                    setOperador(capitalized);
+                  }}
                 />
               </div>
               
@@ -3577,8 +3591,12 @@ function App() {
                         type="text"
                         className="input-field"
                         value={operadorEdit}
-                        onChange={e => setOperadorEdit(e.target.value)}
-                        onBlur={e => setOperadorEdit(normalizarNombre(e.target.value))}
+                        onChange={e => {
+                          const val = e.target.value;
+                          // v8.3: Capitalización instantánea (Proper Case) letra a letra en Modal
+                          const capitalized = val.replace(/(^\w|\s\w)/g, m => m.toUpperCase());
+                          setOperadorEdit(capitalized);
+                        }}
                         placeholder={editingGroupContext === 'General' ? "Nombres de todos los conductores..." : "Nombre del conductor para este grupo..."}
                         style={{ background: 'rgba(255,255,255,0.5)', border: '1px solid rgba(0,0,0,0.1)' }}
                       />
