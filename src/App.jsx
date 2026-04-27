@@ -2363,11 +2363,11 @@ function App() {
             <style>
               {`
                 @media (max-width: 768px) {
-                  /* v10.5: Ancho al 75% para máxima legibilidad del reloj */
+                  /* v10.6: Regreso al ancho del 60% solicitado por el usuario */
                   .kanban-column { 
-                    min-width: 75vw !important; 
-                    width: 75vw !important; 
-                    max-width: 75vw !important;
+                    min-width: 60vw !important; 
+                    width: 60vw !important; 
+                    max-width: 60vw !important;
                   }
                 }
               `}

@@ -329,8 +329,8 @@ h1, h2, h3, h4, h5, h6 {
 }
 
 .kanban-column {
-  flex: 1 0 280px; /* v10.5: Ancho aumentado para evitar saltos de línea */
-  min-width: 280px;
+  flex: 1 0 260px; /* v10.6: Punto exacto solicitado por el usuario */
+  min-width: 260px;
   background: rgba(255, 255, 255, 0.12);
   backdrop-filter: blur(18px);
   -webkit-backdrop-filter: blur(18px);
