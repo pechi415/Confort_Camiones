@@ -844,7 +844,8 @@ function App() {
       prev.map(c => {
         if (c.id.toString() === idStr) {
           const updates = { ...c, estado: nuevoEstado };
-          if (nuevoEstado === 'evaluar' && !c.ingreso_evaluar_at) {
+          // v8.4: Inicio de ciclo flexible (se activa al entrar a Evaluar, Evaluados o Taller)
+          if (['evaluar', 'evaluados', 'taller'].includes(nuevoEstado) && !c.ingreso_evaluar_at) {
             updates.ingreso_evaluar_at = new Date().toISOString();
           }
           return updates;
@@ -856,7 +857,7 @@ function App() {
     // Persistencia Oficial a la Nube (Asíncrono en segundo plano)
     const dbUpdates = { estado: nuevoEstado };
     const targetCamion = camionesRegistrados.find(c => c.id.toString() === idStr);
-    if (nuevoEstado === 'evaluar' && targetCamion && !targetCamion.ingreso_evaluar_at) {
+    if (['evaluar', 'evaluados', 'taller'].includes(nuevoEstado) && targetCamion && !targetCamion.ingreso_evaluar_at) {
       dbUpdates.ingreso_evaluar_at = new Date().toISOString();
     }
     // Actualización Optimista (v2.0.2)
