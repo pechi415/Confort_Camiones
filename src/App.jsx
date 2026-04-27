@@ -2086,11 +2086,12 @@ function App() {
               className="kanban-board"
               onScroll={(e) => {
                  const scrollLeft = e.target.scrollLeft;
-                 // v10.0: Cálculo dinámico según el ancho real de la columna (funciona en PC y Móvil)
-                 const col = e.target.querySelector('.kanban-column');
-                 if (col) {
-                   const colWidth = col.offsetWidth + 16; // ancho + gap
-                   const index = Math.round(scrollLeft / colWidth);
+                 const scrollWidth = e.target.scrollWidth;
+                 const clientWidth = e.target.clientWidth;
+                 // v10.2: Sincronización robusta basada en porcentaje (0% a 100%)
+                 if (scrollWidth > clientWidth) {
+                   const maxScroll = scrollWidth - clientWidth;
+                   const index = Math.round((scrollLeft / maxScroll) * 5);
                    if (index >= 0 && index <= 5) setCurrentKanbanCol(index);
                  }
               }}
@@ -2098,13 +2099,14 @@ function App() {
                 display: 'flex',
                 gap: '1rem',
                 overflowX: 'auto',
-                // v10.1: Área de interacción táctil extendida para el pulgar
-                paddingBottom: '80px', 
+                // v10.2: Área de interacción táctil extendida masivamente para el pulgar
+                paddingBottom: '120px', 
                 flex: 1,
                 alignItems: 'flex-start',
                 scrollSnapType: 'x mandatory',
+                minHeight: 'calc(100vh - 250px)',
                 height: 'fit-content',
-                maxHeight: 'calc(100vh - 350px)',
+                maxHeight: 'calc(100vh - 250px)',
                 overflowY: 'auto', 
                 overflowX: 'auto',
                 WebkitMaskImage: 'linear-gradient(to right, black 95%, transparent 100%)',
