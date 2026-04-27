@@ -2156,9 +2156,9 @@ function App() {
                           style={{ 
                             padding: '0.6rem 0.5rem', 
                             display: 'flex', 
-                            flexWrap: 'wrap', 
+                            flexWrap: 'nowrap', // v9.2: Evitar que el reloj se baje
                             alignItems: 'center', 
-                            gap: '0.6rem' // v9.1: Espacio aumentado para evitar elementos pegados
+                            gap: '0.4rem' // v9.2: Espacio equilibrado
                           }}
                         >
                           <Truck size={18} color="var(--primary-red)" style={{ flexShrink: 0 }} />
