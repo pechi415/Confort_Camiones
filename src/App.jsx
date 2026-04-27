@@ -2085,26 +2085,27 @@ function App() {
             <div 
               className="kanban-board"
               onScroll={(e) => {
-                const scrollLeft = e.target.scrollLeft;
-                const width = e.target.clientWidth;
-                // Calculamos el índice basado en el nuevo ancho de columna (240px + gap)
-                const index = Math.round(scrollLeft / 256); 
-                if (index >= 0 && index <= 5) setCurrentKanbanCol(index);
+                 const scrollLeft = e.target.scrollLeft;
+                 // v10.0: Cálculo dinámico según el ancho real de la columna (funciona en PC y Móvil)
+                 const col = e.target.querySelector('.kanban-column');
+                 if (col) {
+                   const colWidth = col.offsetWidth + 16; // ancho + gap
+                   const index = Math.round(scrollLeft / colWidth);
+                   if (index >= 0 && index <= 5) setCurrentKanbanCol(index);
+                 }
               }}
               style={{
                 display: 'flex',
                 gap: '1rem',
                 overflowX: 'auto',
-                paddingBottom: '0.8rem', // v9.6: Reducido para acercar la barra a las pilas
+                paddingBottom: '0.8rem', 
                 flex: 1,
                 alignItems: 'flex-start',
                 scrollSnapType: 'x mandatory',
-                // v9.7: Altura dinámica (fit-content) con máximo para que el scroll sea "flotante" pero pegado a las pilas
                 height: 'fit-content',
                 maxHeight: 'calc(100vh - 350px)',
                 overflowY: 'auto', 
                 overflowX: 'auto',
-                // v9.3: Efecto de desvanecimiento para indicar más contenido
                 WebkitMaskImage: 'linear-gradient(to right, black 95%, transparent 100%)',
                 maskImage: 'linear-gradient(to right, black 95%, transparent 100%)'
               }}
@@ -2143,11 +2144,8 @@ function App() {
                         onDragStart={(e) => handleDragStart(e, camion.id)}
                         style={{
                           borderLeft: `4px solid ${camion.atencion === 'CRÍTICA' ? '#ef4444' : camion.atencion === 'ALTA' ? 'var(--secondary-yellow)' : '#10b981'}`,
-                          // v8.8: Separación más amplia (menos contacto) entre hojas
                           marginTop: isExpanded ? '0.8rem' : (shouldStack ? '-1.5rem' : '0.5rem'),
-                          // v8.6: Inversión de z-index para que la primera de la lista esté "arriba"
                           zIndex: isExpanded ? 1100 : (camionesColumna.length - index),
-                          // v8.7: Restauración Liquid Glass (Opacidad baja + Blur ultra fuerte)
                           background: 'rgba(255, 255, 255, 0.45)',
                           backdropFilter: 'blur(20px) saturate(180%)',
                           border: '1px solid rgba(255, 255, 255, 0.4)',
@@ -2164,9 +2162,9 @@ function App() {
                           style={{ 
                             padding: '0.6rem 0.5rem', 
                             display: 'flex', 
-                            flexWrap: 'nowrap', // v9.2: Evitar que el reloj se baje
+                            flexWrap: 'nowrap', 
                             alignItems: 'center', 
-                            gap: '0.4rem' // v9.2: Espacio equilibrado
+                            gap: '0.4rem' 
                           }}
                         >
                           <Truck size={18} color="var(--primary-red)" style={{ flexShrink: 0 }} />
@@ -2182,7 +2180,6 @@ function App() {
                           {camion.atencion === 'ALTA' && <AlertTriangle size={17} color="#eab308" strokeWidth={2} style={{ flexShrink: 0 }} />}
                           {camion.atencion === 'NORMAL' && <CheckCircle2 size={17} color="#10b981" strokeWidth={2} style={{ flexShrink: 0 }} />}
                           
-                          {/* v8.5: Cronómetro de Ciclo en la Tarjeta */}
                           <div style={{ 
                             marginLeft: 'auto', 
                             display: 'flex', 
@@ -2218,7 +2215,6 @@ function App() {
                               <span style={{ marginLeft: '0.2rem' }}>Diagnóstico</span>
                             </button>
 
-                            {/* Restaurando Botón de Pendientes de Garantía */}
                             {camion.estado === 'garantia' && camion.motivo_garantia && (
                               <button
                                 onClick={() => setSelectedGarantiaDetails(camion)}
@@ -2254,7 +2250,6 @@ function App() {
                               </button>
                             )}
 
-                            {/* Restaurando Flujo de Feedback: Consenso de 3 Grupos para Liberación */}
                             {camion.estado === 'feedback' && (
                               <div style={{ marginTop: '0.2rem', marginBottom: '0.8rem', display: 'flex', flexDirection: 'column', gap: '0.6rem' }}>
                                 <label style={{ fontSize: '0.65rem', fontWeight: 'bold', color: '#6b7280', marginBottom: '-0.3rem', marginLeft: '0.2rem' }}>Vistos Buenos (Consenso):</label>
@@ -2290,7 +2285,6 @@ function App() {
                                   ))}
                                 </div>
 
-                                {/* El botón de liberación solo aparece con CONSENSO (2 o más grupos) */}
                                 {([camion.aprobado_g1, camion.aprobado_g2, camion.aprobado_g3].filter(Boolean).length >= 2) ? (
                                   <button
                                     onClick={() => {
@@ -2363,7 +2357,31 @@ function App() {
               })}
             </div>
 
-            {/* v9.9: Puntos restaurados para móviles (vertical) */}
+            <style>
+              {`
+                @media (max-width: 768px) {
+                  .kanban-column { min-width: 65vw !important; }
+                  /* v10.0: Indicadores ergonómicos en la parte inferior para acceso con el pulgar */
+                  .kanban-indicators {
+                    position: fixed !important;
+                    bottom: 85px !important;
+                    left: 0;
+                    right: 0;
+                    z-index: 6000 !important;
+                    background: rgba(255, 255, 255, 0.2);
+                    backdrop-filter: blur(8px);
+                    padding: 0.5rem !important;
+                    margin: 0 !important;
+                    width: fit-content;
+                    margin-left: auto !important;
+                    margin-right: auto !important;
+                    border-radius: 20px;
+                    border: 1px solid rgba(255, 255, 255, 0.3);
+                    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+                  }
+                }
+              `}
+            </style>
             <div className="kanban-indicators" style={{ marginTop: '0.5rem' }}>
               {columnasKanban.map((_, i) => (
                 <div key={i} className={`indicator-dot ${currentKanbanCol === i ? 'active' : ''}`} />
@@ -2544,7 +2562,6 @@ function App() {
                               </div>
                             </button>
                             
-                            {/* Botón Eliminar Protegido para Móviles (v1.9.43) */}
                             {session.role === 'admin' && (
                               <button
                                 className={`mobile-only ${confirmDeleteId === registro.id ? 'btn-action-confirm' : ''}`}
@@ -2648,7 +2665,7 @@ function App() {
                   background: 'rgba(227, 25, 55, 0.75)', 
                   backdropFilter: 'blur(10px)', 
                   WebkitBackdropFilter: 'blur(10px)',
-                  border: '1px solid rgba(255, 255, 255, 0.3)',
+                  border: '1px solid rgba(255,255,255,0.3)',
                   padding: '0.6rem 1.2rem', 
                   fontSize: '0.85rem',
                   boxShadow: '0 4px 15px rgba(227, 25, 55, 0.2)',
@@ -3074,11 +3091,9 @@ function App() {
                   const camionExistente = camionesRegistrados.find(c => c.flota === flota && c.estado !== 'liberado');
 
                   if (camionExistente) {
-                    // Normalización de Nombres v3.0
                     const opLimpio = normalizarNombre(operador);
                     const supLimpio = normalizarNombre(session.nombre);
 
-                    // 1. Integración de Grupos, Conductores y Supervisores
                     const listaGrupos = Array.from(new Set([...camionExistente.grupo.split(/\s*[,|]\s*/), grupo])).sort();
 
                     const nuevoRegSup = `G${grupo}: ${supLimpio}`;
@@ -3091,8 +3106,6 @@ function App() {
 
                     const numGrupos = listaGrupos.length;
 
-                    // 2. Integración de Fallas y Puntos Base
-                    // Identificamos IDs de fallas nuevas y existentes para desduplicar puntos
                     const fallasActualesIds = new Set();
                     fallas.forEach(f => {
                       if (camionExistente.fallas.includes(f.nombre)) fallasActualesIds.add(f.id);
@@ -3105,12 +3118,10 @@ function App() {
                       return acc + (f ? f.impacto : 0);
                     }, 0);
 
-                    // 3. Algoritmo de Prioridad Escalable (Bono Consenso)
                     const bonoConsenso = (numGrupos - 1) * 30;
                     const puntosFinales = puntosBase + bonoConsenso;
                     const atencionLabel = puntosFinales > 50 ? 'CRÍTICA' : puntosFinales > 20 ? 'ALTA' : 'NORMAL';
 
-                    // 4. Construcción del string de fallas consolidado (Preservando comentarios anteriores)
                     const obsAnteriores = {};
                     if (camionExistente.fallas) {
                       const rawFallas = camionExistente.fallas;
@@ -3122,7 +3133,6 @@ function App() {
                         const char = rawFallas[i];
                         if (char === '(') depth++;
                         if (char === ')') depth--;
-                        // v6.4: Usar | en lugar de coma
                         if (depth === 0 && char === '|') {
                           parts.push(rawFallas.substring(lastSplit, i).trim());
                           lastSplit = i + 1;
@@ -3144,21 +3154,17 @@ function App() {
                     const fallasConsolidadas = Array.from(todasFallasIds).map(id => {
                       const f = fallas.find(x => x.id === id);
                       const obsViejas = obsAnteriores[id] || '';
-                      // Aplicar limpieza ortográfica al nuevo comentario antes de unirlo
                       const obsNuevaLimpia = corregirOrtografiaIA(observaciones[id] || '');
                       const obsNuevas = obsNuevaLimpia ? `G${grupo}: ${obsNuevaLimpia}` : '';
 
-                      // Motor de Unificación Centralizado v6.2
                       const textoAUnificar = [obsViejas, obsNuevas].filter(Boolean).join(' | ');
                       const finalObs = unificarComentariosIA(textoAUnificar);
 
                       return f.nombre + (finalObs ? ` (${finalObs})` : '');
                     }).join(' | ');
 
-                    // Construimos la estructura JSON del grupo que reporta
                     const fallasStruct = {};
                     Object.keys(selectedDanos).forEach(id => {
-                        // IA: Corrección de Ortografía Automática v3.5
                         fallasStruct[id] = corregirOrtografiaIA(observaciones[id] || '');
                     });
                     const detallesAnteriores = camionExistente.detalles_grupos || {};
@@ -3181,7 +3187,7 @@ function App() {
                       fallas: fallasConsolidadas,
                       puntos: puntosFinales,
                       atencion: atencionLabel,
-                      consenso: numGrupos, // Nuevo campo para UI
+                      consenso: numGrupos,
                       detalles_grupos: detallesNuevos
                     };
 
@@ -3192,12 +3198,10 @@ function App() {
                     addToast(`✅ Reporte integrado con éxito para el camión ${flota}.`);
 
                   } else {
-                    // Lógica de Inserción Normal (Primer reporte)
                     const atencionLabel = totalImpacto > 50 ? 'CRÍTICA' : totalImpacto > 20 ? 'ALTA' : 'NORMAL';
 
                     const fallasDetalladas = Object.keys(selectedDanos).map(id => {
                       const nombreFalla = fallas.find(f => f.id === id)?.nombre;
-                      // IA: Corrección de Ortografía Automática v3.5
                       const comentarioLimpio = corregirOrtografiaIA(observaciones[id] || '');
                       const comentario = comentarioLimpio ? ` (G${grupo}: ${comentarioLimpio})` : '';
                       return `${nombreFalla}${comentario}`;
@@ -3402,18 +3406,27 @@ function App() {
               top: 0, left: 0, right: 0, bottom: 0,
               backgroundColor: 'rgba(0,0,0,0.4)',
               backdropFilter: 'blur(10px)',
-              zIndex: 9999, // Super prioridad sobre la barra nav
+              zIndex: 9999,
               display: 'flex',
               alignItems: 'flex-start',
               justifyContent: 'center',
-              padding: '1.5rem 1.5rem 120px 1.5rem', // Margen inferior masivo para scroll
+              padding: '1.5rem 1.5rem 120px 1.5rem',
               overflowY: 'auto',
               WebkitOverflowScrolling: 'touch'
             }}
             onClick={() => setSelectedReport(null)}
           >
+            <style>{`
+              @media (max-width: 768px) {
+                .modal-content { 
+                  max-width: 65vw !important; 
+                  width: 65vw !important; 
+                  min-width: 65vw !important;
+                }
+              }
+            `}</style>
             <div
-              className="card"
+              className="card modal-content"
               style={{
                 maxWidth: '500px',
                 width: '100%',
