@@ -204,10 +204,10 @@ const unificarComentariosIA = (texto) => {
 
   partesRaw.forEach(parteOriginal => {
     // Limpiamos el prefijo G1/G2 solo para comparar similitud, sin afectar la original
-    const textoPuro = parteOriginal.replace(/^(?:G[1-3]|General):\s*/i, '').trim();
+    const textoPuro = parteOriginal.replace(/^(?:G\w+|General)\s*[:\-]\s*/i, '').trim();
     
     let esRedundante = unificados.some(yaUnificadoOriginal => {
-      const yaUnificadoPuro = yaUnificadoOriginal.replace(/^(?:G\d+|General)\s*[:\-]\s*/i, '').trim();
+      const yaUnificadoPuro = yaUnificadoOriginal.replace(/^(?:G\w+|General)\s*[:\-]\s*/i, '').trim();
       
       // Si la parte actual ya está contenida en algo que ya unificamos, es redundante
       if (yaUnificadoPuro.toLowerCase().includes(textoPuro.toLowerCase())) return true;
@@ -224,7 +224,7 @@ const unificarComentariosIA = (texto) => {
 
   // Re-ensamblar limpiando los prefijos para una lectura más cómoda en pantalla sin indicar el grupo
   // v6.3: Limpieza Global (Elimina G1:, G2: etc. incluso si no están al inicio por arrastre histórico)
-  return unificados.map(p => p.replace(/(?:G\d+|General)\s*[:\-]\s*/gi, '').trim()).join(' | ');
+  return unificados.map(p => p.replace(/(?:G\w+|General)\s*[:\-]\s*/gi, '').trim()).join(' | ');
 };
 
 const limpiarFallasIA = (fallasStr) => {
@@ -970,7 +970,12 @@ function App() {
 
   const prepararEdicion = (camion) => {
     setCamionEditando(camion);
-    const context = session.role === 'admin' ? 'General' : `G${session.grupo}`;
+    // v8.2: Normalización del contexto de grupo para evitar "GG1" o "Gundefined"
+    let context = 'General';
+    if (session.role !== 'admin') {
+      const gRaw = session.grupo || '1';
+      context = gRaw.startsWith('G') ? gRaw : `G${gRaw}`;
+    }
     setEditingGroupContext(context);
     sincronizarModal(camion, context);
   };
@@ -1120,8 +1125,9 @@ function App() {
           else if (!detallesFinales[gMatch[1].toUpperCase()]) opsSet.add(o.trim()); // Legacy con etiqueta que no esté en el JSON
       });
       Object.keys(detallesFinales).forEach(g => {
-          // v8.1: Blindaje contra claves corruptas o undefined
-          if (g && g !== 'undefined' && g !== 'null' && detallesFinales[g].operador) {
+          // v8.2: Filtrado estricto de grupos válidos para evitar contaminación (G1, G2, G3, General, Mantenimiento)
+          const gValido = /^(G\d+|General|Mantenimiento)$/i.test(g);
+          if (gValido && detallesFinales[g].operador) {
               opsSet.add(`${g}: ${detallesFinales[g].operador}`);
           }
       });
@@ -1178,8 +1184,9 @@ function App() {
 
       // 2. Incorporar datos frescos de los Reportes de Grupo (JSON)
       Object.keys(detallesFinales).forEach(g => {
-          // v8.1: Blindaje contra claves corruptas en reporte de fallas
-          if (g && g !== 'undefined' && g !== 'null') {
+          // v8.2: Filtrado estricto de grupos para evitar Gundefined en fallas
+          const gValido = /^(G\d+|General|Mantenimiento)$/i.test(g);
+          if (gValido) {
               const gFallas = detallesFinales[g].fallas;
               if (gFallas) {
                   Object.keys(gFallas).forEach(fId => {
