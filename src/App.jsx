@@ -2362,6 +2362,7 @@ function App() {
 
             <style>
               {`
+                  .kanban-column { min-width: 60vw !important; width: 60vw !important; }
                   /* v10.1: Permitir que los gestos táctiles pasen a través de los indicadores hacia el tablero */
                   .kanban-indicators {
                     pointer-events: none; 
