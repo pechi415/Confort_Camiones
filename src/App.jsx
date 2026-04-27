@@ -2087,18 +2087,21 @@ function App() {
               onScroll={(e) => {
                 const scrollLeft = e.target.scrollLeft;
                 const width = e.target.clientWidth;
-                // Calculamos el índice basado en el nuevo ancho de columna (50vw)
-                const index = Math.round(scrollLeft / (width * 0.53)); // 0.5 + un pequeño margen para el gap
+                // Calculamos el índice basado en el nuevo ancho de columna (240px + gap)
+                const index = Math.round(scrollLeft / 256); 
                 if (index >= 0 && index <= 5) setCurrentKanbanCol(index);
               }}
               style={{
                 display: 'flex',
                 gap: '1rem',
                 overflowX: 'auto',
-                paddingBottom: '1rem',
+                paddingBottom: '1.5rem',
                 flex: 1,
                 alignItems: 'flex-start',
-                scrollSnapType: 'x mandatory'
+                scrollSnapType: 'x mandatory',
+                // v9.3: Efecto de desvanecimiento para indicar más contenido
+                WebkitMaskImage: 'linear-gradient(to right, black 95%, transparent 100%)',
+                maskImage: 'linear-gradient(to right, black 95%, transparent 100%)'
               }}
             >
               {columnasKanban.map(col => {
@@ -2355,7 +2358,8 @@ function App() {
               })}
             </div>
 
-            <div className="kanban-indicators mobile-only">
+            {/* v9.3: Indicadores visibles en PC también para guiar el scroll */}
+            <div className="kanban-indicators" style={{ marginTop: '1.5rem' }}>
               {columnasKanban.map((_, i) => (
                 <div key={i} className={`indicator-dot ${currentKanbanCol === i ? 'active' : ''}`} />
               ))}

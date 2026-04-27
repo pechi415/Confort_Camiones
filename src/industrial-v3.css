@@ -305,6 +305,29 @@ h1, h2, h3, h4, h5, h6 {
   border-color: rgba(227, 25, 55, 0.3);
 }
 
+.kanban-board {
+  scrollbar-width: thin;
+  scrollbar-color: rgba(227, 25, 55, 0.4) rgba(0, 0, 0, 0.05);
+}
+
+.kanban-board::-webkit-scrollbar {
+  height: 8px;
+}
+
+.kanban-board::-webkit-scrollbar-track {
+  background: rgba(0, 0, 0, 0.05);
+  border-radius: 10px;
+}
+
+.kanban-board::-webkit-scrollbar-thumb {
+  background: rgba(227, 25, 55, 0.4);
+  border-radius: 10px;
+}
+
+.kanban-board::-webkit-scrollbar-thumb:hover {
+  background: rgba(227, 25, 55, 0.6);
+}
+
 .kanban-column {
   flex: 1 0 240px; /* v9.0: Punto medio de ancho para balance perfecto */
   min-width: 240px;
