@@ -21,6 +21,10 @@ const fallas = [
   { id: 'otro', nombre: 'Otro', impacto: 0 },
 ];
 
+const reaccionarAcentos = (str) => {
+  return str.normalize("NFD").replace(/[\u0300-\u036f]/g, "");
+};
+
 // v3.0: Motor de IA de Trazabilidad - Normalización Semántica Avanzada
 const normalizarNombre = (n) => {
   if (!n) return '';
@@ -251,10 +255,11 @@ const limpiarFallasIA = (fallasStr) => {
 
         // v2.0.4: Motor de Extracción Progresiva (Prioriza Nombres de Items Conocidos)
         // Intentamos encontrar si el string empieza con algún nombre de la lista oficial
-        // v2.0.5: Motor de Extracción Proactiva con Soporte de Legado (Aliases)
+        // v2.0.6: Motor de Extracción Proactiva con Blindaje de Acentos
+        const textLimpio = reaccionarAcentos(text.toLowerCase());
         const itemEncontrado = fallas.find(f => 
-            text.toLowerCase().startsWith(f.nombre.toLowerCase()) || 
-            (f.aliases && f.aliases.some(alias => text.toLowerCase().startsWith(alias.toLowerCase())))
+            textLimpio.startsWith(reaccionarAcentos(f.nombre.toLowerCase())) || 
+            (f.aliases && f.aliases.some(alias => textLimpio.startsWith(reaccionarAcentos(alias.toLowerCase()))))
         );
         
         if (itemEncontrado) {
@@ -1011,7 +1016,11 @@ function App() {
           if (!p || p === '-') return;
           
           // v7.0: Motor de Emparejamiento de Precisión (No se deja engañar por paréntesis en nombres)
-          const fallaObj = fallas.find(f => p.toLowerCase().startsWith(f.nombre.toLowerCase()));
+          const tLimpio = reaccionarAcentos(p.toLowerCase());
+          const fallaObj = fallas.find(f => 
+            tLimpio.startsWith(reaccionarAcentos(f.nombre.toLowerCase())) ||
+            (f.aliases && f.aliases.some(alias => tLimpio.startsWith(reaccionarAcentos(alias.toLowerCase()))))
+          );
           
           if (fallaObj) {
             danos[fallaObj.id] = true;
@@ -1168,7 +1177,12 @@ function App() {
 
       const uniqueFallas = new Set();
       Object.keys(fallasMap).forEach(fNome => {
-          const fObj = fallas.find(f => f.nombre === fNome || fNome.includes(f.nombre));
+          const fLimpio = reaccionarAcentos(fNome.toLowerCase());
+          const fObj = fallas.find(f => 
+              reaccionarAcentos(f.nombre.toLowerCase()) === fLimpio || 
+              fLimpio.includes(reaccionarAcentos(f.nombre.toLowerCase())) ||
+              (f.aliases && f.aliases.some(alias => fLimpio.includes(reaccionarAcentos(alias.toLowerCase()))))
+          );
           if (fObj) {
               const realName = fObj.nombre;
               uniqueFallas.add(fObj.id);
@@ -3360,7 +3374,11 @@ function App() {
                   {limpiarFallasIA(selectedReport.fallas)
                     .map(f => {
                       // Buscamos el impacto oficial para ordenar
-                      const infoFalla = fallas.find(orig => orig.nombre.toLowerCase() === f.falla.toLowerCase());
+                      const fNombreLimpio = reaccionarAcentos(f.falla.toLowerCase());
+                      const infoFalla = fallas.find(orig => 
+                        reaccionarAcentos(orig.nombre.toLowerCase()) === fNombreLimpio ||
+                        (orig.aliases && orig.aliases.some(alias => reaccionarAcentos(alias.toLowerCase()) === fNombreLimpio))
+                      );
                       return { ...f, impacto: infoFalla ? infoFalla.impacto : 0 };
                     })
                     .sort((a, b) => b.impacto - a.impacto)
