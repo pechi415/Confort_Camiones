@@ -1276,7 +1276,11 @@ body {
 @media (min-width: 1025px) {
   .sidebar { display: flex !important; }
   .bottom-nav { display: none !important; }
-  .main-content { margin-left: 260px !important; width: calc(100% - 260px) !important; }
+  .main-content { 
+    margin-left: 0 !important; 
+    width: auto !important; 
+    flex: 1 !important;
+  }
   .desktop-landscape-view { display: block !important; }
   .mobile-portrait-view { display: none !important; }
 }
