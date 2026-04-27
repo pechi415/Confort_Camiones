@@ -1879,10 +1879,10 @@ function App() {
           </h1>
           <div className="user-profile" style={{ display: 'flex', alignItems: 'center' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
-              {/* v11.0: Botón de Actualización Rápida en Cabecera */}
+              {/* v11.1: Botón de Actualización Rápida (Solo Móvil) */}
               <button 
                 onClick={handleRefresh}
-                className="btn-refresh-header"
+                className="btn-refresh-header mobile-only"
                 title="Sincronizar Datos"
                 style={{
                   background: 'rgba(37, 99, 235, 0.1)',
