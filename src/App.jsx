@@ -1803,7 +1803,8 @@ function App() {
   }) : [];
 
   return (
-    <div className="app-container">
+    <>
+      <div className="app-container">
       {/* Sidebar */}
       <aside className="sidebar">
         <div className="brand">
@@ -4060,6 +4061,8 @@ function App() {
         </div>
       )}
 
+      </div>
+
       {/* Navegación Inferior (Solo Móvil) - Estilo Liquid Glass Ready */}
       <nav className="bottom-nav mobile-only">
         <a 
@@ -4115,7 +4118,7 @@ function App() {
           <ChevronUp size={24} />
         </button>
       )}
-    </div>
+    </>
   );
 }
 
