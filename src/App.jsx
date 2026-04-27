@@ -1124,7 +1124,10 @@ function App() {
       });
       operadorFinal = Array.from(opsSet).filter(Boolean).sort().join(' | ');
 
-      const fallasMap = {};
+      // v8.0: Motor de Consolidación por IDs (Elimina duplicidad por nombres/acentos)
+      const fallasMap = {}; // KEY: fId, VALUE: { G1: obs, G2: obs, ... }
+
+      // 1. Incorporar datos del string de fallas legado (Preservando comentarios existentes)
       if (camionEditando.fallas) {
           const rawFallas = camionEditando.fallas;
           const parts = [];
@@ -1132,83 +1135,81 @@ function App() {
           for (let i = 0; i < rawFallas.length; i++) {
               if (rawFallas[i] === '(') depth++;
               if (rawFallas[i] === ')') depth--;
-              // v6.1: Corregido separador a "|" (antes era ",")
               if (depth === 0 && rawFallas[i] === '|') {
                   parts.push(rawFallas.substring(lastSplit, i).trim());
                   lastSplit = i + 1;
               }
           }
           parts.push(rawFallas.substring(lastSplit).trim());
+
           parts.forEach(p => {
               if (!p || p === '-' || p.includes('Ficha Técnica')) return;
               const match = p.match(/^(.*?)(?:\s*\((.*?)\))?$/);
               if (match) {
                   const nombreRaw = match[1].trim();
-                  // Limpieza de seguridad: si el nombre trae restos de otras fallas por error previo
-                  const nombre = nombreRaw.split('|')[0].trim(); 
-                  const combined = match[2] || '';
-                  if (!fallasMap[nombre]) fallasMap[nombre] = {};
-                  if (combined) {
-                      combined.split(/\s*[|/]\s*/).forEach(seg => {
-                          const gMatch = seg.match(/^(G\d+|General)\s*[:\-]\s*(.*)$/i);
-                          if (gMatch && !detallesFinales[gMatch[1].toUpperCase()]) {
-                              fallasMap[nombre][gMatch[1].toUpperCase()] = gMatch[2] || '';
-                          } else if (!gMatch && seg.length > 1) {
-                              fallasMap[nombre]['General'] = seg;
-                          }
-                      });
+                  const tLimpio = reaccionarAcentos(nombreRaw.toLowerCase());
+                  // Buscamos el ID oficial de esta falla
+                  const fObj = fallas.find(f => 
+                      reaccionarAcentos(f.nombre.toLowerCase()) === tLimpio ||
+                      (f.aliases && f.aliases.some(alias => reaccionarAcentos(alias.toLowerCase()) === tLimpio)) ||
+                      tLimpio.includes(reaccionarAcentos(f.nombre.toLowerCase()))
+                  );
+
+                  if (fObj) {
+                      if (!fallasMap[fObj.id]) fallasMap[fObj.id] = {};
+                      const combined = match[2] || '';
+                      if (combined) {
+                          combined.split(/\s*[|/]\s*/).forEach(seg => {
+                              const gMatch = seg.match(/^(G\d+|General)\s*[:\-]\s*(.*)$/i);
+                              if (gMatch && !detallesFinales[gMatch[1].toUpperCase()]) {
+                                  fallasMap[fObj.id][gMatch[1].toUpperCase()] = gMatch[2] || '';
+                              } else if (!gMatch && seg.length > 1) {
+                                  if (!fallasMap[fObj.id]['General']) fallasMap[fObj.id]['General'] = seg;
+                              }
+                          });
+                      }
                   }
               }
           });
       }
 
+      // 2. Incorporar datos frescos de los Reportes de Grupo (JSON)
       Object.keys(detallesFinales).forEach(g => {
           const gFallas = detallesFinales[g].fallas;
           if (gFallas) {
               Object.keys(gFallas).forEach(fId => {
-                  const fallObj = fallas.find(f => f.id === fId);
-                  if (fallObj) {
-                      if (!fallasMap[fallObj.nombre]) fallasMap[fallObj.nombre] = {};
-                      fallasMap[fallObj.nombre][g] = gFallas[fId] || '';
+                  const fObj = fallas.find(f => f.id === fId);
+                  if (fObj) {
+                      if (!fallasMap[fObj.id]) fallasMap[fObj.id] = {};
+                      fallasMap[fObj.id][g] = gFallas[fId] || '';
                   }
               });
           }
       });
 
-      const uniqueFallas = new Set();
-      Object.keys(fallasMap).forEach(fNome => {
-          const fLimpio = reaccionarAcentos(fNome.toLowerCase());
-          const fObj = fallas.find(f => 
-              reaccionarAcentos(f.nombre.toLowerCase()) === fLimpio || 
-              fLimpio.includes(reaccionarAcentos(f.nombre.toLowerCase())) ||
-              (f.aliases && f.aliases.some(alias => fLimpio.includes(reaccionarAcentos(alias.toLowerCase()))))
-          );
+      // 3. Generar lista final unificada y recalcular puntos
+      const uniqueFallasIds = Object.keys(fallasMap);
+      uniqueFallasIds.forEach(fId => {
+          const fObj = fallas.find(f => f.id === fId);
           if (fObj) {
-              const realName = fObj.nombre;
-              uniqueFallas.add(fObj.id);
-              const obsMap = fallasMap[fNome];
+              const obsMap = fallasMap[fId];
               const segments = [];
               if (obsMap['General']) segments.push(obsMap['General']);
               ['G1', 'G2', 'G3'].forEach(g => {
-                  if (obsMap.hasOwnProperty(g)) {
+                  if (obsMap[g]) {
                       const note = obsMap[g];
                       if (note && note !== g) segments.push(`${g}: ${note}`);
                   }
               });
               
               if (segments.length > 0) {
-                  // Unificación de comentarios para evitar redundancia interna
                   const finalObs = unificarComentariosIA(segments.join(' | '));
-                  finalFallasItems.push(`${realName} (${finalObs})`);
+                  finalFallasItems.push(`${fObj.nombre} (${finalObs})`);
               } else {
-                  finalFallasItems.push(`${realName}`);
+                  finalFallasItems.push(`${fObj.nombre}`);
               }
+              totalPuntos += fObj.impacto;
           }
-      });
-      
-      Array.from(uniqueFallas).forEach(id => {
-          const f = fallas.find(x => x.id === id);
-          if (f) totalPuntos += f.impacto;
       });
     }
 
