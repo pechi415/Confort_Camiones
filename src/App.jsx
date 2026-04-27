@@ -1120,7 +1120,10 @@ function App() {
           else if (!detallesFinales[gMatch[1].toUpperCase()]) opsSet.add(o.trim()); // Legacy con etiqueta que no esté en el JSON
       });
       Object.keys(detallesFinales).forEach(g => {
-          if (detallesFinales[g].operador) opsSet.add(`${g}: ${detallesFinales[g].operador}`);
+          // v8.1: Blindaje contra claves corruptas o undefined
+          if (g && g !== 'undefined' && g !== 'null' && detallesFinales[g].operador) {
+              opsSet.add(`${g}: ${detallesFinales[g].operador}`);
+          }
       });
       operadorFinal = Array.from(opsSet).filter(Boolean).sort().join(' | ');
 
@@ -1175,15 +1178,18 @@ function App() {
 
       // 2. Incorporar datos frescos de los Reportes de Grupo (JSON)
       Object.keys(detallesFinales).forEach(g => {
-          const gFallas = detallesFinales[g].fallas;
-          if (gFallas) {
-              Object.keys(gFallas).forEach(fId => {
-                  const fObj = fallas.find(f => f.id === fId);
-                  if (fObj) {
-                      if (!fallasMap[fObj.id]) fallasMap[fObj.id] = {};
-                      fallasMap[fObj.id][g] = gFallas[fId] || '';
-                  }
-              });
+          // v8.1: Blindaje contra claves corruptas en reporte de fallas
+          if (g && g !== 'undefined' && g !== 'null') {
+              const gFallas = detallesFinales[g].fallas;
+              if (gFallas) {
+                  Object.keys(gFallas).forEach(fId => {
+                      const fObj = fallas.find(f => f.id === fId);
+                      if (fObj) {
+                          if (!fallasMap[fObj.id]) fallasMap[fObj.id] = {};
+                          fallasMap[fObj.id][g] = gFallas[fId] || '';
+                      }
+                  });
+              }
           }
       });
 
@@ -3563,7 +3569,7 @@ function App() {
                 {/* Selector de Grupo Estilo Tabs (v4.0) - Oculto en Dictamen */}
                 {editingGroupContext !== 'Mantenimiento' && (session.role === 'admin' || session.role === 'supervisor') && (
                   <div style={{ display: 'flex', gap: '0.5rem', borderBottom: '1px solid #f1f5f9', paddingBottom: '0.5rem' }}>
-                    {(session.role === 'admin' ? ['General', 'G1', 'G2', 'G3', 'Mantenimiento'] : [`G${session.grupo}`]).map(g => (
+                    {(session.role === 'admin' ? ['General', 'G1', 'G2', 'G3', 'Mantenimiento'] : (session.grupo ? [`G${session.grupo}`] : ['General'])).map(g => (
                       <button
                         key={g}
                         onClick={() => {
