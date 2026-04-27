@@ -754,6 +754,25 @@ function App() {
     };
   }, [session]);
 
+  // v11.0: Función de actualización manual (Refresh) para móviles y PC
+  const handleRefresh = async () => {
+    try {
+      setLoadingData(true);
+      const { data: usersInfo } = await supabase.from('usuarios').select('*');
+      if (usersInfo) setDbUsuarios(usersInfo);
+      
+      const { data: flotaInfo } = await supabase.from('camiones').select('*');
+      if (flotaInfo) setCamionesRegistrados(flotaInfo || []);
+      
+      addToast('🔄 Datos sincronizados con la nube');
+    } catch (err) {
+      console.error("Error al refrescar:", err);
+      addToast('❌ Error al actualizar datos', 'error');
+    } finally {
+      setLoadingData(false);
+    }
+  };
+
   // Filtro de Seguridad Global por Mina (v1.6.0) - Optimizado v2.0
   const camionesAccessibles = useMemo(() => {
     return camionesRegistrados.filter(c => {
@@ -1859,7 +1878,28 @@ function App() {
             {activeTab === 'historial' && 'Historial de Mantenimientos'}
           </h1>
           <div className="user-profile" style={{ display: 'flex', alignItems: 'center' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: '1rem' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
+              {/* v11.0: Botón de Actualización Rápida en Cabecera */}
+              <button 
+                onClick={handleRefresh}
+                className="btn-refresh-header"
+                title="Sincronizar Datos"
+                style={{
+                  background: 'rgba(37, 99, 235, 0.1)',
+                  border: '1px solid rgba(37, 99, 235, 0.2)',
+                  borderRadius: '12px',
+                  padding: '0.5rem',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  cursor: 'pointer',
+                  transition: 'all 0.2s ease',
+                  color: '#2563eb'
+                }}
+              >
+                <RefreshCcw size={20} className={loadingData ? 'spin-animation' : ''} />
+              </button>
+
               <div style={{ textAlign: 'right' }} className="desktop-only">
                 <div style={{ fontWeight: '700' }}>{session?.nombre || 'Usuario'}</div>
                 <div style={{ fontSize: '0.8rem', color: 'var(--text-muted)' }}>Mina {session?.mina || 'N/A'}</div>
