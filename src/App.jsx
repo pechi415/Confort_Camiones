@@ -2138,12 +2138,13 @@ function App() {
                           marginTop: isExpanded ? '0.8rem' : (shouldStack ? '-3rem' : '0.5rem'),
                           // v8.6: Inversión de z-index para que la primera de la lista esté "arriba"
                           zIndex: isExpanded ? 1100 : (camionesColumna.length - index),
-                          // v8.6: Opacidad aumentada para efecto "máscara" (tapa a la de abajo)
-                          background: 'rgba(255, 255, 255, 0.92)',
-                          backdropFilter: 'blur(12px)',
+                          // v8.7: Restauración Liquid Glass (Opacidad baja + Blur ultra fuerte)
+                          background: 'rgba(255, 255, 255, 0.45)',
+                          backdropFilter: 'blur(20px) saturate(180%)',
+                          border: '1px solid rgba(255, 255, 255, 0.4)',
                           boxShadow: isExpanded 
                             ? '0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04)' 
-                            : '0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -2px rgba(0,0,0,0.05)',
+                            : '0 10px 15px -3px rgba(0,0,0,0.08), 0 4px 6px -2px rgba(0,0,0,0.04)',
                           transition: 'all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
                           cursor: 'pointer'
                         }}
