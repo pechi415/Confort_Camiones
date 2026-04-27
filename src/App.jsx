@@ -164,8 +164,19 @@ const corregirOrtografiaIA = (texto) => {
     'verdaderamente': 'verdaderamente', 'seguramente': 'seguramente', 'posiblemente': 'posiblemente',
     'probablemente': 'probablemente', 'acaso': 'acaso', 'ojala': 'ojalá', 'amen': 'amén',
     'si': 'sí', 'no': 'no', 'así': 'así', 'peor': 'peor', 'mejor': 'mejor',
-    'bascula': 'báscula', 'danos': 'daños',
-    'golpe de tolva': 'Tolva', 'ruido y polucion en cabina': 'Cabina'
+    'bascula': 'báscula', 'danos': 'daños', 'daño': 'daño', 'daños': 'daños',
+    'rigidaz': 'rígidas', 'rigidez': 'rigidez', 'rigidas': 'rígidas', 'rigida': 'rígida',
+    'frenaz': 'frenos', 'frenado': 'frenado', 'suspencion': 'suspensión', 'suspension': 'suspensión',
+    'direccion': 'dirección', 'columna': 'columna', 'juego': 'juego', 'golpea': 'golpea',
+    'golpea ': 'golpea ', 'golpeando': 'golpeando', 'critico': 'crítico', 'estabilizadora': 'estabilizadora',
+    'hueso': 'hueso', 'perro': 'perro', 'pin': 'pin', 'central': 'central', 'pata': 'pata',
+    'gallina': 'gallina', 'modular': 'modular', 'transmision': 'transmisión', 'polucion': 'polución',
+    'cabina': 'cabina', 'ruido': 'ruido', 'polvo': 'polvo', 'tapizado': 'tapizado', 'estado': 'estado',
+    'tolva': 'tolva', 'cilindro': 'cilindro', 'manguera': 'manguera', 'fuga': 'fuga', 'presion': 'presión',
+    'liquido': 'líquido', 'nivel': 'nivel', 'motor': 'motor', 'bateria': 'batería', 'luces': 'luces',
+    'bombillo': 'bombillo', 'fusible': 'fusible', 'llanta': 'llanta', 'neumatico': 'neumático',
+    'rin': 'rin', 'tuerca': 'tuerca', 'perno': 'perno', 'torque': 'torque', 'golpe de tolva': 'Tolva', 
+    'ruido y polucion en cabina': 'Cabina'
   };
 
   // v7.2: Motor de Normalización Sentence Case (Solo Primera Letra del Párrafo)
