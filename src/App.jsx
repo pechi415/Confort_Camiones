@@ -2369,10 +2369,35 @@ function App() {
                     width: 60vw !important; 
                     max-width: 60vw !important;
                   }
+                  
+                  /* v10.7: Estilos ergonómicos restaurados para móviles */
+                  .kanban-indicators {
+                    pointer-events: none; 
+                    position: fixed !important;
+                    bottom: 85px !important;
+                    left: 0;
+                    right: 0;
+                    z-index: 6000 !important;
+                    background: rgba(255, 255, 255, 0.2);
+                    backdrop-filter: blur(8px);
+                    padding: 0.5rem !important;
+                    margin: 0 !important;
+                    width: fit-content;
+                    margin-left: auto !important;
+                    margin-right: auto !important;
+                    border-radius: 20px;
+                    border: 1px solid rgba(255, 255, 255, 0.3);
+                    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+                  }
                 }
               `}
             </style>
-            {/* v10.5: Indicadores eliminados para una interfaz más limpia */}
+            {/* v10.7: Puntos restaurados para móviles con sincronización de porcentaje */}
+            <div className="kanban-indicators mobile-only">
+              {columnasKanban.map((_, i) => (
+                <div key={i} className={`indicator-dot ${currentKanbanCol === i ? 'active' : ''}`} />
+              ))}
+            </div>
 
 
           </div>
