@@ -1973,7 +1973,7 @@ function App() {
               </div>
 
               <div className="priority-view-container">
-                {/* v11.4: Alternancia nativa por CSS (Instantánea y sin fallos de detección) */}
+                {/* v11.5: Alternancia robusta por CSS */}
                 <div className="desktop-landscape-view">
                   <div className="table-responsive">
                     <table className="modern-table">
@@ -2026,9 +2026,7 @@ function App() {
                                     onClick={(e) => { e.stopPropagation(); handleSafeDelete(camion.id, () => eliminarCamion(camion.id, camion.flota)); }} 
                                     className={`btn-action ${confirmDeleteId === camion.id ? 'btn-action-confirm-desktop' : 'btn-action-delete'}`}
                                     style={{ 
-                                      background: confirmDeleteId === camion.id ? 'var(--primary-red)' : 'rgba(239, 68, 68, 0.1)', 
-                                      border: confirmDeleteId === camion.id ? 'none' : '1px solid rgba(239, 68, 68, 0.2)',
-                                      color: confirmDeleteId === camion.id ? 'white' : '#ef4444', 
+                                      width: confirmDeleteId === camion.id ? 'auto' : '36px',
                                       padding: confirmDeleteId === camion.id ? '0.5rem 1rem' : '0.3rem', 
                                       borderRadius: '6px',
                                       minWidth: confirmDeleteId === camion.id ? '80px' : '36px',
@@ -2049,43 +2047,43 @@ function App() {
                 </div>
 
                 <div className="mobile-portrait-view">
-                  <div className="priority-cards-container" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1rem' }}>
+                  <div className="priority-cards-container">
                     {(camionesAccessibles || [])
                       .filter(c => c && c.estado !== 'liberado')
                       .sort((a, b) => (Number(b.puntos) || 0) - (Number(a.puntos) || 0))
                       .slice(0, 6)
                       .map((camion) => (
                       <div key={camion.id} className="priority-card fade-in">
-                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.8rem' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                            <Truck size={18} color="var(--primary-red)" />
-                            <strong style={{ fontSize: '1.2rem' }}>{camion.flota}</strong>
+                        <div className="p-card-header">
+                          <div className="p-card-title">
+                            <Truck size={20} color="var(--primary-red)" />
+                            <strong>{camion.flota}</strong>
                           </div>
-                          <span className={`badge badge-${camion.estado}`} style={{ fontSize: '0.65rem' }}>{camion.estado.toUpperCase()}</span>
+                          <span className={`badge badge-${camion.estado}`}>{camion.estado.toUpperCase()}</span>
                         </div>
                         
-                        <div style={{ fontSize: '0.85rem', color: '#4b5563', marginBottom: '1rem', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                            <MapPin size={14} /> Mina {camion.mina} / {formatGrupo(camion.grupo)}
+                        <div className="p-card-body">
+                          <div className="p-card-info">
+                            <MapPin size={14} /> <span>Mina {camion.mina} / {formatGrupo(camion.grupo)}</span>
                           </div>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                            <Calendar size={14} /> {formatFechaCorta(camion.time || camion.creado_at)}
+                          <div className="p-card-info">
+                            <Calendar size={14} /> <span>{formatFechaCorta(camion.time || camion.creado_at)}</span>
                           </div>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginTop: '0.2rem', padding: '0.4rem', borderRadius: '8px', background: camion.atencion === 'CRÍTICA' ? '#fef2f2' : camion.atencion === 'ALTA' ? '#fffbeb' : '#f0fdf4' }}>
-                            {camion.atencion === 'CRÍTICA' && <Siren size={16} color="#ef4444" />}
-                            {camion.atencion === 'ALTA' && <AlertTriangle size={16} color="#eab308" />}
-                            {camion.atencion === 'NORMAL' && <CheckCircle2 size={16} color="#10b981" />}
-                            <strong style={{ color: camion.atencion === 'CRÍTICA' ? '#ef4444' : camion.atencion === 'ALTA' ? '#b45309' : '#15803d' }}>{camion.atencion}</strong>
+                          <div className={`p-card-status status-${camion.atencion.toLowerCase()}`}>
+                            {camion.atencion === 'CRÍTICA' && <Siren size={18} />}
+                            {camion.atencion === 'ALTA' && <AlertTriangle size={18} />}
+                            {camion.atencion === 'NORMAL' && <CheckCircle2 size={18} />}
+                            <strong>{camion.atencion}</strong>
                           </div>
                         </div>
 
-                        <div style={{ display: 'flex', gap: '0.5rem' }}>
-                          <button onClick={() => setSelectedReport(camion)} className="btn btn-secondary" style={{ flex: 1, padding: '0.5rem', fontSize: '0.75rem', justifyContent: 'center' }}>
-                            <FileText size={14} /> Diagnóstico
+                        <div className="p-card-actions">
+                          <button onClick={() => setSelectedReport(camion)} className="btn-p-card btn-p-secondary">
+                            <FileText size={16} /> Diagnóstico
                           </button>
                           {(session?.role === 'admin' || session?.role === 'supervisor') && (
-                            <button onClick={() => prepararEdicion(camion)} className="btn btn-primary" style={{ padding: '0.5rem', minWidth: '40px', justifyContent: 'center', background: '#2563eb' }}>
-                              <Edit3 size={16} />
+                            <button onClick={() => prepararEdicion(camion)} className="btn-p-card btn-p-primary">
+                              <Edit3 size={18} />
                             </button>
                           )}
                         </div>
@@ -2093,6 +2091,7 @@ function App() {
                     ))}
                   </div>
                 </div>
+
               </div>
             </div>
           </div>
