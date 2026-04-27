@@ -2098,7 +2098,8 @@ function App() {
                 display: 'flex',
                 gap: '1rem',
                 overflowX: 'auto',
-                paddingBottom: '0.8rem', 
+                // v10.1: Área de interacción táctil extendida para el pulgar
+                paddingBottom: '80px', 
                 flex: 1,
                 alignItems: 'flex-start',
                 scrollSnapType: 'x mandatory',
@@ -2359,10 +2360,9 @@ function App() {
 
             <style>
               {`
-                @media (max-width: 768px) {
-                  .kanban-column { min-width: 65vw !important; }
-                  /* v10.0: Indicadores ergonómicos en la parte inferior para acceso con el pulgar */
+                  /* v10.1: Permitir que los gestos táctiles pasen a través de los indicadores hacia el tablero */
                   .kanban-indicators {
+                    pointer-events: none; 
                     position: fixed !important;
                     bottom: 85px !important;
                     left: 0;
