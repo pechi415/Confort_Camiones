@@ -2095,11 +2095,14 @@ function App() {
                 display: 'flex',
                 gap: '1rem',
                 overflowX: 'auto',
-                paddingBottom: '2rem', // v9.5: Aumentado para que el scroll sea visible
+                paddingBottom: '0.8rem', // v9.6: Reducido para acercar la barra a las pilas
                 flex: 1,
                 alignItems: 'flex-start',
                 scrollSnapType: 'x mandatory',
-                overflowY: 'hidden', // v9.4: Eliminar doble barra vertical
+                // v9.6: Altura fija con scroll interno para que la barra sea "flotante" y siempre visible
+                height: 'calc(100vh - 380px)',
+                overflowY: 'auto', 
+                overflowX: 'auto',
                 // v9.3: Efecto de desvanecimiento para indicar más contenido
                 WebkitMaskImage: 'linear-gradient(to right, black 95%, transparent 100%)',
                 maskImage: 'linear-gradient(to right, black 95%, transparent 100%)'
