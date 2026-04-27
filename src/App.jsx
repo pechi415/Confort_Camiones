@@ -1973,71 +1973,126 @@ function App() {
               </div>
 
               <div className="priority-view-container">
-                  {/* v11.4: Alternancia nativa por CSS (Instantánea y sin fallos de detección) */}
-                  <div className="desktop-landscape-view">
-                    <div className="table-responsive">
-                      <table className="modern-table">
-                        <thead>
-                          <tr>
-                            <th>Camión</th>
-                            <th>Mina / Grupo</th>
-                            <th>Atención Requerida</th>
-                            <th>Estado</th>
-                            <th>Fecha Reporte</th>
-                            <th style={{ textAlign: 'center' }}>Acciones</th>
-                          </tr>
-                        </thead>
-                        <tbody>
-                          {(camionesAccessibles || [])
-                            .filter(c => c && c.estado !== 'liberado')
-                            .sort((a, b) => (Number(b.puntos) || 0) - (Number(a.puntos) || 0))
-                            .slice(0, 6)
-                            .map((camion) => (
-                            <tr key={camion?.id || Math.random()}>
-                              <td>
-                                <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                                  <strong style={{ fontSize: '1.10rem' }}>{camion?.flota || 'S/N'}</strong>
-                                  <button
-                                    onClick={() => setSelectedReport(camion)}
-                                    style={{ background: 'transparent', border: 'none', color: '#2563eb', cursor: 'pointer', padding: 0 }}
-                                    title="Ver Diagnóstico Técnico"
+                {/* v11.4: Alternancia nativa por CSS (Instantánea y sin fallos de detección) */}
+                <div className="desktop-landscape-view">
+                  <div className="table-responsive">
+                    <table className="modern-table">
+                      <thead>
+                        <tr>
+                          <th>Camión</th>
+                          <th>Mina / Grupo</th>
+                          <th>Atención Requerida</th>
+                          <th>Estado</th>
+                          <th>Fecha Reporte</th>
+                          <th style={{ textAlign: 'center' }}>Acciones</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {(camionesAccessibles || [])
+                          .filter(c => c && c.estado !== 'liberado')
+                          .sort((a, b) => (Number(b.puntos) || 0) - (Number(a.puntos) || 0))
+                          .slice(0, 6)
+                          .map((camion) => (
+                          <tr key={camion?.id || Math.random()}>
+                            <td>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                                <strong style={{ fontSize: '1.10rem' }}>{camion?.flota || 'S/N'}</strong>
+                                <button
+                                  onClick={() => setSelectedReport(camion)}
+                                  style={{ background: 'transparent', border: 'none', color: '#2563eb', cursor: 'pointer', padding: 0 }}
+                                  title="Ver Diagnóstico Técnico"
+                                >
+                                  <FileText size={16} />
+                                </button>
+                              </div>
+                            </td>
+                            <td>{camion?.mina || '--'} / {formatGrupo(camion?.grupo)}</td>
+                            <td>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
+                                {camion?.atencion === 'CRÍTICA' && <><Siren size={20} color="#ef4444" strokeWidth={2} /><strong>CRÍTICA</strong></>}
+                                {camion?.atencion === 'ALTA' && <><AlertTriangle size={20} color="var(--secondary-yellow)" strokeWidth={2} /><strong>ALTA</strong></>}
+                                {camion?.atencion === 'NORMAL' && <><CheckCircle2 size={20} color="#10b981" strokeWidth={2} /><strong>NORMAL</strong></>}
+                              </div>
+                            </td>
+                            <td><span className={`badge badge-${camion?.estado || 'default'}`}>{(camion?.estado || 'N/A').toUpperCase()}</span></td>
+                            <td>{formatFechaCorta(camion?.time || camion?.creado_at)}</td>
+                            <td>
+                              <div style={{ display: 'flex', justifyContent: 'center', gap: '0.6rem' }}>
+                                {(session?.role?.toLowerCase() === 'admin' || session?.role?.toLowerCase() === 'supervisor' || session?.rol?.toLowerCase() === 'admin' || session?.rol?.toLowerCase() === 'supervisor') && (
+                                  <button onClick={() => prepararEdicion(camion)} className="btn-action btn-action-edit" title="Editar"><Edit3 size={18} /></button>
+                                )}
+                                {(session?.role?.toLowerCase() === 'admin' || session?.role?.toLowerCase() === 'admin') && (
+                                  <button 
+                                    onClick={(e) => { e.stopPropagation(); handleSafeDelete(camion.id, () => eliminarCamion(camion.id, camion.flota)); }} 
+                                    className={`btn-action ${confirmDeleteId === camion.id ? 'btn-action-confirm-desktop' : 'btn-action-delete'}`}
+                                    style={{ 
+                                      background: confirmDeleteId === camion.id ? 'var(--primary-red)' : 'rgba(239, 68, 68, 0.1)', 
+                                      border: confirmDeleteId === camion.id ? 'none' : '1px solid rgba(239, 68, 68, 0.2)',
+                                      color: confirmDeleteId === camion.id ? 'white' : '#ef4444', 
+                                      padding: confirmDeleteId === camion.id ? '0.5rem 1rem' : '0.3rem', 
+                                      borderRadius: '6px',
+                                      minWidth: confirmDeleteId === camion.id ? '80px' : '36px',
+                                      transition: 'all 0.3s ease'
+                                    }}
+                                    title="Eliminar"
                                   >
-                                    <FileText size={16} />
+                                    {confirmDeleteId === camion.id ? <span style={{ fontSize: '0.6rem', fontWeight: '900' }}>¿BORRAR?</span> : <Trash2 size={16} />}
                                   </button>
-                            <strong style={{ color: camion?.atencion === 'CRÍTICA' ? '#ef4444' : 'var(--text-main)' }}>{camion?.atencion || 'NORMAL'}</strong>
+                                )}
+                              </div>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                </div>
+
+                <div className="mobile-portrait-view">
+                  <div className="priority-cards-container" style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1rem' }}>
+                    {(camionesAccessibles || [])
+                      .filter(c => c && c.estado !== 'liberado')
+                      .sort((a, b) => (Number(b.puntos) || 0) - (Number(a.puntos) || 0))
+                      .slice(0, 6)
+                      .map((camion) => (
+                      <div key={camion.id} className="priority-card fade-in">
+                        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '0.8rem' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                            <Truck size={18} color="var(--primary-red)" />
+                            <strong style={{ fontSize: '1.2rem' }}>{camion.flota}</strong>
                           </div>
-                          <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-                            <span>Ingreso:</span>
-                            <strong style={{ color: 'var(--secondary-blue)' }}>{formatFechaCorta(camion?.time || camion?.creado_at)}</strong>
+                          <span className={`badge badge-${camion.estado}`} style={{ fontSize: '0.65rem' }}>{camion.estado.toUpperCase()}</span>
+                        </div>
+                        
+                        <div style={{ fontSize: '0.85rem', color: '#4b5563', marginBottom: '1rem', display: 'flex', flexDirection: 'column', gap: '0.4rem' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                            <MapPin size={14} /> Mina {camion.mina} / {formatGrupo(camion.grupo)}
+                          </div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                            <Calendar size={14} /> {formatFechaCorta(camion.time || camion.creado_at)}
+                          </div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem', marginTop: '0.2rem', padding: '0.4rem', borderRadius: '8px', background: camion.atencion === 'CRÍTICA' ? '#fef2f2' : camion.atencion === 'ALTA' ? '#fffbeb' : '#f0fdf4' }}>
+                            {camion.atencion === 'CRÍTICA' && <Siren size={16} color="#ef4444" />}
+                            {camion.atencion === 'ALTA' && <AlertTriangle size={16} color="#eab308" />}
+                            {camion.atencion === 'NORMAL' && <CheckCircle2 size={16} color="#10b981" />}
+                            <strong style={{ color: camion.atencion === 'CRÍTICA' ? '#ef4444' : camion.atencion === 'ALTA' ? '#b45309' : '#15803d' }}>{camion.atencion}</strong>
                           </div>
                         </div>
-                        <div style={{ marginTop: '0.8rem', display: 'flex', justifyContent: 'flex-end', gap: '0.5rem' }}>
-                          <button onClick={() => setSelectedReport(camion)} style={{ background: 'rgba(59, 130, 246, 0.1)', border: 'none', color: '#3b82f6', padding: '0.3rem', borderRadius: '6px' }} title="Diagnóstico"><FileText size={16} /></button>
-                          {(session?.role?.toLowerCase() === 'admin' || session?.role?.toLowerCase() === 'supervisor' || session?.rol?.toLowerCase() === 'admin' || session?.rol?.toLowerCase() === 'supervisor') && (
-                            <button onClick={() => prepararEdicion(camion)} style={{ background: 'rgba(255,255,255,0.8)', border: '1px solid #e5e7eb', color: '#6b7280', padding: '0.3rem', borderRadius: '6px' }} title="Editar"><Edit3 size={16} /></button>
-                          )}
-                          {(session?.role?.toLowerCase() === 'admin' || session?.role?.toLowerCase() === 'admin') && (
-                            <button 
-                              onClick={(e) => { e.stopPropagation(); handleSafeDelete(camion.id, () => eliminarCamion(camion.id, camion.flota)); }} 
-                              style={{ 
-                                background: confirmDeleteId === camion.id ? 'var(--primary-red)' : 'rgba(239, 68, 68, 0.1)', 
-                                border: confirmDeleteId === camion.id ? 'none' : '1px solid rgba(239, 68, 68, 0.2)',
-                                color: confirmDeleteId === camion.id ? 'white' : '#ef4444', 
-                                padding: '0.3rem', 
-                                borderRadius: '6px',
-                                minWidth: confirmDeleteId === camion.id ? '80px' : '32px',
-                                transition: 'all 0.3s ease'
-                              }} 
-                              title="Eliminar"
-                            >
-                              {confirmDeleteId === camion.id ? <span style={{ fontSize: '0.6rem', fontWeight: '900' }}>¿BORRAR?</span> : <Trash2 size={16} />}
+
+                        <div style={{ display: 'flex', gap: '0.5rem' }}>
+                          <button onClick={() => setSelectedReport(camion)} className="btn btn-secondary" style={{ flex: 1, padding: '0.5rem', fontSize: '0.75rem', justifyContent: 'center' }}>
+                            <FileText size={14} /> Diagnóstico
+                          </button>
+                          {(session?.role === 'admin' || session?.role === 'supervisor') && (
+                            <button onClick={() => prepararEdicion(camion)} className="btn btn-primary" style={{ padding: '0.5rem', minWidth: '40px', justifyContent: 'center', background: '#2563eb' }}>
+                              <Edit3 size={16} />
                             </button>
                           )}
                         </div>
                       </div>
                     ))}
                   </div>
-                )}
+                </div>
               </div>
             </div>
           </div>
