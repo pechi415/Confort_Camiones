@@ -2099,8 +2099,9 @@ function App() {
                 flex: 1,
                 alignItems: 'flex-start',
                 scrollSnapType: 'x mandatory',
-                // v9.6: Altura fija con scroll interno para que la barra sea "flotante" y siempre visible
-                height: 'calc(100vh - 380px)',
+                // v9.7: Altura dinámica (fit-content) con máximo para que el scroll sea "flotante" pero pegado a las pilas
+                height: 'fit-content',
+                maxHeight: 'calc(100vh - 350px)',
                 overflowY: 'auto', 
                 overflowX: 'auto',
                 // v9.3: Efecto de desvanecimiento para indicar más contenido

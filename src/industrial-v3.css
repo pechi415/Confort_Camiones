@@ -340,7 +340,7 @@ h1, h2, h3, h4, h5, h6 {
   display: flex;
   flex-direction: column;
   gap: 0;
-  min-height: 60vh;
+  min-height: 150px; /* v9.7: Reducido para evitar el gran hueco vacío */
 }
 
 .kanban-card {
