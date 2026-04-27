@@ -1974,7 +1974,8 @@ function App() {
 
               <div className="priority-view-container">
                 {/* Vista exclusiva para PC: Tabla Moderna */}
-                {window.innerWidth > 768 ? (
+                {/* v11.3: Detección inteligente para mostrar TABLA en PC y en modo horizontal de móviles */}
+                {(window.innerWidth > 768 || (window.innerWidth > 500 && window.innerHeight < 600)) ? (
                   <div className="table-responsive">
                     <table className="modern-table">
                       <thead>
