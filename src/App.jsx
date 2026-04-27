@@ -2095,7 +2095,7 @@ function App() {
                 display: 'flex',
                 gap: '1rem',
                 overflowX: 'auto',
-                paddingBottom: '0.5rem', // v9.4: Espacio reducido
+                paddingBottom: '2rem', // v9.5: Aumentado para que el scroll sea visible
                 flex: 1,
                 alignItems: 'flex-start',
                 scrollSnapType: 'x mandatory',
@@ -2359,12 +2359,8 @@ function App() {
               })}
             </div>
 
-            {/* v9.4: Espacio reducido para compactar el diseño */}
-            <div className="kanban-indicators" style={{ marginTop: '0.5rem' }}>
-              {columnasKanban.map((_, i) => (
-                <div key={i} className={`indicator-dot ${currentKanbanCol === i ? 'active' : ''}`} />
-              ))}
-            </div>
+            {/* v9.5: Puntos eliminados por redundancia en PC */}
+
           </div>
         )}
 
