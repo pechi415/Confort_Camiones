@@ -3352,8 +3352,15 @@ function App() {
                   <AlertCircle size={16} color="#38bdf8" strokeWidth={2.5} />
                   <label style={{ fontSize: 'clamp(0.8rem, 3vw, 0.95rem)', fontWeight: '900', color: '#0369a1', textTransform: 'uppercase', letterSpacing: '0.05em', whiteSpace: 'nowrap' }}>Descripción de Fallas:</label>
                 </div>
-                <div style={{ background: 'rgba(255, 255, 255, 0.2)', padding: '0.8rem', borderRadius: '18px', border: '1px solid rgba(0, 0, 0, 0.05)', backdropFilter: 'blur(5px)', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.03)', maxHeight: '300px', overflowY: 'auto' }}>
-                  {limpiarFallasIA(selectedReport.fallas).map((f, i, arr) => (
+                <div style={{ background: 'rgba(255, 255, 255, 0.2)', padding: '0.8rem', borderRadius: '18px', border: '1px solid rgba(0, 0, 0, 0.05)', backdropFilter: 'blur(5px)', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.03)', maxHeight: '350px', overflowY: 'auto' }}>
+                  {limpiarFallasIA(selectedReport.fallas)
+                    .map(f => {
+                      // Buscamos el impacto oficial para ordenar
+                      const infoFalla = fallas.find(orig => orig.nombre.toLowerCase() === f.falla.toLowerCase());
+                      return { ...f, impacto: infoFalla ? infoFalla.impacto : 0 };
+                    })
+                    .sort((a, b) => b.impacto - a.impacto)
+                    .map((f, i, arr) => (
                     <div key={i} style={{ 
                       marginBottom: i === arr.length - 1 ? 0 : '0.8rem', 
                       padding: '0.8rem', 
@@ -3363,8 +3370,13 @@ function App() {
                       boxShadow: '0 2px 4px rgba(0,0,0,0.02)'
                     }}>
                       <div style={{ fontWeight: '800', color: '#0f172a', display: 'flex', alignItems: 'center', gap: '0.6rem', fontSize: '0.95rem' }}>
-                         <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#ef4444', flexShrink: 0 }}></span>
+                         <span style={{ 
+                           width: '8px', height: '8px', borderRadius: '50%', 
+                           background: f.impacto >= 25 ? '#ef4444' : f.impacto >= 10 ? '#f59e0b' : '#10b981', 
+                           flexShrink: 0 
+                         }}></span>
                          {f.falla}
+                         <span style={{ marginLeft: 'auto', fontSize: '0.7rem', color: '#64748b', background: 'rgba(0,0,0,0.05)', padding: '0.1rem 0.4rem', borderRadius: '6px' }}>{f.impacto} pts</span>
                       </div>
                       {f.obs !== '-' && (
                         <div style={{ 
