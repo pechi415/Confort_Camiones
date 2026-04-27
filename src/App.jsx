@@ -2888,6 +2888,7 @@ function App() {
                   placeholder="Nombre del operador"
                   value={operador}
                   onChange={(e) => setOperador(e.target.value)}
+                  onBlur={(e) => setOperador(normalizarNombre(e.target.value))}
                 />
               </div>
               
@@ -3577,6 +3578,7 @@ function App() {
                         className="input-field"
                         value={operadorEdit}
                         onChange={e => setOperadorEdit(e.target.value)}
+                        onBlur={e => setOperadorEdit(normalizarNombre(e.target.value))}
                         placeholder={editingGroupContext === 'General' ? "Nombres de todos los conductores..." : "Nombre del conductor para este grupo..."}
                         style={{ background: 'rgba(255,255,255,0.5)', border: '1px solid rgba(0,0,0,0.1)' }}
                       />
