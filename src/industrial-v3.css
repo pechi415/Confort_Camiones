@@ -1248,14 +1248,16 @@ body {
   box-shadow: 0 4px 12px rgba(37, 99, 235, 0.2);
 }
 
-/* Reglas de Orientación: Prioridad Absoluta al Giro */
+/* Reglas de Orientación: Solo para Móviles y Tablets */
 @media (max-width: 768px) and (orientation: portrait) {
   .desktop-landscape-view { display: none !important; }
   .mobile-portrait-view { display: block !important; }
+  .sidebar { display: none !important; }
+  .bottom-nav { display: flex !important; }
 }
 
-/* Si el teléfono está horizontal o pantalla es muy bajita */
-@media (orientation: landscape) or (max-height: 520px) {
+/* Modo Horizontal Móvil/Tablet: Forzar Tabla y esconder Sidebar */
+@media (max-width: 1024px) and (orientation: landscape) {
   .desktop-landscape-view { display: block !important; }
   .mobile-portrait-view { display: none !important; }
   .sidebar { display: none !important; }
@@ -1268,4 +1270,13 @@ body {
     background: rgba(15, 15, 15, 0.98) !important;
     border-top: 1px solid rgba(255,255,255,0.1);
   }
+}
+
+/* Asegurar que en PC (ancho > 1024) todo vuelva a la normalidad */
+@media (min-width: 1025px) {
+  .sidebar { display: flex !important; }
+  .bottom-nav { display: none !important; }
+  .main-content { margin-left: 260px !important; width: calc(100% - 260px) !important; }
+  .desktop-landscape-view { display: block !important; }
+  .mobile-portrait-view { display: none !important; }
 }
