@@ -651,7 +651,8 @@ h1, h2, h3, h4, h5, h6 {
     max-width: 50vw !important;
     width: 50vw !important;
     min-width: 50vw !important;
-    height: calc(100vh - 340px) !important;
+    height: auto !important;
+    min-height: 150px !important;
     border: 2px solid rgba(37, 99, 235, 0.4) !important;
   }
   

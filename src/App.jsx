@@ -2363,7 +2363,12 @@ function App() {
               })}
             </div>
 
-            {/* v9.5: Puntos eliminados por redundancia en PC */}
+            {/* v9.9: Puntos restaurados para móviles (vertical) */}
+            <div className="kanban-indicators" style={{ marginTop: '0.5rem' }}>
+              {columnasKanban.map((_, i) => (
+                <div key={i} className={`indicator-dot ${currentKanbanCol === i ? 'active' : ''}`} />
+              ))}
+            </div>
 
           </div>
         )}
