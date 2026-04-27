@@ -2363,34 +2363,17 @@ function App() {
             <style>
               {`
                 @media (max-width: 768px) {
-                  .kanban-column { min-width: 60vw !important; width: 60vw !important; }
-                  /* v10.1: Permitir que los gestos táctiles pasen a través de los indicadores hacia el tablero */
-                  .kanban-indicators {
-                    pointer-events: none; 
-                    position: fixed !important;
-                    bottom: 85px !important;
-                    left: 0;
-                    right: 0;
-                    z-index: 6000 !important;
-                    background: rgba(255, 255, 255, 0.2);
-                    backdrop-filter: blur(8px);
-                    padding: 0.5rem !important;
-                    margin: 0 !important;
-                    width: fit-content;
-                    margin-left: auto !important;
-                    margin-right: auto !important;
-                    border-radius: 20px;
-                    border: 1px solid rgba(255, 255, 255, 0.3);
-                    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+                  /* v10.5: Ancho al 75% para máxima legibilidad del reloj */
+                  .kanban-column { 
+                    min-width: 75vw !important; 
+                    width: 75vw !important; 
+                    max-width: 75vw !important;
                   }
                 }
               `}
             </style>
-            <div className="kanban-indicators" style={{ marginTop: '0.5rem' }}>
-              {columnasKanban.map((_, i) => (
-                <div key={i} className={`indicator-dot ${currentKanbanCol === i ? 'active' : ''}`} />
-              ))}
-            </div>
+            {/* v10.5: Indicadores eliminados para una interfaz más limpia */}
+
 
           </div>
         )}
