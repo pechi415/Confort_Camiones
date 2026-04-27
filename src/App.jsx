@@ -1,7 +1,7 @@
 // VERSION_TAG: 2.0.0_STABLE_GOLD_READY
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import './industrial-v3.css';
-import { LayoutDashboard, Zap, FileText, Blocks, ClipboardList, ShieldAlert, ShieldCheck, MonitorCheck, PlusCircle, Trash2, Edit3, Settings, Shield, Unlock, LockKeyhole, Lock, RefreshCcw, Users, AlertTriangle, CheckCircle2, Wrench, Activity, Truck, Search, Hourglass, SearchCheck, Award, FileSpreadsheet, MapPin, Calendar, Siren, AlertCircle, Info, History, ChevronUp, LogOut } from 'lucide-react';
+import { LayoutDashboard, Zap, FileText, Blocks, ClipboardList, ShieldAlert, ShieldCheck, MonitorCheck, PlusCircle, Trash2, Edit3, Settings, Shield, Unlock, LockKeyhole, Lock, RefreshCcw, Users, AlertTriangle, CheckCircle2, Wrench, Activity, Truck, Search, Hourglass, SearchCheck, Award, FileSpreadsheet, MapPin, Calendar, Siren, AlertCircle, Info, History, ChevronUp, LogOut, Clock } from 'lucide-react';
 
 import { supabase } from './supabaseClient';
 import { jsPDF } from 'jspdf';
@@ -2162,6 +2162,23 @@ function App() {
                           {camion.atencion === 'CRÍTICA' && <Siren size={17} color="#ef4444" strokeWidth={2} style={{ flexShrink: 0 }} />}
                           {camion.atencion === 'ALTA' && <AlertTriangle size={17} color="#eab308" strokeWidth={2} style={{ flexShrink: 0 }} />}
                           {camion.atencion === 'NORMAL' && <CheckCircle2 size={17} color="#10b981" strokeWidth={2} style={{ flexShrink: 0 }} />}
+                          
+                          {/* v8.5: Cronómetro de Ciclo en la Tarjeta */}
+                          <div style={{ 
+                            marginLeft: 'auto', 
+                            display: 'flex', 
+                            alignItems: 'center', 
+                            gap: '0.3rem', 
+                            background: 'rgba(0,0,0,0.05)', 
+                            padding: '0.2rem 0.5rem', 
+                            borderRadius: '6px', 
+                            fontSize: '0.75rem', 
+                            color: (camion.ingreso_evaluar_at || camion.estado === 'liberado') ? 'var(--primary-black)' : '#9ca3af',
+                            fontWeight: '700'
+                          }}>
+                            <Clock size={12} strokeWidth={2.5} />
+                            {formatearCiclo(camion.creado_at, new Date().toISOString(), camion.ingreso_evaluar_at)}
+                          </div>
                         </div>
 
                         {isExpanded && (
