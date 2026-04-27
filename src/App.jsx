@@ -3352,8 +3352,36 @@ function App() {
                   <AlertCircle size={16} color="#38bdf8" strokeWidth={2.5} />
                   <label style={{ fontSize: 'clamp(0.8rem, 3vw, 0.95rem)', fontWeight: '900', color: '#0369a1', textTransform: 'uppercase', letterSpacing: '0.05em', whiteSpace: 'nowrap' }}>Descripción de Fallas:</label>
                 </div>
-                <div style={{ background: 'rgba(255, 255, 255, 0.3)', padding: '1.2rem', borderRadius: '18px', border: '1px solid rgba(0, 0, 0, 0.08)', color: '#0f172a', lineHeight: '1.6', fontSize: '1rem', fontWeight: '400', backdropFilter: 'blur(5px)', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.05)' }}>
-                  {limpiarFallasIA(selectedReport.fallas).map(f => `${f.falla}${f.obs !== '-' ? ` (${f.obs})` : ''}`).join(' | ')}
+                <div style={{ background: 'rgba(255, 255, 255, 0.2)', padding: '0.8rem', borderRadius: '18px', border: '1px solid rgba(0, 0, 0, 0.05)', backdropFilter: 'blur(5px)', boxShadow: 'inset 0 2px 4px rgba(0,0,0,0.03)', maxHeight: '300px', overflowY: 'auto' }}>
+                  {limpiarFallasIA(selectedReport.fallas).map((f, i, arr) => (
+                    <div key={i} style={{ 
+                      marginBottom: i === arr.length - 1 ? 0 : '0.8rem', 
+                      padding: '0.8rem', 
+                      backgroundColor: 'rgba(255, 255, 255, 0.6)', 
+                      borderRadius: '14px',
+                      border: '1px solid rgba(0,0,0,0.02)',
+                      boxShadow: '0 2px 4px rgba(0,0,0,0.02)'
+                    }}>
+                      <div style={{ fontWeight: '800', color: '#0f172a', display: 'flex', alignItems: 'center', gap: '0.6rem', fontSize: '0.95rem' }}>
+                         <span style={{ width: '8px', height: '8px', borderRadius: '50%', background: '#ef4444', flexShrink: 0 }}></span>
+                         {f.falla}
+                      </div>
+                      {f.obs !== '-' && (
+                        <div style={{ 
+                          marginLeft: '1.4rem', 
+                          marginTop: '0.5rem', 
+                          fontSize: '0.88rem', 
+                          color: '#475569', 
+                          fontStyle: 'italic',
+                          borderLeft: '3px solid #38bdf8',
+                          paddingLeft: '0.8rem',
+                          lineHeight: '1.4'
+                        }}>
+                           "{f.obs}"
+                        </div>
+                      )}
+                    </div>
+                  ))}
                 </div>
               </div>
 
