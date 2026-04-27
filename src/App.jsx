@@ -2135,7 +2135,8 @@ function App() {
                         onDragStart={(e) => handleDragStart(e, camion.id)}
                         style={{
                           borderLeft: `4px solid ${camion.atencion === 'CRÍTICA' ? '#ef4444' : camion.atencion === 'ALTA' ? 'var(--secondary-yellow)' : '#10b981'}`,
-                          marginTop: isExpanded ? '0.8rem' : (shouldStack ? '-3rem' : '0.5rem'),
+                          // v8.8: Separación más amplia (menos contacto) entre hojas
+                          marginTop: isExpanded ? '0.8rem' : (shouldStack ? '-1.5rem' : '0.5rem'),
                           // v8.6: Inversión de z-index para que la primera de la lista esté "arriba"
                           zIndex: isExpanded ? 1100 : (camionesColumna.length - index),
                           // v8.7: Restauración Liquid Glass (Opacidad baja + Blur ultra fuerte)
