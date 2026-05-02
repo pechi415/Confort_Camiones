@@ -4216,14 +4216,17 @@ function App() {
                   const chromOffset = 1 + chromIntensity;
                   const chromOpacity = 0.3 + (chromIntensity * 0.1);
                   
-                  // GOTA TIPO PASTILLA FINA (1.4x de ancho para elegancia)
-                  const bubbleWidth = itemWidthPct * 1.4; 
+                  // GOTA TIPO PASTILLA FINA (1.35x para balancear)
+                  const bubbleWidth = itemWidthPct * 1.35; 
                   const offset = (bubbleWidth - itemWidthPct) / 2;
-                  const safePos = currentPosPct || 0;
                   
-                  // Sincronizamos la Máscara de Revelado con el nuevo ancho de la gota
-                  const maskL = Math.max(0, safePos - offset);
-                  const maskR = Math.max(0, 100 - (safePos + itemWidthPct + offset));
+                  // CLAMPING: Evitamos que la gota se salga por los lados (VITAL para v16.36)
+                  const rawPos = currentPosPct || 0;
+                  const clampedPos = Math.max(offset, Math.min(100 - itemWidthPct - offset, rawPos));
+                  
+                  // Sincronizamos la Máscara de Revelado con la posición limitada
+                  const maskL = Math.max(0, clampedPos - offset);
+                  const maskR = Math.max(0, 100 - (clampedPos + itemWidthPct + offset));
 
                   return (
                     <>
@@ -4245,7 +4248,7 @@ function App() {
                           className={`nav-lens-drop ${isDraggingNav || jumpStretch > 1 ? 'lens-active' : ''}`} 
                           style={{ 
                             width: `${bubbleWidth}%`,
-                            transform: `translateX(${(safePos - offset) * (100 / bubbleWidth)}%) scaleX(${finalStretch}) skewX(${finalSkew}deg)`,
+                            transform: `translateX(${(clampedPos - offset) * (100 / bubbleWidth)}%) scaleX(${finalStretch}) skewX(${finalSkew}deg)`,
                             transition: isDraggingNav ? 'none' : 'transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275)'
                           }} 
                         >

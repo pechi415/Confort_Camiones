@@ -571,7 +571,7 @@ h1, h2, h3, h4, h5, h6 {
   .nav-base-bar-blur {
     position: absolute;
     top: 8px;
-    bottom: 8px;
+    bottom: 14px; /* Elevamos el borde inferior de la barra base para que la gota sobresalga */
     left: 6px;
     right: 6px;
     /* Blur moderado para máxima estabilidad */
@@ -597,9 +597,9 @@ h1, h2, h3, h4, h5, h6 {
 
   #main-mobile-nav-v16 .nav-lens-drop {
     position: absolute !important;
-    height: 38px !important;  /* Reposo: Pastilla ultra-fina y elegante */
-    top: 18.5px !important;    /* Centrado vertical perfecto en barra de 75px */
-    border-radius: 19px !important;
+    height: 44px !important;  /* Altura ideal para pastilla alargada */
+    top: 24px !important;      /* Desplazamiento hacia abajo para sobresalir */
+    border-radius: 22px !important;
     transform-origin: center center;
     will-change: transform, height, top, border-radius;
     /* QUITAMOS EL !important para no romper la transición en línea de App.jsx */
@@ -702,9 +702,9 @@ h1, h2, h3, h4, h5, h6 {
     border-radius: 21px !important;
   }
   #main-mobile-nav-v16 .nav-lens-drop.lens-active {
-    height: 52px !important;   /* Expansión controlada, mantiene forma de pastilla */
-    top: 11.5px !important;
-    border-radius: 26px !important;
+    height: 58px !important;   /* Crece hacia abajo sobresaliendo de la barra */
+    top: 14px !important;
+    border-radius: 29px !important;
   }
   .nav-base-bar-blur {
     top: 11px !important;
