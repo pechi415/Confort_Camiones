@@ -547,6 +547,15 @@ h1, h2, h3, h4, h5, h6 {
     display: flex !important;
     padding: 0 !important;
     overflow: visible !important;
+    
+    /* Animación para el Zoom Táctil */
+    transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275) !important;
+    will-change: transform;
+  }
+
+  /* Micro-interacción: Zoom de toda la barra al tocar/arrastrar */
+  #main-mobile-nav-v16.bottom-nav.nav-active-scale {
+    transform: translateX(-50%) scale(1.03) translateY(-2px) !important;
   }
 
   .nav-background-wrapper {

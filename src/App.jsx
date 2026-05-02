@@ -4183,7 +4183,7 @@ function App() {
 
             <nav 
               id="main-mobile-nav-v16" 
-              className="bottom-nav mobile-only"
+              className={`bottom-nav mobile-only ${isDraggingNav || jumpStretch > 1 ? 'nav-active-scale' : ''}`}
               ref={navRef}
               style={{ touchAction: 'none' }}
               onTouchStart={handleTouchStart}
