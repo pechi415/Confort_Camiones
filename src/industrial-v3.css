@@ -586,14 +586,14 @@ h1, h2, h3, h4, h5, h6 {
     backface-visibility: hidden;
   }
 
-  .nav-liquid-base {
+  .nav-liquid-anchor {
     position: absolute;
-    top: 12px;
-    bottom: 12px;
-    left: 6px;
-    right: 6px;
-    background: rgba(255, 255, 255, 0.9);
-    border-radius: 35px;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: 25px;
+    height: 25px;
+    background: #ffffff;
+    border-radius: 50%;
   }
 
   #main-mobile-nav-v16 .nav-active-drop {
@@ -630,9 +630,9 @@ h1, h2, h3, h4, h5, h6 {
     height: 48px !important;
     top: 11px !important;
   }
-  .nav-liquid-base {
-    top: 11px !important;
-    bottom: 11px !important;
+  .nav-liquid-anchor {
+    width: 20px !important;
+    height: 20px !important;
   }
   .nav-base-bar-blur {
     top: 11px !important;

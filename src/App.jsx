@@ -4168,9 +4168,20 @@ function App() {
                 {/* A. Barra Esmerilada (FUERA del filtro Gooey para evitar crash) */}
                 <div className="nav-base-bar-blur"></div>
                 
-                {/* B. Capa Gooey (Restaurada con motor seguro) */}
+                {/* B. Capa Gooey (Efecto Metaballs Genuino) */}
                 <div className="nav-liquid-layer">
-                  <div className="nav-liquid-base"></div>
+                  {/* Anclas líquidas estáticas detrás de cada icono */}
+                  {mobileTabs.map((_, idx) => (
+                    <div 
+                      key={`anchor-${idx}`}
+                      className="nav-liquid-anchor"
+                      style={{ 
+                        left: `${(idx * itemWidthPct) + (itemWidthPct / 2)}%`,
+                      }}
+                    />
+                  ))}
+                  
+                  {/* La gota principal que viaja */}
                   <div 
                     className="nav-active-drop" 
                     style={{ 
