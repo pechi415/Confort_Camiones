@@ -736,7 +736,7 @@ h1, h2, h3, h4, h5, h6 {
 
   .bottom-nav-item.active {
     color: #000;
-    transform: scale(1.22); /* Efecto Lupa Sincronizado: Gran aumento de tamaño real */
+    /* La escala ahora es inyectada dinámicamente por React (Efecto Lupa Fluido) */
   }
 
   .bottom-nav-item.active svg {

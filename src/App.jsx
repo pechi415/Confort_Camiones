@@ -4151,21 +4151,33 @@ function App() {
           <div className={`nav-items-layer ${isColored ? 'colored-layer' : 'base-layer'}`}>
             {mobileTabs.map((tab, idx) => {
               const isActive = activeTab === tab;
+              // EFECTO LUPA FÍSICO: Calculamos la distancia entre la gota y este icono
+              const iconPosPct = idx * itemWidthPct;
+              const distancePct = Math.abs(currentPosPct - iconPosPct);
+              
+              // zoomFactor es 1.0 si la gota está exactamente encima, y cae a 0 si la gota se aleja
+              const zoomFactor = Math.max(0, 1 - (distancePct / (itemWidthPct * 0.8)));
+              
+              // Escala dinámica desde 1.0x hasta 1.25x en el centro de la lupa
+              const dynamicScale = 1 + (zoomFactor * 0.25);
+              
               let Icon = LayoutDashboard;
               let label = "Inicio";
-              let color = "#1a73e8";
 
-              if (tab === 'cola') { Icon = Truck; label = "Lista"; color = "#f44336"; }
-              if (tab === 'nuevo') { Icon = PlusCircle; label = "Nuevo"; color = "#4caf50"; }
-              if (tab === 'historial') { Icon = History; label = "Historial"; color = "#ff9800"; }
-              if (tab === 'usuarios') { Icon = Users; label = "Usuarios"; color = "#9c27b0"; }
+              if (tab === 'cola') { Icon = Truck; label = "Lista"; }
+              if (tab === 'nuevo') { Icon = PlusCircle; label = "Nuevo"; }
+              if (tab === 'historial') { Icon = History; label = "Historial"; }
+              if (tab === 'usuarios') { Icon = Users; label = "Usuarios"; }
 
               return (
                 <div 
                   key={tab} 
                   className={`bottom-nav-item ${isActive ? 'active' : ''}`}
                   onClick={() => handleTabClick(tab, idx)}
-                  style={{ color: isColored ? '#000' : '#5f6368' }}
+                  style={{ 
+                    color: isColored ? '#000' : '#5f6368',
+                    transform: `scale(${dynamicScale})` // Inyección en tiempo real del motor óptico
+                  }}
                 >
                   <div className="icon-wrapper">
                     <Icon size={22} strokeWidth={2} />
