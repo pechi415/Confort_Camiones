@@ -730,7 +730,13 @@ h1, h2, h3, h4, h5, h6 {
     font-weight: 700;
     flex: 1;
     height: 100%;
-    transition: all 0.3s ease;
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    will-change: transform;
+  }
+
+  /* Durante el arrastre, el zoom debe ser INSTANTÁNEO para que no se quede atrás */
+  .nav-active-scale .bottom-nav-item {
+    transition: none !important;
   }
 
   .bottom-nav-item .icon-wrapper {
