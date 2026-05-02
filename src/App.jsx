@@ -4079,14 +4079,7 @@ function App() {
         
         if (isDraggingNav && navRef.current) {
           const rect = navRef.current.getBoundingClientRect();
-          const currentX = navTouchX;
-          const delta = currentX - lastTouchX.current;
-          
-          // Suavizado de velocidad para evitar saltos bruscos
-          setNavVelocity(prev => prev * 0.7 + delta * 0.3);
-          lastTouchX.current = currentX;
-
-          const relativeX = currentX - rect.left - 6;
+          const relativeX = navTouchX - rect.left - 6;
           const totalWidth = rect.width - 12;
           currentPosPct = (relativeX / totalWidth) * 100 - (itemWidthPct / 2);
           currentPosPct = Math.max(0, Math.min(100 - itemWidthPct, currentPosPct));
@@ -4101,7 +4094,13 @@ function App() {
         };
 
         const handleTouchMove = (e) => {
-          setNavTouchX(e.touches[0].clientX);
+          const currentX = e.touches[0].clientX;
+          setNavTouchX(currentX);
+          
+          // Cálculo de velocidad en el evento (NUNCA en el render)
+          const delta = currentX - lastTouchX.current;
+          setNavVelocity(prev => prev * 0.7 + delta * 0.3);
+          lastTouchX.current = currentX;
         };
 
         const handleTouchEnd = (e) => {
@@ -4169,17 +4168,15 @@ function App() {
                 {/* A. Barra Esmerilada (FUERA del filtro Gooey para evitar crash) */}
                 <div className="nav-base-bar-blur"></div>
                 
-                {/* B. Capa Líquida (Simplificada v16.5 para diagnóstico) */}
-                <div className="nav-liquid-layer" style={{ filter: 'none' }}>
+                {/* B. Capa Gooey (Restaurada con motor seguro) */}
+                <div className="nav-liquid-layer">
                   <div className="nav-liquid-base"></div>
                   <div 
                     className="nav-active-drop" 
                     style={{ 
                       width: `${itemWidthPct}%`,
                       transform: `translateX(${Math.max(0, (currentPosPct || 0)) * (100 / itemWidthPct)}%) scaleX(${stretch}) skewX(${skew}deg)`,
-                      transition: isDraggingNav ? 'none' : 'transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
-                      background: 'var(--primary-red)', /* Color sólido para ver si aparece */
-                      opacity: 0.2 /* Sutil para no tapar todo si hay error */
+                      transition: isDraggingNav ? 'none' : 'transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275)'
                     }} 
                   />
                 </div>
