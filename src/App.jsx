@@ -4190,23 +4190,9 @@ function App() {
               onTouchMove={handleTouchMove}
               onTouchEnd={handleTouchEnd}
             >
-              {/* 1. Capas de Fondo y Líquido */}
               <div className="nav-background-wrapper">
-                {/* A. Barra Esmerilada (FUERA del filtro Gooey para evitar crash) */}
+                {/* A. Barra Esmerilada Base */}
                 <div className="nav-base-bar-blur"></div>
-                
-                {/* B. Capa Dinámica (Física Elástica Genuina) */}
-                <div className="nav-liquid-layer">
-                  {/* La gota principal que viaja y se deforma */}
-                  <div 
-                    className="nav-active-drop" 
-                    style={{ 
-                      width: `${itemWidthPct}%`,
-                      transform: `translateX(${Math.max(0, (currentPosPct || 0)) * (100 / itemWidthPct)}%) scaleX(${finalStretch}) skewX(${finalSkew}deg)`,
-                      transition: isDraggingNav ? 'none' : 'transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275)'
-                    }} 
-                  />
-                </div>
               </div>
 
               {/* 2. Capa de Iconos Base (Inactivos) */}
@@ -4222,6 +4208,18 @@ function App() {
                 }}
               >
                 {renderNavContent(true)}
+              </div>
+
+              {/* 4. Capa Lente de Agua (Aberración Cromática sobre los iconos) */}
+              <div className="nav-lens-layer">
+                <div 
+                  className="nav-lens-drop" 
+                  style={{ 
+                    width: `${itemWidthPct}%`,
+                    transform: `translateX(${Math.max(0, (currentPosPct || 0)) * (100 / itemWidthPct)}%) scaleX(${finalStretch}) skewX(${finalSkew}deg)`,
+                    transition: isDraggingNav ? 'none' : 'transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275)'
+                  }} 
+                />
               </div>
             </nav>
           </>

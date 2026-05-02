@@ -575,36 +575,47 @@ h1, h2, h3, h4, h5, h6 {
     backface-visibility: hidden;
   }
 
-  .nav-liquid-layer {
+  /* Capa superior para la lente iridiscente */
+  .nav-lens-layer {
     position: absolute;
     top: 0;
-    left: 0;
-    width: 100%;
+    left: 6px;
+    right: 6px;
     height: 100%;
-    filter: url('#goo-stable');
-    z-index: 2;
-    backface-visibility: hidden;
+    z-index: 20; /* Flotando sobre los iconos */
+    pointer-events: none; /* Intocable */
   }
 
-  .nav-liquid-anchor {
-    position: absolute;
-    top: 50%;
-    transform: translate(-50%, -50%);
-    width: 25px;
-    height: 25px;
-    background: #ffffff;
-    border-radius: 50%;
-  }
-
-  #main-mobile-nav-v16 .nav-active-drop {
+  #main-mobile-nav-v16 .nav-lens-drop {
     position: absolute !important;
     height: 58px !important;
     top: 11px !important;
-    background: #ffffff !important;
     border-radius: 29px !important;
-    z-index: 3;
     transform-origin: center center;
     will-change: transform;
+    
+    /* 1. Transparencia y distorsión de lente (lupa de agua) */
+    background: rgba(255, 255, 255, 0.05) !important;
+    backdrop-filter: blur(4px) saturate(120%) brightness(1.05) contrast(105%);
+    -webkit-backdrop-filter: blur(4px) saturate(120%) brightness(1.05) contrast(105%);
+    
+    /* 2. Aberración Cromática (Burbuja de Jabón) */
+    box-shadow: 
+      /* Brillo interno simulando refracción superior */
+      inset 0 3px 6px rgba(255, 255, 255, 0.7),
+      /* Prisma Cian a la izquierda/abajo */
+      inset -2px -2px 8px rgba(0, 255, 255, 0.25),
+      /* Prisma Magenta a la derecha/arriba */
+      inset 2px 2px 8px rgba(255, 0, 255, 0.25),
+      /* Prisma Amarillo sutil en el fondo */
+      inset 0 -3px 8px rgba(255, 255, 0, 0.15),
+      /* Ligera sombra exterior para dar volumen 3D al cristal */
+      0 6px 16px rgba(0, 0, 0, 0.1) !important;
+      
+    /* 3. Borde cristalino iridiscente */
+    border: 1px solid rgba(255, 255, 255, 0.6) !important;
+    border-top: 1px solid rgba(255, 255, 255, 0.9) !important;
+    border-bottom: 1px solid rgba(0, 255, 255, 0.3) !important;
   }
 
   .nav-items-layer {
@@ -626,13 +637,9 @@ h1, h2, h3, h4, h5, h6 {
     bottom: 12px !important;
     max-width: 600px !important;
   }
-  #main-mobile-nav-v16 .nav-active-drop {
+  #main-mobile-nav-v16 .nav-lens-drop {
     height: 48px !important;
     top: 11px !important;
-  }
-  .nav-liquid-anchor {
-    width: 20px !important;
-    height: 20px !important;
   }
   .nav-base-bar-blur {
     top: 11px !important;
