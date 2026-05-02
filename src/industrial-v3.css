@@ -539,7 +539,9 @@ h1, h2, h3, h4, h5, h6 {
     transform: translateX(-50%) !important;
     width: 94% !important;
     max-width: 480px !important;
-    height: 75px !important;
+    height: 64px !important;
+    border-radius: 40px !important;
+    padding: 0 12px !important; /* Carril seguro estilo WhatsApp/iOS */
     background: transparent !important;
     border: none !important;
     box-shadow: none !important;
@@ -570,25 +572,25 @@ h1, h2, h3, h4, h5, h6 {
 
   .nav-base-bar-blur {
     position: absolute;
-    top: 8px;
-    bottom: 14px; /* Elevamos el borde inferior de la barra base para que la gota sobresalga */
-    left: 6px;
-    right: 6px;
-    /* Blur moderado para máxima estabilidad */
-    backdrop-filter: blur(15px);
-    -webkit-backdrop-filter: blur(15px);
-    border-radius: 35px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
-    border: 1px solid rgba(255, 255, 255, 0.3);
+    top: 0;
+    bottom: 0;
+    left: 0;
+    right: 0;
+    backdrop-filter: blur(25px);
+    -webkit-backdrop-filter: blur(25px);
+    border-radius: 40px;
+    background: rgba(255, 255, 255, 0.85);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08), 
+                inset 0 1px 0 rgba(255, 255, 255, 0.6);
     z-index: 1;
-    backface-visibility: hidden;
+    border: none !important;
   }
 
-  /* Capa superior para la lente iridiscente */
   .nav-lens-layer {
+    position: absolute;
     top: 0;
-    left: 20px;
-    right: 20px;
+    left: 12px;
+    right: 12px;
     height: 100%;
     z-index: 60; /* Flotando SOBRE los iconos para poder desenfocarlos */
     pointer-events: none;
@@ -596,9 +598,9 @@ h1, h2, h3, h4, h5, h6 {
 
   #main-mobile-nav-v16 .nav-lens-drop {
     position: absolute !important;
-    height: 42px !important;  /* Reposo: Altura balanceada */
-    top: 20px !important;      /* Elevado para no chocar con las letras de al lado */
-    border-radius: 21px !important;
+    height: 48px !important;  /* Selector tipo Píldora iOS */
+    top: 8px !important;       /* Centrado vertical perfecto en barra de 64px */
+    border-radius: 24px !important;
     transform-origin: center center;
     will-change: transform, height, top, border-radius;
     /* QUITAMOS EL !important para no romper la transición en línea de App.jsx */
@@ -618,9 +620,9 @@ h1, h2, h3, h4, h5, h6 {
 
   /* ESTADO ACTIVO (Gota Gorda 3D Alargada al Tocar) */
   #main-mobile-nav-v16 .nav-lens-drop.lens-active {
-    height: 56px !important;   
-    top: 12px !important;
-    border-radius: 28px !important;
+    height: 54px !important;   
+    top: 5px !important;
+    border-radius: 27px !important;
     
     /* 1. Cristal Puro (100% Transparente como WhatsApp) */
     background: transparent !important;
@@ -720,8 +722,8 @@ h1, h2, h3, h4, h5, h6 {
   .nav-reveal-mask {
     position: absolute;
     top: 0;
-    left: 20px;
-    right: 20px;
+    left: 12px;
+    right: 12px;
     height: 100%;
     z-index: 40; /* Iconos negros están bajo la lente (60) pero sobre la base (1) */
     pointer-events: none;
@@ -732,8 +734,8 @@ h1, h2, h3, h4, h5, h6 {
   .nav-items-layer {
     position: absolute;
     top: 0;
-    left: 20px;
-    right: 20px;
+    left: 12px;
+    right: 12px;
     bottom: 0;
     display: flex;
     justify-content: space-around;
