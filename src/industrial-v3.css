@@ -597,9 +597,9 @@ h1, h2, h3, h4, h5, h6 {
 
   #main-mobile-nav-v16 .nav-lens-drop {
     position: absolute !important;
-    height: 58px !important;  /* Reposo: Ahora más alto para contener icono + texto */
-    top: 16px !important;      /* Centrado vertical en la barra de 90px */
-    border-radius: 29px !important;
+    height: 62px !important;  /* Reposo: Ahora más alto y ancho para contener todo */
+    top: 14px !important;      /* Centrado vertical perfecto en barra de 90px */
+    border-radius: 31px !important;
     transform-origin: center center;
     will-change: transform, height, top, border-radius;
     /* QUITAMOS EL !important para no romper la transición en línea de App.jsx */
@@ -702,9 +702,9 @@ h1, h2, h3, h4, h5, h6 {
     border-radius: 21px !important;
   }
   #main-mobile-nav-v16 .nav-lens-drop.lens-active {
-    height: 80px !important;   /* Expansión masiva al tocar */
-    top: 2px !important;
-    border-radius: 40px !important;
+    height: 74px !important;   /* No tan grande como antes, pero alargada */
+    top: 8px !important;
+    border-radius: 37px !important;
   }
   .nav-base-bar-blur {
     top: 11px !important;

@@ -4229,12 +4229,17 @@ function App() {
                   const chromOffset = 1 + chromIntensity;
                   const chromOpacity = 0.3 + (chromIntensity * 0.1);
                   
+                  // HACEMOS LA GOTA MÁS ANCHA (Pastilla alargada)
+                  const bubbleWidth = itemWidthPct * 1.35; 
+                  const horizontalOffset = (bubbleWidth - itemWidthPct) / 2;
+                  const safePos = currentPosPct || 0;
+                  
                   return (
                     <div 
                       className={`nav-lens-drop ${isDraggingNav || jumpStretch > 1 ? 'lens-active' : ''}`} 
                       style={{ 
-                        width: `${itemWidthPct}%`,
-                        transform: `translateX(${Math.max(0, (currentPosPct || 0)) * (100 / itemWidthPct)}%) scaleX(${finalStretch}) skewX(${finalSkew}deg)`,
+                        width: `${bubbleWidth}%`,
+                        transform: `translateX(${(safePos - horizontalOffset) * (100 / bubbleWidth)}%) scaleX(${finalStretch}) skewX(${finalSkew}deg)`,
                         transition: isDraggingNav ? 'none' : 'transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275)'
                       }} 
                     >
