@@ -4064,10 +4064,26 @@ function App() {
       </div>
 
       {/* Navegación Inferior (Solo Móvil) - Estilo Liquid Glass Ready */}
-      <nav className="bottom-nav mobile-only">
-        <a 
-          href="#" 
-          className={`bottom-nav-item ${activeTab === 'dashboard' ? 'active' : ''}`}
+      {(() => {
+        const mobileTabs = ['dashboard', 'cola', 'nuevo', 'historial'];
+        if (session?.role === 'admin') mobileTabs.push('usuarios');
+        const activeIndex = mobileTabs.indexOf(activeTab);
+        const itemWidth = 100 / mobileTabs.length;
+        
+        return (
+          <nav className="bottom-nav mobile-only">
+            {/* Indicador Fluido Estilo Gota */}
+            <div 
+              className="nav-active-pill" 
+              style={{ 
+                width: `${itemWidth}%`,
+                transform: `translateX(${activeIndex * 100}%)`
+              }} 
+            />
+            
+            <a 
+              href="#" 
+              className={`bottom-nav-item ${activeTab === 'dashboard' ? 'active' : ''}`}
           onClick={(e) => { e.preventDefault(); setActiveTab('dashboard'); }}
         >
           <div className="icon-wrapper">
@@ -4118,6 +4134,8 @@ function App() {
           </a>
         )}
       </nav>
+        );
+      })()}
       {/* Botón Volver Arriba Seguro v1.9.52 */}
       {showBackToTop && (
         <button 
