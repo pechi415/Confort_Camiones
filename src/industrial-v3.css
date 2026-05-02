@@ -545,7 +545,7 @@ h1, h2, h3, h4, h5, h6 {
     box-shadow: none !important;
     z-index: 9999 !important;
     display: flex !important;
-    padding: 0 15px !important; /* Margen de seguridad para que la gota no se salga */
+    padding: 0 !important;
     overflow: visible !important;
     
     /* Animación para el Zoom Táctil */
@@ -586,10 +586,9 @@ h1, h2, h3, h4, h5, h6 {
 
   /* Capa superior para la lente iridiscente */
   .nav-lens-layer {
-    position: absolute;
     top: 0;
-    left: 6px;
-    right: 6px;
+    left: 20px;
+    right: 20px;
     height: 100%;
     z-index: 60; /* Flotando SOBRE los iconos para poder desenfocarlos */
     pointer-events: none;
@@ -721,8 +720,8 @@ h1, h2, h3, h4, h5, h6 {
   .nav-reveal-mask {
     position: absolute;
     top: 0;
-    left: 6px;
-    right: 6px;
+    left: 20px;
+    right: 20px;
     height: 100%;
     z-index: 40; /* Iconos negros están bajo la lente (60) pero sobre la base (1) */
     pointer-events: none;
@@ -730,7 +729,22 @@ h1, h2, h3, h4, h5, h6 {
     will-change: clip-path;
   }
 
+  .nav-items-layer {
+    position: absolute;
+    top: 0;
+    left: 20px;
+    right: 20px;
+    bottom: 0;
+    display: flex;
+    justify-content: space-around;
+    align-items: center;
+    width: auto;
+    pointer-events: none;
+  }
+  
   .nav-reveal-mask .nav-items-layer {
+    position: absolute;
+    top: 0;
     left: 0;
     right: 0;
     width: 100%;
