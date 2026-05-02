@@ -367,13 +367,7 @@ function App() {
 
   // Supabase Auth Session State
   // MOCK SESSION PARA DESARROLLO LOCAL (Bypass de Login v16.47)
-  const [session, setSession] = useState({
-    nombre: 'Modo Desarrollo',
-    role: 'admin',
-    mina: 'PB',
-    grupo: '1',
-    username: 'dev'
-  }); // null = No Logueado
+  const [session, setSession] = useState(null); // null = No Logueado
   const [pendingPasswordChangeUser, setPendingPasswordChangeUser] = useState(null);
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
