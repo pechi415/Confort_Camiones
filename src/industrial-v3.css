@@ -565,13 +565,14 @@ h1, h2, h3, h4, h5, h6 {
     bottom: 12px;
     left: 6px;
     right: 6px;
-    /* Blur fuera del filtro Gooey para estabilidad */
-    backdrop-filter: blur(25px);
-    -webkit-backdrop-filter: blur(25px);
+    /* Blur moderado para máxima estabilidad */
+    backdrop-filter: blur(15px);
+    -webkit-backdrop-filter: blur(15px);
     border-radius: 35px;
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
     border: 1px solid rgba(255, 255, 255, 0.3);
     z-index: 1;
+    backface-visibility: hidden;
   }
 
   .nav-liquid-layer {
@@ -580,8 +581,9 @@ h1, h2, h3, h4, h5, h6 {
     left: 0;
     width: 100%;
     height: 100%;
-    filter: url('#goo-v16');
+    filter: url('#goo-stable');
     z-index: 2;
+    backface-visibility: hidden;
   }
 
   .nav-liquid-base {

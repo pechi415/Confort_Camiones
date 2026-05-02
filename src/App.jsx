@@ -4158,6 +4158,7 @@ function App() {
               id="main-mobile-nav-v16" 
               className="bottom-nav mobile-only"
               ref={navRef}
+              style={{ touchAction: 'none' }}
               onTouchStart={handleTouchStart}
               onTouchMove={handleTouchMove}
               onTouchEnd={handleTouchEnd}
@@ -4209,13 +4210,12 @@ function App() {
           <ChevronUp size={24} />
         </button>
       )}
-      {/* Filtro SVG Gooey Mágico (Estático para evitar crash por re-renderizado) */}
-      <svg style={{ position: 'absolute', width: 0, height: 0, pointerEvents: 'none', visibility: 'hidden' }}>
+      {/* Filtro SVG Gooey Mágico (Optimizado v16.4) */}
+      <svg style={{ position: 'absolute', width: 0, height: 0, pointerEvents: 'none', opacity: 0 }}>
         <defs>
-          <filter id="goo-v16">
-            <feGaussianBlur in="SourceGraphic" stdDeviation="10" result="blur" />
-            <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 20 -9" result="goo" />
-            <feComposite in="SourceGraphic" in2="goo" operator="atop" />
+          <filter id="goo-stable">
+            <feGaussianBlur in="SourceGraphic" stdDeviation="8" result="blur" />
+            <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 18 -8" result="goo" />
           </filter>
         </defs>
       </svg>
