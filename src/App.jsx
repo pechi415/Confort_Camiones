@@ -4216,8 +4216,8 @@ function App() {
                   const chromOffset = 1 + chromIntensity;
                   const chromOpacity = 0.3 + (chromIntensity * 0.1);
                   
-                  // GOTA TIPO PASTILLA FINA (1.35x para balancear)
-                  const bubbleWidth = itemWidthPct * 1.35; 
+                  // GOTA TIPO PASTILLA FINA (1.2x para evitar colisiones laterales)
+                  const bubbleWidth = itemWidthPct * 1.2; 
                   const offset = (bubbleWidth - itemWidthPct) / 2;
                   
                   // CLAMPING: Evitamos que la gota se salga por los lados (VITAL para v16.36)
