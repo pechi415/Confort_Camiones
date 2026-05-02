@@ -4107,6 +4107,7 @@ function App() {
         const handleTouchEnd = (e) => {
           setIsDraggingNav(false);
           setNavVelocity(0);
+          if (!navRef.current) return;
           const rect = navRef.current.getBoundingClientRect();
           const relativeX = navTouchX - rect.left - 6;
           const totalWidth = rect.width - 12;
@@ -4168,16 +4169,17 @@ function App() {
                 {/* A. Barra Esmerilada (FUERA del filtro Gooey para evitar crash) */}
                 <div className="nav-base-bar-blur"></div>
                 
-                {/* B. Capa Gooey (Solo para la fusión visual) */}
-                <div className="nav-liquid-layer">
-                  {/* Barra base invisible/sólida que se fusiona con la gota */}
+                {/* B. Capa Líquida (Simplificada v16.5 para diagnóstico) */}
+                <div className="nav-liquid-layer" style={{ filter: 'none' }}>
                   <div className="nav-liquid-base"></div>
                   <div 
                     className="nav-active-drop" 
                     style={{ 
                       width: `${itemWidthPct}%`,
-                      transform: `translateX(${(currentPosPct || 0) * (100 / itemWidthPct)}%) scaleX(${stretch}) skewX(${skew}deg)`,
-                      transition: isDraggingNav ? 'none' : 'transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275)'
+                      transform: `translateX(${Math.max(0, (currentPosPct || 0)) * (100 / itemWidthPct)}%) scaleX(${stretch}) skewX(${skew}deg)`,
+                      transition: isDraggingNav ? 'none' : 'transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275)',
+                      background: 'var(--primary-red)', /* Color sólido para ver si aparece */
+                      opacity: 0.2 /* Sutil para no tapar todo si hay error */
                     }} 
                   />
                 </div>
@@ -4186,12 +4188,13 @@ function App() {
               {/* 2. Capa de Iconos Base (Inactivos) */}
               {renderNavContent(false)}
 
-              {/* 3. Capa de Iconos Coloridos (Con Máscara de Recorte) */}
+              {/* 3. Capa de Iconos Coloridos (Con Máscara de Recorte Segura) */}
               <div 
                 className="nav-reveal-mask"
                 style={{
-                  clipPath: `inset(0 ${100 - (currentPosPct + itemWidthPct)}% 0 ${currentPosPct}% round 35px)`,
-                  transition: isDraggingNav ? 'none' : 'clip-path 0.6s cubic-bezier(0.19, 1, 0.22, 1)'
+                  clipPath: `inset(0 ${Math.max(0, 100 - (currentPosPct + itemWidthPct))}% 0 ${Math.max(0, currentPosPct)}% round 35px)`,
+                  transition: isDraggingNav ? 'none' : 'clip-path 0.6s cubic-bezier(0.19, 1, 0.22, 1)',
+                  willChange: 'clip-path'
                 }}
               >
                 {renderNavContent(true)}
