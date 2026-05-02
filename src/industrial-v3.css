@@ -736,11 +736,11 @@ h1, h2, h3, h4, h5, h6 {
 
   .bottom-nav-item.active {
     color: #000;
-    transform: scale(1.05);
+    transform: scale(1.22); /* Efecto Lupa Sincronizado: Gran aumento de tamaño real */
   }
 
   .bottom-nav-item.active svg {
-    stroke-width: 2.5px;
+    stroke-width: 2.1px; /* Líneas finas para que se vea más grande, no más gordo */
   }
   
   /* Alineación Estricta: Sin zoom para evitar visión doble con el fondo */
