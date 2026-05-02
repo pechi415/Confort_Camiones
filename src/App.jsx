@@ -4066,8 +4066,6 @@ function App() {
         </div>
       )}
 
-      </div>
-
       {/* Navegación Inferior de Próxima Generación - Gota Líquida + Color Reveal (v15) */}
       {(() => {
         const mobileTabs = ['dashboard', 'cola', 'nuevo', 'historial'];
@@ -4212,6 +4210,7 @@ function App() {
           <ChevronUp size={24} />
         </button>
       )}
+      </div>
     </>
   );
 }
