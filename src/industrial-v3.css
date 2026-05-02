@@ -558,19 +558,20 @@ h1, h2, h3, h4, h5, h6 {
 
   .nav-active-pill {
     position: absolute;
-    height: 54px;
-    top: 9px;
-    background: rgba(255, 255, 255, 0.95) !important; /* Más sólido para que se note el efecto vidrio sobre el fondo transparente */
-    backdrop-filter: blur(10px);
-    border-radius: 27px;
-    /* Efecto Gota Líquida: cubic-bezier elástico */
-    transition: transform 0.6s cubic-bezier(0.34, 1.56, 0.64, 1), width 0.3s ease;
+    height: 52px;
+    top: 10px;
+    background: rgba(255, 255, 255, 0.98) !important;
+    backdrop-filter: blur(15px);
+    border-radius: 26px;
+    /* Efecto Rodante de Gota: Curva viscosa y fluida (no elástica) */
+    transition: transform 0.45s cubic-bezier(0.19, 1, 0.22, 1), width 0.3s ease;
     z-index: 0;
     pointer-events: none;
-    border: 2px solid #ffffff !important;
+    border: 1px solid rgba(255, 255, 255, 1) !important;
     box-shadow: 
-      0 10px 25px rgba(0, 0, 0, 0.15),
-      0 0 25px rgba(255, 255, 255, 0.5);
+      0 4px 12px rgba(0, 0, 0, 0.12),
+      0 0 20px rgba(255, 255, 255, 0.6),
+      inset 0 0 12px rgba(255, 255, 255, 0.5); /* Efecto volumen */
   }
 
   .bottom-nav-item {
@@ -1345,9 +1346,10 @@ body {
     background: rgba(255, 255, 255, 0.2) !important;
   }
   .nav-active-pill {
-    height: 48px !important;
-    top: 7px !important;
-    background: rgba(255, 255, 255, 0.95) !important;
+    height: 44px !important;
+    top: 9px !important;
+    background: rgba(255, 255, 255, 0.98) !important;
+    transition: transform 0.45s cubic-bezier(0.19, 1, 0.22, 1), width 0.3s ease !important;
   }
   .bottom-nav-item {
     height: 100% !important;
