@@ -4068,7 +4068,6 @@ function App() {
         const mobileTabs = ['dashboard', 'cola', 'nuevo', 'historial'];
         if (session?.role === 'admin') mobileTabs.push('usuarios');
         const activeIndex = mobileTabs.indexOf(activeTab);
-        const itemWidth = 100 / mobileTabs.length;
         
         return (
           <nav className="bottom-nav mobile-only">
@@ -4076,8 +4075,9 @@ function App() {
             <div 
               className="nav-active-pill" 
               style={{ 
-                width: `${itemWidth}%`,
-                transform: `translateX(${activeIndex * 100}%)`
+                width: `calc((100% - 12px) / ${mobileTabs.length})`,
+                transform: `translateX(${activeIndex * 100}%)`,
+                left: '6px'
               }} 
             />
             
