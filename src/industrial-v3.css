@@ -597,44 +597,56 @@ h1, h2, h3, h4, h5, h6 {
 
   #main-mobile-nav-v16 .nav-lens-drop {
     position: absolute !important;
-    height: 48px !important;  /* Reposo: Dentro de la barra */
-    top: 16px !important;      /* Centrado */
-    border-radius: 24px !important;
+    top: 0 !important;
+    height: 100% !important; /* Llena toda la altura de la barra */
     transform-origin: center center;
-    will-change: transform, height, top, border-radius;
-    transition: height 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), 
-                top 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), 
-                border-radius 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275),
-                background 0.3s ease, 
-                box-shadow 0.3s ease !important;
-    
-    /* Estado Reposo: Ligeramente gris, sin desenfoque agresivo */
-    background: rgba(0, 0, 0, 0.03) !important;
-    backdrop-filter: none;
-    -webkit-backdrop-filter: none;
+    will-change: transform;
+    /* Wrapper invisible, solo mueve la posición */
+    background: transparent !important;
     box-shadow: none !important;
-    border: 1px solid rgba(0, 0, 0, 0.05) !important;
+    border: none !important;
+    backdrop-filter: none !important;
   }
 
-  /* ESTADO ACTIVO (Lente Iridiscente al Tocar) */
-  #main-mobile-nav-v16 .nav-lens-drop.lens-active {
-    height: 74px !important;  /* Crece fuera de la barra */
-    top: 3px !important;
-    border-radius: 37px !important;
+  /* La forma real de la gota (Pseudo-elemento para hacerla redonda) */
+  #main-mobile-nav-v16 .nav-lens-drop::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
     
-    /* Burbuja de cristal 100% transparente (Centro despejado) */
-    background: transparent !important;
-    backdrop-filter: contrast(105%); /* Sin blur para máxima nitidez de iconos */
+    /* Estado Reposo: Pequeña y redonda */
+    width: 48px;
+    height: 48px;
+    border-radius: 50%; /* Círculo perfecto */
+    
+    transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+    
+    /* Estilos Reposo */
+    background: rgba(0, 0, 0, 0.03);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+  }
+
+  /* ESTADO ACTIVO (Gota Gorda 3D al Tocar) */
+  #main-mobile-nav-v16 .nav-lens-drop.lens-active::after {
+    /* Crece a una esfera grande */
+    width: 74px;
+    height: 74px;
+    
+    /* Burbuja de cristal transparente */
+    background: transparent;
+    backdrop-filter: contrast(105%);
     -webkit-backdrop-filter: contrast(105%);
     
-    /* Solo los bordes tienen brillo y arcoíris */
+    /* Destellos 3D en los bordes curvos */
     box-shadow: 
-      inset 0 2px 3px rgba(255, 255, 255, 0.6), /* Brillo superior fino */
-      inset -1px -1px 4px rgba(0, 255, 255, 0.6), /* Borde Cian fino */
-      inset 1px 1px 4px rgba(255, 0, 255, 0.6), /* Borde Magenta fino */
-      0 6px 12px rgba(0, 0, 0, 0.08) !important; /* Sombra externa suave */
+      inset 0 3px 5px rgba(255, 255, 255, 0.7), /* Brillo superior 3D */
+      inset -1.5px -1.5px 5px rgba(0, 255, 255, 0.6), /* Borde Cian */
+      inset 1.5px 1.5px 5px rgba(255, 0, 255, 0.6), /* Borde Magenta */
+      0 6px 12px rgba(0, 0, 0, 0.08); /* Sombra base */
       
-    border: 1px solid rgba(255, 255, 255, 0.3) !important;
+    border: 1px solid rgba(255, 255, 255, 0.3);
   }
 
   .nav-items-layer {
@@ -656,15 +668,13 @@ h1, h2, h3, h4, h5, h6 {
     bottom: 12px !important;
     max-width: 600px !important;
   }
-  #main-mobile-nav-v16 .nav-lens-drop {
-    height: 42px !important;
-    top: 14px !important;
-    border-radius: 21px !important;
+  #main-mobile-nav-v16 .nav-lens-drop::after {
+    width: 42px;
+    height: 42px;
   }
-  #main-mobile-nav-v16 .nav-lens-drop.lens-active {
-    height: 64px !important;
-    top: 3px !important;
-    border-radius: 32px !important;
+  #main-mobile-nav-v16 .nav-lens-drop.lens-active::after {
+    width: 64px;
+    height: 64px;
   }
   .nav-base-bar-blur {
     top: 11px !important;
