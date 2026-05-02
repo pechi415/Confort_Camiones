@@ -361,6 +361,8 @@ function App() {
   const [activeTab, setActiveTab] = useState('dashboard');
   const [isDraggingNav, setIsDraggingNav] = useState(false);
   const [navTouchX, setNavTouchX] = useState(0);
+  const [navVelocity, setNavVelocity] = useState(0);
+  const lastTouchX = useRef(0);
   const navRef = useRef(null);
 
   // Supabase Auth Session State
@@ -4079,16 +4081,25 @@ function App() {
         
         if (isDraggingNav && navRef.current) {
           const rect = navRef.current.getBoundingClientRect();
-          const relativeX = navTouchX - rect.left - 6; // Ajuste por padding
+          const currentX = navTouchX;
+          const delta = currentX - lastTouchX.current;
+          
+          // Suavizado de velocidad para evitar saltos bruscos
+          setNavVelocity(prev => prev * 0.7 + delta * 0.3);
+          lastTouchX.current = currentX;
+
+          const relativeX = currentX - rect.left - 6;
           const totalWidth = rect.width - 12;
           currentPosPct = (relativeX / totalWidth) * 100 - (itemWidthPct / 2);
-          // Limitar rango
           currentPosPct = Math.max(0, Math.min(100 - itemWidthPct, currentPosPct));
         }
 
         const handleTouchStart = (e) => {
           setIsDraggingNav(true);
-          setNavTouchX(e.touches[0].clientX);
+          const x = e.touches[0].clientX;
+          setNavTouchX(x);
+          lastTouchX.current = x;
+          setNavVelocity(0);
         };
 
         const handleTouchMove = (e) => {
@@ -4097,6 +4108,7 @@ function App() {
 
         const handleTouchEnd = (e) => {
           setIsDraggingNav(false);
+          setNavVelocity(0);
           const rect = navRef.current.getBoundingClientRect();
           const relativeX = navTouchX - rect.left - 6;
           const totalWidth = rect.width - 12;
@@ -4104,6 +4116,10 @@ function App() {
           const newIndex = Math.max(0, Math.min(mobileTabs.length - 1, Math.floor(pct / itemWidthPct)));
           setActiveTab(mobileTabs[newIndex]);
         };
+
+        // Calcular deformación (Estiramiento y Sesgo)
+        const stretch = 1 + Math.min(Math.abs(navVelocity) * 0.012, 0.4); // Máx 40% de estiramiento
+        const skew = Math.max(-15, Math.min(15, navVelocity * 0.6)); // Máx 15 grados de inclinación
 
         const renderNavContent = (isColored) => (
           <div className={`nav-items-layer ${isColored ? 'colored-layer' : 'base-layer'}`}>
@@ -4140,16 +4156,16 @@ function App() {
             {/* Filtro SVG Gooey Mágico */}
             <svg style={{ visibility: 'hidden', position: 'absolute' }} width="0" height="0">
               <defs>
-                <filter id="goo-v15">
-                  <feGaussianBlur in="SourceGraphic" stdDeviation="10" result="blur" />
-                  <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 19 -9" result="goo" />
+                <filter id="goo-v16">
+                  <feGaussianBlur in="SourceGraphic" stdDeviation="12" result="blur" />
+                  <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 22 -9" result="goo" />
                   <feComposite in="SourceGraphic" in2="goo" operator="atop" />
                 </filter>
               </defs>
             </svg>
 
             <nav 
-              id="main-mobile-nav-v15" 
+              id="main-mobile-nav-v16" 
               className="bottom-nav mobile-only"
               ref={navRef}
               onTouchStart={handleTouchStart}
@@ -4163,8 +4179,8 @@ function App() {
                   className="nav-active-drop" 
                   style={{ 
                     width: `${itemWidthPct}%`,
-                    transform: `translateX(${currentPosPct * (100 / itemWidthPct)}%)`,
-                    transition: isDraggingNav ? 'none' : 'transform 0.5s cubic-bezier(0.19, 1, 0.22, 1)'
+                    transform: `translateX(${currentPosPct * (100 / itemWidthPct)}%) scaleX(${stretch}) skewX(${skew}deg)`,
+                    transition: isDraggingNav ? 'none' : 'transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275)' // Bounce al soltar
                   }} 
                 />
               </div>
@@ -4177,7 +4193,7 @@ function App() {
                 className="nav-reveal-mask"
                 style={{
                   clipPath: `inset(0 ${100 - (currentPosPct + itemWidthPct)}% 0 ${currentPosPct}% round 35px)`,
-                  transition: isDraggingNav ? 'none' : 'clip-path 0.5s cubic-bezier(0.19, 1, 0.22, 1)'
+                  transition: isDraggingNav ? 'none' : 'clip-path 0.6s cubic-bezier(0.19, 1, 0.22, 1)'
                 }}
               >
                 {renderNavContent(true)}

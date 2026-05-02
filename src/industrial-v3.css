@@ -1384,7 +1384,49 @@ body {
     font-size: 0.8rem !important;
   }
 
-  #main-mobile-nav-v15.bottom-nav { 
+  /* v16.0: LIQUID PHYSICS NAVIGATION - ELASTIC STRETCH */
+  #main-mobile-nav-v16.bottom-nav {
+    position: fixed !important;
+    bottom: 22px !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    width: 94% !important;
+    max-width: 480px !important;
+    height: 80px !important;
+    background: transparent !important;
+    border: none !important;
+    box-shadow: none !important;
+    z-index: 9999 !important;
+    display: flex !important;
+    padding: 0 !important;
+    overflow: visible !important;
+  }
+
+  .nav-liquid-layer {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    filter: url('#goo-v16');
+    z-index: 1;
+    pointer-events: none;
+  }
+
+  #main-mobile-nav-v16 .nav-active-drop {
+    position: absolute !important;
+    height: 58px !important;
+    top: 11px !important;
+    background: #ffffff !important;
+    border-radius: 29px !important;
+    z-index: 2;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1) !important;
+    /* Punto de origen para el estiramiento */
+    transform-origin: center center;
+  }
+
+  /* Landscape consistency v16 */
+  #main-mobile-nav-v16.bottom-nav { 
     display: flex !important; 
     visibility: visible !important; 
     opacity: 1 !important;
@@ -1392,13 +1434,9 @@ body {
     bottom: 12px !important;
     max-width: 600px !important;
   }
-  .nav-active-drop {
-    height: 46px !important;
-    top: 12px !important;
-  }
-  .nav-base-bar {
-    top: 12px !important;
-    bottom: 12px !important;
+  #main-mobile-nav-v16 .nav-active-drop {
+    height: 48px !important;
+    top: 11px !important;
   }
   .bottom-nav-item {
     height: 100% !important;
