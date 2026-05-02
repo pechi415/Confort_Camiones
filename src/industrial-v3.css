@@ -743,14 +743,16 @@ h1, h2, h3, h4, h5, h6 {
     stroke-width: 2.5px;
   }
   
-  /* Letras e Iconos 100% Nítidos y Negros dentro de la lupa */
+  /* EFECTO LUPA: Todo dentro de la burbuja se agranda un 15% */
   .nav-reveal-mask .bottom-nav-item {
     color: #000; 
     text-shadow: none; /* Cero distorsión */
+    transform: scale(1.18) !important; /* Aumento óptico real de lupa */
   }
   
   .nav-reveal-mask .bottom-nav-item svg {
     filter: none; /* Cero distorsión */
+    stroke-width: 2.3px; /* Ligeramente más grueso por el aumento */
   }
 
   .bottom-nav-item span {
