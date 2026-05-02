@@ -644,8 +644,8 @@ h1, h2, h3, h4, h5, h6 {
       
     mix-blend-mode: normal; 
     position: relative;
-    /* Quitamos overflow: hidden para que el blur de borde pueda expandirse */
-    overflow: visible;
+    /* Restauramos el recorte para evitar que el desenfoque se escape como una nube */
+    overflow: hidden;
     /* Borde fino semitransparente para definir el cristal */
     border: 1px solid rgba(255, 255, 255, 0.3) !important;
   }
@@ -653,12 +653,13 @@ h1, h2, h3, h4, h5, h6 {
   /* EFECTO LENTE: Solo los bordes difuminan lo que hay debajo */
   .nav-lens-edge-blur {
     position: absolute;
-    inset: -15px; /* Expandimos el área de blur hacia afuera */
+    inset: 0; 
     border-radius: inherit;
-    backdrop-filter: blur(25px) contrast(115%) brightness(0.9);
-    -webkit-backdrop-filter: blur(25px) contrast(115%) brightness(0.9);
-    -webkit-mask-image: radial-gradient(circle at center, transparent 25%, black 75%);
-    mask-image: radial-gradient(circle at center, transparent 25%, black 75%);
+    backdrop-filter: blur(12px);
+    -webkit-backdrop-filter: blur(12px);
+    /* Usamos una elipse para que el centro nítido siga la forma de la pastilla */
+    -webkit-mask-image: radial-gradient(ellipse at center, transparent 40%, black 90%);
+    mask-image: radial-gradient(ellipse at center, transparent 40%, black 90%);
     pointer-events: none;
     z-index: 1;
   }
