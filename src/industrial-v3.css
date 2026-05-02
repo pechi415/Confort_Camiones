@@ -537,9 +537,9 @@ h1, h2, h3, h4, h5, h6 {
     bottom: 22px !important;
     left: 50% !important;
     transform: translateX(-50%) !important;
-    width: 96% !important;
-    max-width: 520px !important;
-    height: 64px !important;
+    width: 98% !important;
+    max-width: 540px !important;
+    height: 82px !important;
     border-radius: 40px !important;
     padding: 0 12px !important; /* Carril seguro estilo WhatsApp/iOS */
     background: transparent !important;
@@ -599,7 +599,7 @@ h1, h2, h3, h4, h5, h6 {
   #main-mobile-nav-v16 .nav-lens-drop {
     position: absolute !important;
     height: 48px !important;  /* Selector tipo Píldora iOS */
-    top: 8px !important;       /* Centrado vertical perfecto en barra de 64px */
+    top: 17px !important;      /* Centrado vertical en la nueva barra de 82px */
     border-radius: 24px !important;
     transform-origin: center center;
     will-change: transform, height, top, border-radius;
@@ -620,9 +620,9 @@ h1, h2, h3, h4, h5, h6 {
 
   /* ESTADO ACTIVO (Gota Gorda 3D Alargada al Tocar) */
   #main-mobile-nav-v16 .nav-lens-drop.lens-active {
-    height: 54px !important;   
-    top: 5px !important;
-    border-radius: 27px !important;
+    height: 58px !important;   
+    top: 12px !important;
+    border-radius: 29px !important;
     
     /* 1. Cristal Puro (100% Transparente como WhatsApp) */
     background: transparent !important;
