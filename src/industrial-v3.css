@@ -533,7 +533,7 @@ h1, h2, h3, h4, h5, h6 {
   }
 }
 
-  /* Bottom Navigation Style - Fluid Liquid Glass */
+  /* Bottom Navigation Style - Frosted Glass (Gota/Vidrio) */
   .bottom-nav {
     position: fixed;
     bottom: 22px;
@@ -542,10 +542,10 @@ h1, h2, h3, h4, h5, h6 {
     width: 94%;
     max-width: 460px;
     height: 72px;
-    background: rgba(255, 255, 255, 0.25) !important; /* Extremadamente transparente */
-    backdrop-filter: blur(40px) saturate(160%) !important;
-    -webkit-backdrop-filter: blur(40px) saturate(160%) !important;
-    border: 1px solid rgba(255, 255, 255, 0.4) !important;
+    background-color: rgba(255, 255, 255, 0.7) !important; /* Valor exacto pedido por el usuario */
+    backdrop-filter: blur(12px) !important; /* Efecto esmerilado */
+    -webkit-backdrop-filter: blur(12px) !important;
+    border: 1px solid rgba(255, 255, 255, 0.5) !important;
     border-radius: 36px;
     display: flex;
     justify-content: space-around;
@@ -553,25 +553,21 @@ h1, h2, h3, h4, h5, h6 {
     padding: 0 6px;
     z-index: 5000;
     box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-    overflow: hidden; /* Para que la gota no se salga */
+    overflow: hidden;
   }
 
   .nav-active-pill {
     position: absolute;
-    height: 52px;
-    top: 10px;
-    background: rgba(255, 255, 255, 0.98) !important;
+    height: 54px;
+    top: 9px;
+    background: rgba(255, 255, 255, 0.5) !important; /* Vidrio sobre vidrio */
     backdrop-filter: blur(15px);
-    border-radius: 26px;
-    /* Efecto Rodante de Gota: Curva viscosa y fluida (no elástica) */
-    transition: transform 0.45s cubic-bezier(0.19, 1, 0.22, 1), width 0.3s ease;
+    border-radius: 27px;
+    transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
     z-index: 0;
     pointer-events: none;
-    border: 1px solid rgba(255, 255, 255, 1) !important;
-    box-shadow: 
-      0 4px 12px rgba(0, 0, 0, 0.12),
-      0 0 20px rgba(255, 255, 255, 0.6),
-      inset 0 0 12px rgba(255, 255, 255, 0.5); /* Efecto volumen */
+    border: 1.5px solid rgba(255, 255, 255, 0.8) !important;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
   }
 
   .bottom-nav-item {
@@ -1343,13 +1339,13 @@ body {
     bottom: 12px !important;
     padding: 0 4px !important;
     max-width: 500px !important;
-    background: rgba(255, 255, 255, 0.2) !important;
+    background-color: rgba(255, 255, 255, 0.7) !important;
+    backdrop-filter: blur(10px) !important;
   }
   .nav-active-pill {
-    height: 44px !important;
-    top: 9px !important;
-    background: rgba(255, 255, 255, 0.98) !important;
-    transition: transform 0.45s cubic-bezier(0.19, 1, 0.22, 1), width 0.3s ease !important;
+    height: 48px !important;
+    top: 7px !important;
+    background: rgba(255, 255, 255, 0.6) !important;
   }
   .bottom-nav-item {
     height: 100% !important;
