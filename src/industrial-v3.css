@@ -630,24 +630,34 @@ h1, h2, h3, h4, h5, h6 {
     backdrop-filter: contrast(102%) brightness(1.02);
     -webkit-backdrop-filter: contrast(102%) brightness(1.02);
     
-      /* 2. Refracción de bordes (Volumen 3D y Halo Fino) */
+      /* 2. Refracción de bordes (Solo Brillos Blancos y Sombra Base) */
     box-shadow: 
       /* Brillo Especular Superior */
       inset 0px 2px 2px rgba(255, 255, 255, 0.9), 
       inset 0px 4px 8px rgba(255, 255, 255, 0.2), 
-      
-      /* Anillo Prismático Hiper-Fino en la base (Sin difuminar el texto) */
-      inset -1px -1px 0px rgba(0, 255, 255, 0.4),
-      inset 1px -1px 0px rgba(255, 0, 255, 0.4),
       
       /* Sombra Interna Abajo para volumen */
       inset 0px -4px 6px rgba(0, 0, 0, 0.25),
       
       /* Sombra Externa */
       0px 8px 20px rgba(0, 0, 0, 0.15) !important; 
-      
+    
+    position: relative;
+    overflow: hidden;
     /* Borde fino semitransparente para definir el cristal */
     border: 1px solid rgba(255, 255, 255, 0.3) !important;
+  }
+  
+  /* Capa especial para el arcoíris que reacciona a la tinta negra */
+  .nav-lens-chromatic-effect {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    border-radius: inherit;
+    mix-blend-mode: screen; /* CLAVE: Hace que el color desaparezca en blanco y brille en negro */
+    pointer-events: none;
   }
 
   .nav-items-layer {
