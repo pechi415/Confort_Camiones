@@ -358,7 +358,10 @@ function App() {
   useEffect(() => {
     document.title = "Drummond Confort System";
   }, []);
-  const [activeTab, setActiveTab] = useState(() => sessionStorage.getItem('drummond_activeTab') || 'dashboard');
+  const [activeTab, setActiveTab] = useState('dashboard');
+  const [isDraggingNav, setIsDraggingNav] = useState(false);
+  const [navTouchX, setNavTouchX] = useState(0);
+  const navRef = useRef(null);
 
   // Supabase Auth Session State
   const [session, setSession] = useState(() => {
@@ -4063,91 +4066,124 @@ function App() {
 
       </div>
 
-    {/* Navegación Inferior (Solo Móvil) - Estilo Liquid Glass Ready */}
+      {/* Navegación Inferior de Próxima Generación - Gota Líquida + Color Reveal (v15) */}
       {(() => {
         const mobileTabs = ['dashboard', 'cola', 'nuevo', 'historial'];
         if (session?.role === 'admin') mobileTabs.push('usuarios');
-        const activeIndex = mobileTabs.indexOf(activeTab);
         
+        const activeIndex = mobileTabs.indexOf(activeTab);
+        const itemWidthPct = 100 / mobileTabs.length;
+        
+        // Calcular posición actual (porcentaje) - Ya sea por arrastre o por pestaña activa
+        let currentPosPct = activeIndex * itemWidthPct;
+        
+        if (isDraggingNav && navRef.current) {
+          const rect = navRef.current.getBoundingClientRect();
+          const relativeX = navTouchX - rect.left - 6; // Ajuste por padding
+          const totalWidth = rect.width - 12;
+          currentPosPct = (relativeX / totalWidth) * 100 - (itemWidthPct / 2);
+          // Limitar rango
+          currentPosPct = Math.max(0, Math.min(100 - itemWidthPct, currentPosPct));
+        }
+
+        const handleTouchStart = (e) => {
+          setIsDraggingNav(true);
+          setNavTouchX(e.touches[0].clientX);
+        };
+
+        const handleTouchMove = (e) => {
+          setNavTouchX(e.touches[0].clientX);
+        };
+
+        const handleTouchEnd = (e) => {
+          setIsDraggingNav(false);
+          const rect = navRef.current.getBoundingClientRect();
+          const relativeX = navTouchX - rect.left - 6;
+          const totalWidth = rect.width - 12;
+          const pct = (relativeX / totalWidth) * 100;
+          const newIndex = Math.max(0, Math.min(mobileTabs.length - 1, Math.floor(pct / itemWidthPct)));
+          setActiveTab(mobileTabs[newIndex]);
+        };
+
+        const renderNavContent = (isColored) => (
+          <div className={`nav-items-layer ${isColored ? 'colored-layer' : 'base-layer'}`}>
+            {mobileTabs.map((tab, idx) => {
+              const isActive = activeTab === tab;
+              let Icon = LayoutDashboard;
+              let label = "Inicio";
+              let color = "#1a73e8";
+
+              if (tab === 'cola') { Icon = Truck; label = "Lista"; color = "#f44336"; }
+              if (tab === 'nuevo') { Icon = PlusCircle; label = "Nuevo"; color = "#4caf50"; }
+              if (tab === 'historial') { Icon = History; label = "Historial"; color = "#ff9800"; }
+              if (tab === 'usuarios') { Icon = Users; label = "Usuarios"; color = "#9c27b0"; }
+
+              return (
+                <div 
+                  key={tab} 
+                  className={`bottom-nav-item ${isActive ? 'active' : ''}`}
+                  onClick={() => setActiveTab(tab)}
+                  style={{ color: isColored ? color : '#5f6368' }}
+                >
+                  <div className="icon-wrapper">
+                    <Icon size={22} strokeWidth={isColored ? 2.5 : 2} />
+                  </div>
+                  <span>{label}</span>
+                </div>
+              );
+            })}
+          </div>
+        );
+
         return (
-          <nav id="main-mobile-nav-v14" className="bottom-nav mobile-only">
-            {/* Filtro SVG para efecto Gooey (Gota Líquida) v14 */}
+          <>
+            {/* Filtro SVG Gooey Mágico */}
             <svg style={{ visibility: 'hidden', position: 'absolute' }} width="0" height="0">
               <defs>
-                <filter id="liquid-goo-v14">
-                  <feGaussianBlur in="SourceGraphic" stdDeviation="12" result="blur" />
-                  <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 20 -10" result="goo" />
+                <filter id="goo-v15">
+                  <feGaussianBlur in="SourceGraphic" stdDeviation="10" result="blur" />
+                  <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 19 -9" result="goo" />
                   <feComposite in="SourceGraphic" in2="goo" operator="atop" />
                 </filter>
               </defs>
             </svg>
 
-            {/* Capa de fondo líquida */}
-            <div className="nav-liquid-container">
-              <div className="nav-base-strip"></div>
+            <nav 
+              id="main-mobile-nav-v15" 
+              className="bottom-nav mobile-only"
+              ref={navRef}
+              onTouchStart={handleTouchStart}
+              onTouchMove={handleTouchMove}
+              onTouchEnd={handleTouchEnd}
+            >
+              {/* 1. Capa Líquida (Gooey Background) */}
+              <div className="nav-liquid-layer">
+                <div className="nav-base-bar"></div>
+                <div 
+                  className="nav-active-drop" 
+                  style={{ 
+                    width: `${itemWidthPct}%`,
+                    transform: `translateX(${currentPosPct * (100 / itemWidthPct)}%)`,
+                    transition: isDraggingNav ? 'none' : 'transform 0.5s cubic-bezier(0.19, 1, 0.22, 1)'
+                  }} 
+                />
+              </div>
+
+              {/* 2. Capa de Iconos Base (Inactivos) */}
+              {renderNavContent(false)}
+
+              {/* 3. Capa de Iconos Coloridos (Con Máscara de Recorte) */}
               <div 
-                className="nav-active-pill" 
-                style={{ 
-                  width: `calc((100% - 12px) / ${mobileTabs.length})`,
-                  transform: `translateX(${activeIndex * 100}%)`,
-                  left: '6px'
-                }} 
-              />
-            </div>
-            
-            <a 
-              href="#" 
-              className={`bottom-nav-item ${activeTab === 'dashboard' ? 'active' : ''}`}
-          onClick={(e) => { e.preventDefault(); setActiveTab('dashboard'); }}
-        >
-          <div className="icon-wrapper">
-            <LayoutDashboard size={22} />
-          </div>
-          <span>Inicio</span>
-        </a>
-        <a 
-          href="#" 
-          className={`bottom-nav-item ${activeTab === 'cola' ? 'active' : ''}`}
-          onClick={(e) => { e.preventDefault(); setActiveTab('cola'); }}
-        >
-          <div className="icon-wrapper">
-            <Truck size={22} />
-          </div>
-          <span>Lista</span>
-        </a>
-        <a 
-          href="#" 
-          className={`bottom-nav-item ${activeTab === 'nuevo' ? 'active' : ''}`}
-          onClick={(e) => { e.preventDefault(); setActiveTab('nuevo'); }}
-        >
-          <div className="icon-wrapper">
-            <PlusCircle size={22} />
-          </div>
-          <span>Nuevo Reporte</span>
-        </a>
-        <a 
-          href="#" 
-          className={`bottom-nav-item ${activeTab === 'historial' ? 'active' : ''}`}
-          onClick={(e) => { e.preventDefault(); setActiveTab('historial'); }}
-        >
-          <div className="icon-wrapper">
-            <History size={22} />
-          </div>
-          <span>Historial</span>
-        </a>
-        {session?.role === 'admin' && (
-          <a 
-            href="#" 
-            className={`bottom-nav-item ${activeTab === 'usuarios' ? 'active' : ''}`}
-            onClick={(e) => { e.preventDefault(); setActiveTab('usuarios'); }}
-          >
-            <div className="icon-wrapper">
-              <Users size={22} />
-            </div>
-            <span>Usuarios</span>
-          </a>
-        )}
-      </nav>
+                className="nav-reveal-mask"
+                style={{
+                  clipPath: `inset(0 ${100 - (currentPosPct + itemWidthPct)}% 0 ${currentPosPct}% round 35px)`,
+                  transition: isDraggingNav ? 'none' : 'clip-path 0.5s cubic-bezier(0.19, 1, 0.22, 1)'
+                }}
+              >
+                {renderNavContent(true)}
+              </div>
+            </nav>
+          </>
         );
       })()}
       {/* Botón Volver Arriba Seguro v1.9.52 */}
