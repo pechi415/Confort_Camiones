@@ -4115,10 +4115,37 @@ function App() {
           setActiveTab(mobileTabs[newIndex]);
         };
 
-        // Calcular deformación (Estiramiento y Sesgo) con protección contra NaN
+        // Estado para deformación elástica (física de resorte)
+        const [jumpStretch, setJumpStretch] = useState(1);
+        const [jumpSkew, setJumpSkew] = useState(0);
+
+        const handleTabClick = (tab, targetIdx) => {
+          const distance = targetIdx - activeIndex;
+          if (distance === 0) return;
+          
+          setActiveTab(tab);
+          
+          // Simular impulso elástico basado en la distancia
+          const direction = Math.sign(distance);
+          const intensity = Math.min(Math.abs(distance) * 0.15, 0.5); // Max 50% de estiramiento
+          
+          setJumpStretch(1 + intensity);
+          setJumpSkew(direction * intensity * 30); // Max 15 grados de inclinación
+          
+          // Efecto rebote (volver a la normalidad)
+          setTimeout(() => {
+            setJumpStretch(1);
+            setJumpSkew(0);
+          }, 300); // Mitad de la transición para el efecto "wobble"
+        };
+
+        // Calcular deformación final (Combina arrastre manual y salto automático)
         const velSafe = navVelocity || 0;
-        const stretch = 1 + Math.min(Math.abs(velSafe) * 0.012, 0.4); 
-        const skew = Math.max(-15, Math.min(15, velSafe * 0.6)); 
+        const dragStretch = 1 + Math.min(Math.abs(velSafe) * 0.012, 0.4); 
+        const dragSkew = Math.max(-15, Math.min(15, velSafe * 0.6)); 
+        
+        const finalStretch = isDraggingNav ? dragStretch : jumpStretch;
+        const finalSkew = isDraggingNav ? dragSkew : jumpSkew;
 
         const renderNavContent = (isColored) => (
           <div className={`nav-items-layer ${isColored ? 'colored-layer' : 'base-layer'}`}>
@@ -4137,7 +4164,7 @@ function App() {
                 <div 
                   key={tab} 
                   className={`bottom-nav-item ${isActive ? 'active' : ''}`}
-                  onClick={() => setActiveTab(tab)}
+                  onClick={() => handleTabClick(tab, idx)}
                   style={{ color: isColored ? color : '#5f6368' }}
                 >
                   <div className="icon-wrapper">
@@ -4168,25 +4195,14 @@ function App() {
                 {/* A. Barra Esmerilada (FUERA del filtro Gooey para evitar crash) */}
                 <div className="nav-base-bar-blur"></div>
                 
-                {/* B. Capa Gooey (Efecto Metaballs Genuino) */}
+                {/* B. Capa Dinámica (Física Elástica Genuina) */}
                 <div className="nav-liquid-layer">
-                  {/* Anclas líquidas estáticas detrás de cada icono */}
-                  {mobileTabs.map((_, idx) => (
-                    <div 
-                      key={`anchor-${idx}`}
-                      className="nav-liquid-anchor"
-                      style={{ 
-                        left: `${(idx * itemWidthPct) + (itemWidthPct / 2)}%`,
-                      }}
-                    />
-                  ))}
-                  
-                  {/* La gota principal que viaja */}
+                  {/* La gota principal que viaja y se deforma */}
                   <div 
                     className="nav-active-drop" 
                     style={{ 
                       width: `${itemWidthPct}%`,
-                      transform: `translateX(${Math.max(0, (currentPosPct || 0)) * (100 / itemWidthPct)}%) scaleX(${stretch}) skewX(${skew}deg)`,
+                      transform: `translateX(${Math.max(0, (currentPosPct || 0)) * (100 / itemWidthPct)}%) scaleX(${finalStretch}) skewX(${finalSkew}deg)`,
                       transition: isDraggingNav ? 'none' : 'transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275)'
                     }} 
                   />
@@ -4221,15 +4237,6 @@ function App() {
           <ChevronUp size={24} />
         </button>
       )}
-      {/* Filtro SVG Gooey Mágico (Optimizado v16.4) */}
-      <svg style={{ position: 'absolute', width: 0, height: 0, pointerEvents: 'none', opacity: 0 }}>
-        <defs>
-          <filter id="goo-stable">
-            <feGaussianBlur in="SourceGraphic" stdDeviation="8" result="blur" />
-            <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 18 -8" result="goo" />
-          </filter>
-        </defs>
-      </svg>
       </div>
     </>
   );
