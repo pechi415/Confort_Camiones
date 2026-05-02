@@ -537,8 +537,8 @@ h1, h2, h3, h4, h5, h6 {
     bottom: 22px !important;
     left: 50% !important;
     transform: translateX(-50%) !important;
-    width: 94% !important;
-    max-width: 480px !important;
+    width: 96% !important;
+    max-width: 520px !important;
     height: 64px !important;
     border-radius: 40px !important;
     padding: 0 12px !important; /* Carril seguro estilo WhatsApp/iOS */
