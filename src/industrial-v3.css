@@ -743,11 +743,11 @@ h1, h2, h3, h4, h5, h6 {
     stroke-width: 2.5px;
   }
   
-  /* EFECTO LUPA: Todo dentro de la burbuja se agranda un 15% */
+  /* Alineación Estricta: Sin zoom para evitar visión doble con el fondo */
   .nav-reveal-mask .bottom-nav-item {
     color: #000; 
     text-shadow: none; /* Cero distorsión */
-    transform: scale(1.18) !important; /* Aumento óptico real de lupa */
+    /* Retirado el scale() masivo para que encaje 1:1 con las letras grises */
   }
   
   .nav-reveal-mask .bottom-nav-item svg {

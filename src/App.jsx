@@ -4165,7 +4165,7 @@ function App() {
                   key={tab} 
                   className={`bottom-nav-item ${isActive ? 'active' : ''}`}
                   onClick={() => handleTabClick(tab, idx)}
-                  style={{ color: isColored ? color : '#5f6368' }}
+                  style={{ color: isColored ? '#000' : '#5f6368' }}
                 >
                   <div className="icon-wrapper">
                     <Icon size={22} strokeWidth={isColored ? 2.5 : 2} />
