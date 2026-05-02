@@ -591,8 +591,8 @@ h1, h2, h3, h4, h5, h6 {
     left: 6px;
     right: 6px;
     height: 100%;
-    z-index: 20; /* Flotando sobre los iconos */
-    pointer-events: none; /* Intocable */
+    z-index: 60; /* Flotando SOBRE los iconos para poder desenfocarlos */
+    pointer-events: none;
   }
 
   #main-mobile-nav-v16 .nav-lens-drop {
@@ -644,7 +644,8 @@ h1, h2, h3, h4, h5, h6 {
       
     mix-blend-mode: normal; 
     position: relative;
-    overflow: hidden;
+    /* Quitamos overflow: hidden para que el blur de borde pueda expandirse */
+    overflow: visible;
     /* Borde fino semitransparente para definir el cristal */
     border: 1px solid rgba(255, 255, 255, 0.3) !important;
   }
@@ -652,12 +653,12 @@ h1, h2, h3, h4, h5, h6 {
   /* EFECTO LENTE: Solo los bordes difuminan lo que hay debajo */
   .nav-lens-edge-blur {
     position: absolute;
-    inset: -2px; /* Un poco más grande que la gota para capturar el borde */
+    inset: -15px; /* Expandimos el área de blur hacia afuera */
     border-radius: inherit;
-    backdrop-filter: blur(40px) contrast(120%) brightness(0.9);
-    -webkit-backdrop-filter: blur(40px) contrast(120%) brightness(0.9);
-    -webkit-mask-image: radial-gradient(circle, transparent 20%, black 85%);
-    mask-image: radial-gradient(circle, transparent 20%, black 85%);
+    backdrop-filter: blur(25px) contrast(115%) brightness(0.9);
+    -webkit-backdrop-filter: blur(25px) contrast(115%) brightness(0.9);
+    -webkit-mask-image: radial-gradient(circle at center, transparent 25%, black 75%);
+    mask-image: radial-gradient(circle at center, transparent 25%, black 75%);
     pointer-events: none;
     z-index: 1;
   }
@@ -722,7 +723,7 @@ h1, h2, h3, h4, h5, h6 {
     left: 6px;
     right: 6px;
     height: 100%;
-    z-index: 10;
+    z-index: 40; /* Iconos negros están bajo la lente (60) pero sobre la base (1) */
     pointer-events: none;
     overflow: hidden;
     will-change: clip-path;
