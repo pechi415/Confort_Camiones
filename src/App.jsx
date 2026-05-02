@@ -4168,7 +4168,7 @@ function App() {
                   style={{ color: isColored ? '#000' : '#5f6368' }}
                 >
                   <div className="icon-wrapper">
-                    <Icon size={22} strokeWidth={isColored ? 2.5 : 2} />
+                    <Icon size={22} strokeWidth={2} />
                   </div>
                   <span>{label}</span>
                 </div>
