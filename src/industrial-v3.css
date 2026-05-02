@@ -630,17 +630,13 @@ h1, h2, h3, h4, h5, h6 {
     backdrop-filter: contrast(102%) brightness(1.02);
     -webkit-backdrop-filter: contrast(102%) brightness(1.02);
     
-    /* 2. Refracción de bordes duros como en la imagen de WhatsApp */
+      /* 2. Refracción de bordes (Solo Brillos Blancos y Sombra Base) */
     box-shadow: 
       /* Brillo Especular Fino Arriba */
       inset 0px 2px 2px rgba(255, 255, 255, 0.9), 
       inset 0px 5px 10px rgba(255, 255, 255, 0.2), 
       
-      /* Refracción Dura Lateral (Sin desenfoque de sombra para replicar cristal) */
-      inset 3px 0px 2px rgba(0, 255, 255, 0.6),   /* Cian nítido a la izquierda */
-      inset -3px 0px 2px rgba(255, 0, 255, 0.6),  /* Magenta nítido a la derecha */
-      
-      /* Sombra Interna Abajo para peso 3D de la gota */
+      /* Sombra Interna Abajo para peso 3D de la gota (Cero arcoíris aquí) */
       inset 0px -4px 6px rgba(0, 0, 0, 0.25),
       
       /* Sombra Externa */
@@ -741,7 +737,18 @@ h1, h2, h3, h4, h5, h6 {
 
   .bottom-nav-item.active svg {
     stroke-width: 2.5px;
-    filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.8));
+  }
+  
+  /* LA MAGIA: Aberración cromática SOLO en los elementos vistos a través de la lente */
+  .nav-reveal-mask .bottom-nav-item {
+    color: #000; /* Se vuelven oscuros al pasar la lupa */
+    /* El arcoíris nace de las letras */
+    text-shadow: -2px 0px 1px rgba(0, 255, 255, 0.8), 2px 0px 1px rgba(255, 0, 255, 0.8);
+  }
+  
+  .nav-reveal-mask .bottom-nav-item svg {
+    /* El arcoíris nace de los iconos negros */
+    filter: drop-shadow(-2px 0px 0px rgba(0, 255, 255, 0.8)) drop-shadow(2px 0px 0px rgba(255, 0, 255, 0.8));
   }
 
   .bottom-nav-item span {
