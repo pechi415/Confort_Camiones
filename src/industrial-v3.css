@@ -641,11 +641,24 @@ h1, h2, h3, h4, h5, h6 {
       
       /* Sombra Externa */
       0px 8px 20px rgba(0, 0, 0, 0.15) !important; 
-    
+      
+    mix-blend-mode: normal; 
     position: relative;
     overflow: hidden;
     /* Borde fino semitransparente para definir el cristal */
     border: 1px solid rgba(255, 255, 255, 0.3) !important;
+  }
+  
+  /* EFECTO LENTE: Solo los bordes difuminan lo que hay debajo */
+  .nav-lens-edge-blur {
+    position: absolute;
+    inset: 0;
+    border-radius: inherit;
+    backdrop-filter: blur(5px);
+    -webkit-mask-image: radial-gradient(circle, transparent 45%, black 100%);
+    mask-image: radial-gradient(circle, transparent 45%, black 100%);
+    pointer-events: none;
+    z-index: 1;
   }
   
   /* Capa especial para el arcoíris que reacciona a la tinta negra */
@@ -658,6 +671,7 @@ h1, h2, h3, h4, h5, h6 {
     border-radius: inherit;
     mix-blend-mode: screen; /* CLAVE: Hace que el color desaparezca en blanco y brille en negro */
     pointer-events: none;
+    z-index: 2;
   }
 
   .nav-items-layer {
