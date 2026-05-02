@@ -531,6 +531,7 @@ h1, h2, h3, h4, h5, h6 {
   .kpi-value {
     font-size: 1.8rem;
   }
+}
 
   /* Bottom Navigation Style - Floating Premium Dock */
   .bottom-nav {
@@ -592,6 +593,8 @@ h1, h2, h3, h4, h5, h6 {
     height: 22px;
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   }
+
+@media (max-width: 768px) {
 
   /* Kanban Mobile Adjustments */
   .kanban-headers {
@@ -747,12 +750,15 @@ h1, h2, h3, h4, h5, h6 {
 /* Estabilización de Altura y Scroll Estándar */
 html, body, #root {
   height: 100%;
-  overflow-x: hidden;
+  max-width: 100vw !important;
+  overflow-x: hidden !important;
 }
 
 .app-container {
   display: flex;
   min-height: 100vh;
+  max-width: 100vw !important;
+  overflow-x: hidden !important;
 }
 
 .main-content {
