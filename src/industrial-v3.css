@@ -539,7 +539,7 @@ h1, h2, h3, h4, h5, h6 {
     transform: translateX(-50%) !important;
     width: 94% !important;
     max-width: 480px !important;
-    height: 90px !important;
+    height: 75px !important;
     background: transparent !important;
     border: none !important;
     box-shadow: none !important;
@@ -570,8 +570,8 @@ h1, h2, h3, h4, h5, h6 {
 
   .nav-base-bar-blur {
     position: absolute;
-    top: 10px;
-    bottom: 10px;
+    top: 8px;
+    bottom: 8px;
     left: 6px;
     right: 6px;
     /* Blur moderado para máxima estabilidad */
@@ -597,9 +597,9 @@ h1, h2, h3, h4, h5, h6 {
 
   #main-mobile-nav-v16 .nav-lens-drop {
     position: absolute !important;
-    height: 62px !important;  /* Reposo: Ahora más alto y ancho para contener todo */
-    top: 14px !important;      /* Centrado vertical perfecto en barra de 90px */
-    border-radius: 31px !important;
+    height: 38px !important;  /* Reposo: Pastilla ultra-fina y elegante */
+    top: 18.5px !important;    /* Centrado vertical perfecto en barra de 75px */
+    border-radius: 19px !important;
     transform-origin: center center;
     will-change: transform, height, top, border-radius;
     /* QUITAMOS EL !important para no romper la transición en línea de App.jsx */
@@ -702,9 +702,9 @@ h1, h2, h3, h4, h5, h6 {
     border-radius: 21px !important;
   }
   #main-mobile-nav-v16 .nav-lens-drop.lens-active {
-    height: 74px !important;   /* No tan grande como antes, pero alargada */
-    top: 8px !important;
-    border-radius: 37px !important;
+    height: 52px !important;   /* Expansión controlada, mantiene forma de pastilla */
+    top: 11.5px !important;
+    border-radius: 26px !important;
   }
   .nav-base-bar-blur {
     top: 11px !important;

@@ -4180,9 +4180,9 @@ function App() {
                   }}
                 >
                   <div className="icon-wrapper">
-                    <Icon size={22} strokeWidth={2} />
+                    <Icon size={19} strokeWidth={2} />
                   </div>
-                  <span>{label}</span>
+                  <span style={{ fontSize: '10px', marginTop: '-2px' }}>{label}</span>
                 </div>
               );
             })}
@@ -4211,57 +4211,61 @@ function App() {
               {renderNavContent(false)}
 
               {/* 3. Capa de Iconos Coloridos (Con Máscara de Recorte Segura) */}
-              <div 
-                className="nav-reveal-mask"
-                style={{
-                  clipPath: `inset(0 ${Math.max(0, 100 - (currentPosPct + itemWidthPct))}% 0 ${Math.max(0, currentPosPct)}% round 35px)`,
-                  transition: isDraggingNav ? 'none' : 'clip-path 0.6s cubic-bezier(0.19, 1, 0.22, 1)',
-                  willChange: 'clip-path'
-                }}
-              >
-                {renderNavContent(true)}
-              </div>
-
-              {/* 4. Capa Lente de Agua (Con Aberración Cromática Dinámica por Velocidad) */}
-              <div className="nav-lens-layer">
                 {(() => {
                   const chromIntensity = Math.min(Math.abs(velSafe) * 0.35, 4);
                   const chromOffset = 1 + chromIntensity;
                   const chromOpacity = 0.3 + (chromIntensity * 0.1);
                   
-                  // HACEMOS LA GOTA MÁS ANCHA (Pastilla alargada)
-                  const bubbleWidth = itemWidthPct * 1.35; 
-                  const horizontalOffset = (bubbleWidth - itemWidthPct) / 2;
+                  // GOTA TIPO PASTILLA FINA (1.4x de ancho para elegancia)
+                  const bubbleWidth = itemWidthPct * 1.4; 
+                  const offset = (bubbleWidth - itemWidthPct) / 2;
                   const safePos = currentPosPct || 0;
                   
-                  return (
-                    <div 
-                      className={`nav-lens-drop ${isDraggingNav || jumpStretch > 1 ? 'lens-active' : ''}`} 
-                      style={{ 
-                        width: `${bubbleWidth}%`,
-                        transform: `translateX(${(safePos - horizontalOffset) * (100 / bubbleWidth)}%) scaleX(${finalStretch}) skewX(${finalSkew}deg)`,
-                        transition: isDraggingNav ? 'none' : 'transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275)'
-                      }} 
-                    >
-                      {/* EFECTO ÓPTICO: Solo los bordes difuminan lo que hay debajo */}
-                      <div className="nav-lens-edge-blur" />
+                  // Sincronizamos la Máscara de Revelado con el nuevo ancho de la gota
+                  const maskL = Math.max(0, safePos - offset);
+                  const maskR = Math.max(0, 100 - (safePos + itemWidthPct + offset));
 
-                      {/* SUB-CAPA DE ARCOÍRIS DINÁMICO (Reactiva a la velocidad e iconos) */}
-                      {(isDraggingNav || jumpStretch > 1) && (
+                  return (
+                    <>
+                      {/* 3. Capa de Revelado Sincronizada */}
+                      <div 
+                        className="nav-reveal-mask"
+                        style={{
+                          clipPath: `inset(0 ${maskR}% 0 ${maskL}% round 25px)`,
+                          transition: isDraggingNav ? 'none' : 'clip-path 0.6s cubic-bezier(0.19, 1, 0.22, 1)',
+                          willChange: 'clip-path'
+                        }}
+                      >
+                        {renderNavContent(true)}
+                      </div>
+
+                      {/* 4. Capa Lente de Agua */}
+                      <div className="nav-lens-layer">
                         <div 
-                          className="nav-lens-chromatic-effect"
-                          style={{
-                            boxShadow: `
-                              inset -${chromOffset}px 0px 2px rgba(0, 255, 255, ${chromOpacity}),
-                              inset ${chromOffset}px 0px 2px rgba(255, 0, 255, ${chromOpacity})
-                            `
-                          }}
-                        />
-                      )}
-                    </div>
+                          className={`nav-lens-drop ${isDraggingNav || jumpStretch > 1 ? 'lens-active' : ''}`} 
+                          style={{ 
+                            width: `${bubbleWidth}%`,
+                            transform: `translateX(${(safePos - offset) * (100 / bubbleWidth)}%) scaleX(${finalStretch}) skewX(${finalSkew}deg)`,
+                            transition: isDraggingNav ? 'none' : 'transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275)'
+                          }} 
+                        >
+                          <div className="nav-lens-edge-blur" />
+                          {(isDraggingNav || jumpStretch > 1) && (
+                            <div 
+                              className="nav-lens-chromatic-effect"
+                              style={{
+                                boxShadow: `
+                                  inset -${chromOffset}px 0px 2px rgba(0, 255, 255, ${chromOpacity}),
+                                  inset ${chromOffset}px 0px 2px rgba(255, 0, 255, ${chromOpacity})
+                                `
+                              }}
+                            />
+                          )}
+                        </div>
+                      </div>
+                    </>
                   );
                 })()}
-              </div>
             </nav>
           </>
         );
