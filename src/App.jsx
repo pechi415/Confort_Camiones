@@ -4063,23 +4063,37 @@ function App() {
 
       </div>
 
-      {/* Navegación Inferior (Solo Móvil) - Estilo Liquid Glass Ready */}
+    {/* Filtro SVG para efecto Gooey (Gota Líquida) */}
+    <svg style={{ visibility: 'hidden', position: 'absolute' }} width="0" height="0">
+      <defs>
+        <filter id="liquid-goo">
+          <feGaussianBlur in="SourceGraphic" stdDeviation="10" result="blur" />
+          <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 19 -9" result="goo" />
+          <feComposite in="SourceGraphic" in2="goo" operator="atop" />
+        </filter>
+      </defs>
+    </svg>
+
+    {/* Navegación Inferior (Solo Móvil) - Estilo Liquid Glass Ready */}
       {(() => {
         const mobileTabs = ['dashboard', 'cola', 'nuevo', 'historial'];
         if (session?.role === 'admin') mobileTabs.push('usuarios');
         const activeIndex = mobileTabs.indexOf(activeTab);
         
         return (
-          <nav id="main-mobile-nav-v12" className="bottom-nav mobile-only">
-            {/* Indicador Fluido Estilo Gota */}
-            <div 
-              className="nav-active-pill" 
-              style={{ 
-                width: `calc((100% - 12px) / ${mobileTabs.length})`,
-                transform: `translateX(${activeIndex * 100}%)`,
-                left: '6px'
-              }} 
-            />
+          <nav id="main-mobile-nav-v13" className="bottom-nav mobile-only">
+            {/* Capa de fondo líquida */}
+            <div className="nav-liquid-container">
+              <div className="nav-base-strip"></div>
+              <div 
+                className="nav-active-pill" 
+                style={{ 
+                  width: `calc((100% - 12px) / ${mobileTabs.length})`,
+                  transform: `translateX(${activeIndex * 100}%)`,
+                  left: '6px'
+                }} 
+              />
+            </div>
             
             <a 
               href="#" 
