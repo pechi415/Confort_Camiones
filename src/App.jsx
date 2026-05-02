@@ -4213,7 +4213,7 @@ function App() {
               {/* 4. Capa Lente de Agua (Aberración Cromática sobre los iconos) */}
               <div className="nav-lens-layer">
                 <div 
-                  className="nav-lens-drop" 
+                  className={`nav-lens-drop ${isDraggingNav || jumpStretch > 1 ? 'lens-active' : ''}`} 
                   style={{ 
                     width: `${itemWidthPct}%`,
                     transform: `translateX(${Math.max(0, (currentPosPct || 0)) * (100 / itemWidthPct)}%) scaleX(${finalStretch}) skewX(${finalSkew}deg)`,
