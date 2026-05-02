@@ -626,24 +626,25 @@ h1, h2, h3, h4, h5, h6 {
     /* 1. Cristal Puro (100% Transparente como WhatsApp) */
     background: transparent !important;
     
-    /* Desenfoque hiper-ligero para el efecto lente */
-    backdrop-filter: blur(1.5px) contrast(105%);
-    -webkit-backdrop-filter: blur(1.5px) contrast(105%);
+    /* CERO BLUR: Transparencia total, solo un microscópico realce de brillo */
+    backdrop-filter: contrast(102%) brightness(1.02);
+    -webkit-backdrop-filter: contrast(102%) brightness(1.02);
     
-    /* 2. La Magia del Volumen: Luces altas y refracción debajo */
+    /* 2. Refracción de bordes duros como en la imagen de WhatsApp */
     box-shadow: 
-      /* Luz Especular Superior (Highlight blanco arriba) */
-      inset 0px 3px 5px rgba(255, 255, 255, 0.9), 
+      /* Brillo Especular Fino Arriba */
+      inset 0px 2px 2px rgba(255, 255, 255, 0.9), 
+      inset 0px 5px 10px rgba(255, 255, 255, 0.2), 
       
-      /* Refracción Arcoíris (Concentrada en el borde inferior) */
-      inset -2px -4px 6px rgba(0, 255, 255, 0.5), /* Prisma Cian por debajo */
-      inset 2px -4px 6px rgba(255, 0, 255, 0.5),  /* Prisma Magenta por debajo */
+      /* Refracción Dura Lateral (Sin desenfoque de sombra para replicar cristal) */
+      inset 3px 0px 2px rgba(0, 255, 255, 0.6),   /* Cian nítido a la izquierda */
+      inset -3px 0px 2px rgba(255, 0, 255, 0.6),  /* Magenta nítido a la derecha */
       
-      /* Sombra Interna Inferior negra para dar panza */
-      inset 0px -2px 4px rgba(0, 0, 0, 0.2),
+      /* Sombra Interna Abajo para peso 3D de la gota */
+      inset 0px -4px 6px rgba(0, 0, 0, 0.25),
       
-      /* Sombra Externa para que flote sobre la barra */
-      0px 6px 14px rgba(0, 0, 0, 0.15) !important; 
+      /* Sombra Externa */
+      0px 8px 20px rgba(0, 0, 0, 0.15) !important; 
       
     /* Borde fino semitransparente para definir el cristal */
     border: 1px solid rgba(255, 255, 255, 0.3) !important;
