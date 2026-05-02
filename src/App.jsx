@@ -4070,7 +4070,9 @@ function App() {
           className={`bottom-nav-item ${activeTab === 'dashboard' ? 'active' : ''}`}
           onClick={(e) => { e.preventDefault(); setActiveTab('dashboard'); }}
         >
-          <LayoutDashboard size={20} />
+          <div className="icon-wrapper">
+            <LayoutDashboard size={22} />
+          </div>
           <span>Inicio</span>
         </a>
         <a 
@@ -4078,7 +4080,9 @@ function App() {
           className={`bottom-nav-item ${activeTab === 'cola' ? 'active' : ''}`}
           onClick={(e) => { e.preventDefault(); setActiveTab('cola'); }}
         >
-          <Truck size={20} />
+          <div className="icon-wrapper">
+            <Truck size={22} />
+          </div>
           <span>Lista</span>
         </a>
         <a 
@@ -4086,7 +4090,9 @@ function App() {
           className={`bottom-nav-item ${activeTab === 'nuevo' ? 'active' : ''}`}
           onClick={(e) => { e.preventDefault(); setActiveTab('nuevo'); }}
         >
-          <PlusCircle size={20} />
+          <div className="icon-wrapper">
+            <PlusCircle size={22} />
+          </div>
           <span>Nuevo Reporte</span>
         </a>
         <a 
@@ -4094,7 +4100,9 @@ function App() {
           className={`bottom-nav-item ${activeTab === 'historial' ? 'active' : ''}`}
           onClick={(e) => { e.preventDefault(); setActiveTab('historial'); }}
         >
-          <History size={20} />
+          <div className="icon-wrapper">
+            <History size={22} />
+          </div>
           <span>Historial</span>
         </a>
         {session?.role === 'admin' && (
@@ -4103,7 +4111,9 @@ function App() {
             className={`bottom-nav-item ${activeTab === 'usuarios' ? 'active' : ''}`}
             onClick={(e) => { e.preventDefault(); setActiveTab('usuarios'); }}
           >
-            <Users size={20} />
+            <div className="icon-wrapper">
+              <Users size={22} />
+            </div>
             <span>Usuarios</span>
           </a>
         )}

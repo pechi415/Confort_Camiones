@@ -533,26 +533,26 @@ h1, h2, h3, h4, h5, h6 {
   }
 }
 
-  /* Bottom Navigation Style - Floating Premium Dock */
+  /* Bottom Navigation Style - WhatsApp/Material 3 Inspired */
   .bottom-nav {
     position: fixed;
-    bottom: 25px; /* Flotante sobre el fondo */
+    bottom: 20px;
     left: 50%;
     transform: translateX(-50%);
-    width: 92%;
-    max-width: 420px;
-    height: 70px;
-    background: rgba(15, 15, 20, 0.55); /* Mayor transparencia para más efecto glass */
-    backdrop-filter: blur(28px) saturate(180%) !important; 
-    -webkit-backdrop-filter: blur(28px) saturate(180%) !important;
-    border: 1px solid rgba(255, 255, 255, 0.15);
-    border-radius: 35px; /* Forma de píldora */
+    width: 94%;
+    max-width: 450px;
+    height: 80px;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(20px) saturate(180%);
+    -webkit-backdrop-filter: blur(20px) saturate(180%);
+    border: 1px solid rgba(0, 0, 0, 0.08);
+    border-radius: 40px;
     display: flex;
-    justify-content: space-evenly;
+    justify-content: space-around;
     align-items: center;
-    padding: 0 0.5rem;
+    padding: 0 10px;
     z-index: 5000;
-    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3), inset 0 1px 0 rgba(255, 255, 255, 0.15);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
   }
 
   .bottom-nav-item {
@@ -561,17 +561,40 @@ h1, h2, h3, h4, h5, h6 {
     align-items: center;
     justify-content: center;
     gap: 4px;
-    color: rgba(255, 255, 255, 0.45);
+    color: #5f6368; /* Dark gray for inactive */
     text-decoration: none;
-    font-size: 0.62rem; /* Ligeramente más pequeño para evitar desbordes */
-    font-weight: 600;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    height: 56px;
-    flex: 1; /* Distribuir espacio equitativamente */
+    font-size: 0.75rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    flex: 1;
     min-width: 0;
+    height: 100%;
+  }
+
+  .bottom-nav-item .icon-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 64px;
+    height: 32px;
     border-radius: 16px;
-    position: relative;
-    text-align: center;
+    transition: all 0.2s ease;
+    margin-bottom: 2px;
+  }
+
+  .bottom-nav-item.active {
+    color: #1a73e8; /* Blue for active text (or primary color) */
+    font-weight: 700;
+  }
+
+  .bottom-nav-item.active .icon-wrapper {
+    background-color: rgba(26, 115, 232, 0.12); /* Light blue pill background */
+    color: #1a73e8;
+  }
+
+  .bottom-nav-item.active svg {
+    stroke-width: 2.5px;
+    transform: scale(1.1);
   }
 
   .bottom-nav-item span {
@@ -579,29 +602,13 @@ h1, h2, h3, h4, h5, h6 {
     width: 100%;
     overflow: hidden;
     text-overflow: ellipsis;
-    padding: 0 2px;
+    text-align: center;
   }
 
-  .bottom-nav-item:hover {
-    color: rgba(255, 255, 255, 0.9);
-  }
-
-  .bottom-nav-item.active {
-    color: #ffffff;
-    background: rgba(255, 255, 255, 0.08); /* Resalte sutil */
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
-  }
-
-  .bottom-nav-item.active svg {
-    color: var(--primary-red);
-    filter: drop-shadow(0 4px 8px rgba(227, 25, 55, 0.5));
-    transform: translateY(-2px) scale(1.15);
-  }
-  
   .bottom-nav-item svg {
     width: 22px;
     height: 22px;
-    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    transition: all 0.2s ease;
   }
 
 @media (max-width: 768px) {
@@ -1317,13 +1324,17 @@ body {
     display: flex !important; 
     visibility: visible !important; 
     opacity: 1 !important;
-    height: 60px !important;
-    bottom: 12px !important;
+    height: 65px !important;
+    bottom: 15px !important;
     padding: 0 0.5rem !important;
+    max-width: 500px !important;
   }
   .bottom-nav-item {
-    height: 50px !important;
-    border-radius: 20px !important;
+    height: 100% !important;
+  }
+  .bottom-nav-item .icon-wrapper {
+    width: 56px !important;
+    height: 28px !important;
   }
 }
 
