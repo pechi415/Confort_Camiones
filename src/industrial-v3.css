@@ -602,11 +602,12 @@ h1, h2, h3, h4, h5, h6 {
     border-radius: 24px !important;
     transform-origin: center center;
     will-change: transform, height, top, border-radius;
+    /* QUITAMOS EL !important para no romper la transición en línea de App.jsx */
     transition: height 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), 
                 top 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275), 
                 border-radius 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275),
                 background 0.3s ease, 
-                box-shadow 0.3s ease !important;
+                box-shadow 0.3s ease;
     
     /* Estado Reposo: Ligeramente gris, sin desenfoque agresivo */
     background: rgba(0, 0, 0, 0.03) !important;
@@ -622,28 +623,24 @@ h1, h2, h3, h4, h5, h6 {
     top: 3px !important;
     border-radius: 37px !important;
     
-    /* 1. Gradiente Superficial (Efecto Glassmorphism 3D) */
-    background: linear-gradient(
-      135deg, 
-      rgba(255, 255, 255, 0.15) 0%,  /* Más blanco arriba a la izquierda */
-      rgba(255, 255, 255, 0.0) 100%  /* Totalmente transparente abajo */
-    ) !important;
+    /* 1. Cristal Puro (100% Transparente como WhatsApp) */
+    background: transparent !important;
     
-    /* Desenfoque hiper-ligero para simular el grosor del cristal */
+    /* Desenfoque hiper-ligero para el efecto lente */
     backdrop-filter: blur(1.5px) contrast(105%);
     -webkit-backdrop-filter: blur(1.5px) contrast(105%);
     
-    /* 2. La Magia del Volumen: Luces y Sombras Internas combinadas con Arcoíris */
+    /* 2. La Magia del Volumen: Luces altas y refracción debajo */
     box-shadow: 
-      /* Luz Especular Superior (Highlight) */
+      /* Luz Especular Superior (Highlight blanco arriba) */
       inset 0px 3px 5px rgba(255, 255, 255, 0.9), 
       
-      /* Sombra Interna Inferior para dar grosor/panza */
-      inset 0px -3px 6px rgba(0, 0, 0, 0.15),
+      /* Refracción Arcoíris (Concentrada en el borde inferior) */
+      inset -2px -4px 6px rgba(0, 255, 255, 0.5), /* Prisma Cian por debajo */
+      inset 2px -4px 6px rgba(255, 0, 255, 0.5),  /* Prisma Magenta por debajo */
       
-      /* Arcoíris de Refracción (Cian y Magenta en los bordes) */
-      inset -2px -2px 5px rgba(0, 255, 255, 0.4),
-      inset 2px 2px 5px rgba(255, 0, 255, 0.4),
+      /* Sombra Interna Inferior negra para dar panza */
+      inset 0px -2px 4px rgba(0, 0, 0, 0.2),
       
       /* Sombra Externa para que flote sobre la barra */
       0px 6px 14px rgba(0, 0, 0, 0.15) !important; 
