@@ -1,7 +1,7 @@
 // VERSION_TAG: 2.0.0_STABLE_GOLD_READY
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import './industrial-v3.css';
-import { LayoutDashboard, Zap, FileText, Blocks, ClipboardList, ShieldAlert, ShieldCheck, MonitorCheck, PlusCircle, Trash2, Edit3, Settings, Shield, Unlock, LockKeyhole, Lock, RefreshCcw, Users, AlertTriangle, CheckCircle2, Wrench, Activity, Truck, Search, Hourglass, SearchCheck, Award, FileSpreadsheet, MapPin, Calendar, Siren, AlertCircle, Info, History, ChevronUp, LogOut, Clock } from 'lucide-react';
+import { LayoutDashboard, Zap, FileText, Blocks, ClipboardList, ShieldAlert, ShieldCheck, MonitorCheck, PlusCircle, Plus, Trash2, Edit3, Settings, Shield, Unlock, LockKeyhole, Lock, RefreshCcw, Users, AlertTriangle, CheckCircle2, Wrench, Activity, Truck, Search, Hourglass, SearchCheck, Award, FileSpreadsheet, MapPin, Calendar, Siren, AlertCircle, Info, History, ChevronUp, LogOut, Clock } from 'lucide-react';
 
 import { supabase } from './supabaseClient';
 import { jsPDF } from 'jspdf';
@@ -366,17 +366,13 @@ function App() {
   const navRef = useRef(null);
 
   // Supabase Auth Session State
-  const [session, setSession] = useState(() => {
-    const saved = localStorage.getItem('drummond_session');
-    if (!saved) return null;
-    try {
-      const parsed = JSON.parse(saved);
-      // Parche de compatibilidad: Si la sesión es vieja y usa 'rol', lo pasamos a 'role'
-      if (parsed.rol && !parsed.role) parsed.role = parsed.rol;
-      return parsed;
-    } catch (e) {
-      return null;
-    }
+  // MOCK SESSION PARA DESARROLLO LOCAL (Bypass de Login v16.47)
+  const [session, setSession] = useState({
+    nombre: 'Modo Desarrollo',
+    role: 'admin',
+    mina: 'PB',
+    grupo: '1',
+    username: 'dev'
   }); // null = No Logueado
   const [pendingPasswordChangeUser, setPendingPasswordChangeUser] = useState(null);
   const [newPassword, setNewPassword] = useState('');
@@ -2190,8 +2186,8 @@ function App() {
                           marginTop: isExpanded ? '0.8rem' : (shouldStack ? '-1.5rem' : '0.5rem'),
                           zIndex: isExpanded ? 1100 : (camionesColumna.length - index),
                           background: 'rgba(255, 255, 255, 0.45)',
-                          backdropFilter: 'blur(20px) saturate(180%)',
-                          border: '1px solid rgba(255, 255, 255, 0.4)',
+                          backdropFilter: 'blur(20px) saturate(200%) contrast(120%)',
+                          border: '1px solid rgba(255, 255, 255, 0.6)',
                           boxShadow: isExpanded 
                             ? '0 20px 25px -5px rgba(0,0,0,0.1), 0 10px 10px -5px rgba(0,0,0,0.04)' 
                             : '0 10px 15px -3px rgba(0,0,0,0.08), 0 4px 6px -2px rgba(0,0,0,0.04)',
@@ -3469,11 +3465,11 @@ function App() {
             onClick={() => setSelectedReport(null)}
           >
             <style>{`
-              @media (max-width: 768px) {
+              @media (max-width: 1024px) {
                 .modal-content { 
-                  max-width: 65vw !important; 
-                  width: 65vw !important; 
-                  min-width: 65vw !important;
+                  max-width: 94vw !important; 
+                  width: 94vw !important; 
+                  min-width: 94vw !important;
                 }
               }
             `}</style>
@@ -4079,8 +4075,8 @@ function App() {
         
         if (isDraggingNav && navRef.current) {
           const rect = navRef.current.getBoundingClientRect();
-          const relativeX = navTouchX - rect.left - 6;
-          const totalWidth = rect.width - 12;
+          const relativeX = navTouchX - rect.left;
+          const totalWidth = rect.width;
           currentPosPct = (relativeX / totalWidth) * 100 - (itemWidthPct / 2);
           currentPosPct = Math.max(0, Math.min(100 - itemWidthPct, currentPosPct));
         }
@@ -4097,6 +4093,19 @@ function App() {
           const currentX = e.touches[0].clientX;
           setNavTouchX(currentX);
           
+          // SELECCIÓN EN TIEMPO REAL: Detectamos el cambio de sección al vuelo
+          if (navRef.current) {
+            const rect = navRef.current.getBoundingClientRect();
+            const relativeX = currentX - rect.left;
+            const totalWidth = rect.width;
+            const pct = (relativeX / totalWidth) * 100;
+            const newIndex = Math.max(0, Math.min(mobileTabs.length - 1, Math.floor(pct / itemWidthPct)));
+            
+            if (mobileTabs[newIndex] !== activeTab) {
+              setActiveTab(mobileTabs[newIndex]);
+            }
+          }
+
           // Cálculo de velocidad en el evento (NUNCA en el render)
           const delta = currentX - lastTouchX.current;
           setNavVelocity(prev => prev * 0.7 + delta * 0.3);
@@ -4108,8 +4117,8 @@ function App() {
           setNavVelocity(0);
           if (!navRef.current) return;
           const rect = navRef.current.getBoundingClientRect();
-          const relativeX = navTouchX - rect.left - 6;
-          const totalWidth = rect.width - 12;
+          const relativeX = navTouchX - rect.left;
+          const totalWidth = rect.width;
           const pct = (relativeX / totalWidth) * 100;
           const newIndex = Math.max(0, Math.min(mobileTabs.length - 1, Math.floor(pct / itemWidthPct)));
           setActiveTab(mobileTabs[newIndex]);
@@ -4147,127 +4156,134 @@ function App() {
         const finalStretch = isDraggingNav ? dragStretch : jumpStretch;
         const finalSkew = isDraggingNav ? dragSkew : jumpSkew;
 
-        const renderNavContent = (isColored) => (
-          <div className={`nav-items-layer ${isColored ? 'colored-layer' : 'base-layer'}`}>
-            {mobileTabs.map((tab, idx) => {
-              const isActive = activeTab === tab;
-              // EFECTO LUPA FÍSICO: Calculamos la distancia entre la gota y este icono
-              const iconPosPct = idx * itemWidthPct;
-              const distancePct = Math.abs(currentPosPct - iconPosPct);
-              
-              // zoomFactor es 1.0 si la gota está exactamente encima, y cae a 0 si la gota se aleja
-              const zoomFactor = Math.max(0, 1 - (distancePct / (itemWidthPct * 0.8)));
-              
-              // Escala dinámica desde 1.0x hasta 1.25x en el centro de la lupa
-              const dynamicScale = 1 + (zoomFactor * 0.25);
-              
-              let Icon = LayoutDashboard;
-              let label = "Inicio";
-
-              if (tab === 'cola') { Icon = Truck; label = "Lista"; }
-              if (tab === 'nuevo') { Icon = PlusCircle; label = "Nuevo"; }
-              if (tab === 'historial') { Icon = History; label = "Historial"; }
-              if (tab === 'usuarios') { Icon = Users; label = "Usuarios"; }
-
-              return (
-                <div 
-                  key={tab} 
-                  className={`bottom-nav-item ${isActive ? 'active' : ''}`}
-                  onClick={() => handleTabClick(tab, idx)}
-                  style={{ 
-                    color: isColored ? '#000' : '#5f6368',
-                    transform: `scale(${dynamicScale})` // Inyección en tiempo real del motor óptico
-                  }}
-                >
-                  <div className="icon-wrapper">
-                    <Icon size={19} strokeWidth={2} />
-                  </div>
-                  <span style={{ fontSize: '10px', marginTop: '-2px' }}>{label}</span>
-                </div>
-              );
-            })}
-          </div>
-        );
+        const getTabInfo = (tab) => {
+          switch(tab) {
+            case 'dashboard': return { Icon: LayoutDashboard, label: "Inicio", color: '#E31937', filled: true };
+            case 'cola': return { Icon: Truck, label: "Lista", color: '#0072BC', filled: true };
+            case 'nuevo': return { Icon: Plus, label: "Nuevo", color: '#10b981', filled: false }; // Solo trazo grueso
+            case 'historial': return { Icon: Clock, label: "Historial", color: '#f97316', filled: false }; // Solo trazo grueso
+            case 'usuarios': return { Icon: Users, label: "Usuarios", color: '#00b4d8', filled: true };
+            default: return { Icon: LayoutDashboard, label: "Inicio", color: '#E31937', filled: true };
+          }
+        };
 
         return (
-          <>
+          <nav 
+            id="main-mobile-nav-v17" 
+            className={`bottom-nav mobile-only ${isDraggingNav || jumpStretch > 1 ? 'nav-active-scale' : ''}`}
+            style={{ 
+              touchAction: 'none', 
+              position: 'relative', 
+              overflow: 'visible'
+            }}
+            onTouchStart={handleTouchStart}
+            onTouchMove={handleTouchMove}
+            onTouchEnd={handleTouchEnd}
+          >
+            {/* Fondo y Blur */}
+            <div className="nav-background-wrapper">
+              <div className="nav-base-bar-blur"></div>
+            </div>
 
-
-            <nav 
-              id="main-mobile-nav-v16" 
-              className={`bottom-nav mobile-only ${isDraggingNav || jumpStretch > 1 ? 'nav-active-scale' : ''}`}
+            <div 
               ref={navRef}
-              style={{ touchAction: 'none' }}
-              onTouchStart={handleTouchStart}
-              onTouchMove={handleTouchMove}
-              onTouchEnd={handleTouchEnd}
+              className="nav-content-area" 
+              style={{ position: 'absolute', inset: '0 6px', pointerEvents: 'none' }}
             >
-              <div className="nav-background-wrapper">
-                {/* A. Barra Esmerilada Base */}
-                <div className="nav-base-bar-blur"></div>
-              </div>
+                {/* LA GOTA LÍQUIDA PREMIUM */}
+                <div 
+                  className={`nav-lens-indicator ${!isDraggingNav ? 'lens-idle' : ''}`}
+                  style={{
+                    left: `${currentPosPct}%`,
+                    width: `${itemWidthPct}%`,
+                    transition: isDraggingNav ? 'none' : 'left 0.4s cubic-bezier(0.19, 1, 0.22, 1)'
+                  }}
+                >
+                  <div className="nav-lens-liquid-bg" />
+                  <div className="nav-lens-chromatic" />
+                  <div className="nav-lens-glint" />
+                </div>
 
-              {/* 2. Capa de Iconos Base (Inactivos) */}
-              {renderNavContent(false)}
+                {/* 1. CAPA BASE (Gris) - 100% Alineada con Zoom Dinámico */}
+                <div className="nav-items-layer">
+                  {mobileTabs.map((tab, idx) => {
+                    const { Icon, label } = getTabInfo(tab);
+                    
+                    // CÁLCULO DE LENTE CONVEXA (Zoom potente en los bordes)
+                    const iconPosPct = idx * itemWidthPct;
+                    const distancePct = Math.abs(currentPosPct - iconPosPct);
+                    const zoomRange = itemWidthPct * 0.9;
+                    
+                    const normalizedDist = distancePct / zoomRange;
+                    const edgeFactor = Math.sin(normalizedDist * Math.PI) * (distancePct < zoomRange ? 1 : 0);
+                    const dynamicScale = 1 + (edgeFactor * 0.55); // Súper zoom (1.55x) en bordes
 
-              {/* 3. Capa de Iconos Coloridos (Con Máscara de Recorte Segura) */}
-                {(() => {
-                  const chromIntensity = Math.min(Math.abs(velSafe) * 0.35, 4);
-                  const chromOffset = 1 + chromIntensity;
-                  const chromOpacity = 0.3 + (chromIntensity * 0.1);
-                  
-                  // GOTA 'CLEAN' (Alineación matemática perfecta 1.0x)
-                  const bubbleWidth = itemWidthPct; 
-                  const offset = 0;
-                  const safePos = currentPosPct || 0;
-                  
-                  // Sincronizamos la Máscara de Revelado exactamente con el slot
-                  const maskL = safePos;
-                  const maskR = 100 - (safePos + itemWidthPct);
-
-                  return (
-                    <>
-                      {/* 3. Capa de Revelado Sincronizada */}
+                    return (
                       <div 
-                        className="nav-reveal-mask"
-                        style={{
-                          clipPath: `inset(0 ${maskR}% 0 ${maskL}% round 25px)`,
-                          transition: isDraggingNav ? 'none' : 'clip-path 0.6s cubic-bezier(0.19, 1, 0.22, 1)',
-                          willChange: 'clip-path'
-                        }}
+                        key={`base-${tab}`} 
+                        className="bottom-nav-item"
+                        onClick={() => handleTabClick(tab, idx)}
+                        style={{ pointerEvents: 'auto' }}
                       >
-                        {renderNavContent(true)}
-                      </div>
-
-                      {/* 4. Capa Lente de Agua */}
-                      <div className="nav-lens-layer">
                         <div 
-                          className={`nav-lens-drop ${isDraggingNav || jumpStretch > 1 ? 'lens-active' : ''}`} 
+                          className="item-content-wrapper"
                           style={{ 
-                            width: `${bubbleWidth}%`,
-                            transform: `translateX(${safePos * (100 / bubbleWidth)}%) scaleX(${finalStretch}) skewX(${finalSkew}deg)`,
-                            transition: isDraggingNav ? 'none' : 'transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275)'
-                          }} 
+                            transform: `scale(${dynamicScale})`,
+                            transition: isDraggingNav ? 'none' : 'transform 0.3s ease'
+                          }}
                         >
-                          <div className="nav-lens-edge-blur" />
-                          {(isDraggingNav || jumpStretch > 1) && (
-                            <div 
-                              className="nav-lens-chromatic-effect"
-                              style={{
-                                boxShadow: `
-                                  inset -${chromOffset}px 0px 2px rgba(0, 255, 255, ${chromOpacity}),
-                                  inset ${chromOffset}px 0px 2px rgba(255, 0, 255, ${chromOpacity})
-                                `
-                              }}
-                            />
-                          )}
+                          <Icon size={22} strokeWidth={1.5} />
+                          <span>{label}</span>
                         </div>
                       </div>
-                    </>
-                  );
-                })()}
-            </nav>
-          </>
+                    );
+                  })}
+                </div>
+
+                {/* 2. CAPA ACTIVA (Negra) - Revelado Maestro con Zoom Sincronizado */}
+                <div 
+                  className="nav-items-layer active-reveal-layer"
+                  style={{
+                    clipPath: `inset(0px ${100 - (currentPosPct + itemWidthPct)}% 0px ${currentPosPct}%)`,
+                    transition: isDraggingNav ? 'none' : 'clip-path 0.4s cubic-bezier(0.19, 1, 0.22, 1)',
+                    zIndex: 20,
+                    pointerEvents: 'none'
+                  }}
+                >
+                  {mobileTabs.map((tab, idx) => {
+                    const { Icon, label, color, filled } = getTabInfo(tab);
+                    
+                    // MISMO CÁLCULO DE LENTE (Para sincronización total)
+                    const iconPosPct = idx * itemWidthPct;
+                    const distancePct = Math.abs(currentPosPct - iconPosPct);
+                    const zoomRange = itemWidthPct * 0.9;
+                    const normalizedDist = distancePct / zoomRange;
+                    const edgeFactor = Math.sin(normalizedDist * Math.PI) * (distancePct < zoomRange ? 1 : 0);
+                    const dynamicScale = 1 + (edgeFactor * 0.55);
+
+                    return (
+                      <div key={`active-${tab}`} className="bottom-nav-item">
+                        <div 
+                          className="item-content-wrapper"
+                          style={{ 
+                            transform: `scale(${dynamicScale})`,
+                            color: color,
+                            transition: isDraggingNav ? 'none' : 'transform 0.3s ease'
+                          }}
+                        >
+                          <Icon 
+                            size={22} 
+                            strokeWidth={filled ? 2 : 2.8} 
+                            fill={filled ? "currentColor" : "none"} 
+                          />
+                          <span>{label}</span>
+                        </div>
+                      </div>
+                    );
+                  })}
+                </div>
+            </div>
+          </nav>
         );
       })()}
       {/* Botón Volver Arriba Seguro v1.9.52 */}
