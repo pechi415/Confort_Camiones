@@ -531,9 +531,7 @@ h1, h2, h3, h4, h5, h6 {
   .kpi-value {
     font-size: 1.8rem;
   }
-}
-
-  /* v16.0: LIQUID PHYSICS NAVIGATION - ELASTIC STRETCH (GLOBAL MOBILE) */
+}  /* v16.2: STABLE LIQUID PHYSICS - ANTI-CRASH ARCHITECTURE */
   #main-mobile-nav-v16.bottom-nav {
     position: fixed !important;
     bottom: 22px !important;
@@ -551,6 +549,31 @@ h1, h2, h3, h4, h5, h6 {
     overflow: visible !important;
   }
 
+  .nav-background-wrapper {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  .nav-base-bar-blur {
+    position: absolute;
+    top: 12px;
+    bottom: 12px;
+    left: 6px;
+    right: 6px;
+    /* Blur fuera del filtro Gooey para estabilidad */
+    backdrop-filter: blur(25px);
+    -webkit-backdrop-filter: blur(25px);
+    border-radius: 35px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    z-index: 1;
+  }
+
   .nav-liquid-layer {
     position: absolute;
     top: 0;
@@ -558,22 +581,17 @@ h1, h2, h3, h4, h5, h6 {
     width: 100%;
     height: 100%;
     filter: url('#goo-v16');
-    z-index: 1;
-    pointer-events: none;
+    z-index: 2;
   }
 
-  .nav-base-bar {
+  .nav-liquid-base {
     position: absolute;
     top: 12px;
     bottom: 12px;
     left: 6px;
     right: 6px;
     background: rgba(255, 255, 255, 0.9);
-    backdrop-filter: blur(25px);
-    -webkit-backdrop-filter: blur(25px);
     border-radius: 35px;
-    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
-    border: 1px solid rgba(255, 255, 255, 0.5);
   }
 
   #main-mobile-nav-v16 .nav-active-drop {
@@ -582,9 +600,9 @@ h1, h2, h3, h4, h5, h6 {
     top: 11px !important;
     background: #ffffff !important;
     border-radius: 29px !important;
-    z-index: 2;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1) !important;
+    z-index: 3;
     transform-origin: center center;
+    will-change: transform;
   }
 
   .nav-items-layer {
@@ -596,8 +614,34 @@ h1, h2, h3, h4, h5, h6 {
     display: flex;
     justify-content: space-around;
     align-items: center;
-    z-index: 5;
+    z-index: 10;
     pointer-events: none;
+  }
+
+  /* Landscape consistency v16.2 */
+  #main-mobile-nav-v16.bottom-nav { 
+    height: 70px !important;
+    bottom: 12px !important;
+    max-width: 600px !important;
+  }
+  #main-mobile-nav-v16 .nav-active-drop {
+    height: 48px !important;
+    top: 11px !important;
+  }
+  .nav-liquid-base {
+    top: 11px !important;
+    bottom: 11px !important;
+  }
+  .nav-base-bar-blur {
+    top: 11px !important;
+    bottom: 11px !important;
+  }  .bottom-nav-item .icon-wrapper {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    height: 28px;
+    transition: all 0.3s ease;
   }
 
   .nav-reveal-mask {
@@ -609,6 +653,7 @@ h1, h2, h3, h4, h5, h6 {
     z-index: 10;
     pointer-events: none;
     overflow: hidden;
+    will-change: clip-path;
   }
 
   .nav-reveal-mask .nav-items-layer {
@@ -640,15 +685,6 @@ h1, h2, h3, h4, h5, h6 {
 
   .bottom-nav-item span {
     font-size: 0.65rem;
-  }
-
-  .bottom-nav-item .icon-wrapper {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    width: 100%;
-    height: 28px;
-    transition: all 0.3s ease;
   }
 
   .bottom-nav-item.active {

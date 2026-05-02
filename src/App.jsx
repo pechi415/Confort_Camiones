@@ -4115,9 +4115,10 @@ function App() {
           setActiveTab(mobileTabs[newIndex]);
         };
 
-        // Calcular deformación (Estiramiento y Sesgo)
-        const stretch = 1 + Math.min(Math.abs(navVelocity) * 0.012, 0.4); // Máx 40% de estiramiento
-        const skew = Math.max(-15, Math.min(15, navVelocity * 0.6)); // Máx 15 grados de inclinación
+        // Calcular deformación (Estiramiento y Sesgo) con protección contra NaN
+        const velSafe = navVelocity || 0;
+        const stretch = 1 + Math.min(Math.abs(velSafe) * 0.012, 0.4); 
+        const skew = Math.max(-15, Math.min(15, velSafe * 0.6)); 
 
         const renderNavContent = (isColored) => (
           <div className={`nav-items-layer ${isColored ? 'colored-layer' : 'base-layer'}`}>
@@ -4152,11 +4153,11 @@ function App() {
         return (
           <>
             {/* Filtro SVG Gooey Mágico */}
-            <svg style={{ visibility: 'hidden', position: 'absolute' }} width="0" height="0">
+            <svg style={{ position: 'absolute', width: 0, height: 0, pointerEvents: 'none' }}>
               <defs>
                 <filter id="goo-v16">
-                  <feGaussianBlur in="SourceGraphic" stdDeviation="12" result="blur" />
-                  <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 22 -9" result="goo" />
+                  <feGaussianBlur in="SourceGraphic" stdDeviation="10" result="blur" />
+                  <feColorMatrix in="blur" mode="matrix" values="1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 20 -9" result="goo" />
                   <feComposite in="SourceGraphic" in2="goo" operator="atop" />
                 </filter>
               </defs>
@@ -4170,17 +4171,24 @@ function App() {
               onTouchMove={handleTouchMove}
               onTouchEnd={handleTouchEnd}
             >
-              {/* 1. Capa Líquida (Gooey Background) */}
-              <div className="nav-liquid-layer">
-                <div className="nav-base-bar"></div>
-                <div 
-                  className="nav-active-drop" 
-                  style={{ 
-                    width: `${itemWidthPct}%`,
-                    transform: `translateX(${currentPosPct * (100 / itemWidthPct)}%) scaleX(${stretch}) skewX(${skew}deg)`,
-                    transition: isDraggingNav ? 'none' : 'transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275)' // Bounce al soltar
-                  }} 
-                />
+              {/* 1. Capas de Fondo y Líquido */}
+              <div className="nav-background-wrapper">
+                {/* A. Barra Esmerilada (FUERA del filtro Gooey para evitar crash) */}
+                <div className="nav-base-bar-blur"></div>
+                
+                {/* B. Capa Gooey (Solo para la fusión visual) */}
+                <div className="nav-liquid-layer">
+                  {/* Barra base invisible/sólida que se fusiona con la gota */}
+                  <div className="nav-liquid-base"></div>
+                  <div 
+                    className="nav-active-drop" 
+                    style={{ 
+                      width: `${itemWidthPct}%`,
+                      transform: `translateX(${(currentPosPct || 0) * (100 / itemWidthPct)}%) scaleX(${stretch}) skewX(${skew}deg)`,
+                      transition: isDraggingNav ? 'none' : 'transform 0.6s cubic-bezier(0.175, 0.885, 0.32, 1.275)'
+                    }} 
+                  />
+                </div>
               </div>
 
               {/* 2. Capa de Iconos Base (Inactivos) */}
