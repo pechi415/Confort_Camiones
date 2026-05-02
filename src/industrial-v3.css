@@ -533,41 +533,42 @@ h1, h2, h3, h4, h5, h6 {
   }
 }
 
-  /* Bottom Navigation Style - Frosted Glass (Gota/Vidrio) */
-  .bottom-nav {
-    position: fixed;
-    bottom: 22px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 94%;
-    max-width: 460px;
-    height: 72px;
-    background-color: rgba(255, 255, 255, 0.7) !important; /* Valor exacto pedido por el usuario */
-    backdrop-filter: blur(12px) !important; /* Efecto esmerilado */
-    -webkit-backdrop-filter: blur(12px) !important;
-    border: 1px solid rgba(255, 255, 255, 0.5) !important;
-    border-radius: 36px;
-    display: flex;
-    justify-content: space-around;
-    align-items: center;
-    padding: 0 6px;
-    z-index: 5000;
-    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
-    overflow: hidden;
+  /* v12.9: Frosted Glass - FINAL REFINEMENT */
+  #main-mobile-nav-v12.bottom-nav {
+    position: fixed !important;
+    bottom: 22px !important;
+    left: 50% !important;
+    transform: translateX(-50%) !important;
+    width: 94% !important;
+    max-width: 460px !important;
+    height: 75px !important;
+    background-color: rgba(255, 255, 255, 0.72) !important; 
+    backdrop-filter: blur(15px) saturate(180%) !important; 
+    -webkit-backdrop-filter: blur(15px) saturate(180%) !important;
+    border: 1.5px solid rgba(255, 255, 255, 0.8) !important;
+    border-radius: 38px !important;
+    display: flex !important;
+    justify-content: space-around !important;
+    align-items: center !important;
+    padding: 0 8px !important;
+    z-index: 9999 !important;
+    box-shadow: 0 12px 40px rgba(0, 0, 0, 0.15) !important;
+    overflow: hidden !important;
   }
 
-  .nav-active-pill {
-    position: absolute;
-    height: 54px;
-    top: 9px;
-    background: rgba(255, 255, 255, 0.5) !important; /* Vidrio sobre vidrio */
-    backdrop-filter: blur(15px);
-    border-radius: 27px;
-    transition: transform 0.4s cubic-bezier(0.165, 0.84, 0.44, 1);
-    z-index: 0;
-    pointer-events: none;
-    border: 1.5px solid rgba(255, 255, 255, 0.8) !important;
-    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.05);
+  #main-mobile-nav-v12 .nav-active-pill {
+    position: absolute !important;
+    height: 58px !important;
+    top: 8.5px !important;
+    background: rgba(255, 255, 255, 0.6) !important; 
+    backdrop-filter: blur(10px) !important;
+    -webkit-backdrop-filter: blur(10px) !important;
+    border-radius: 29px !important;
+    transition: transform 0.4s cubic-bezier(0.2, 0, 0, 1) !important;
+    z-index: 0 !important;
+    pointer-events: none !important;
+    border: 1.5px solid rgba(255, 255, 255, 1) !important;
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08) !important;
   }
 
   .bottom-nav-item {

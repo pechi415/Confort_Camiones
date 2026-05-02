@@ -4070,7 +4070,7 @@ function App() {
         const activeIndex = mobileTabs.indexOf(activeTab);
         
         return (
-          <nav className="bottom-nav mobile-only">
+          <nav id="main-mobile-nav-v12" className="bottom-nav mobile-only">
             {/* Indicador Fluido Estilo Gota */}
             <div 
               className="nav-active-pill" 
