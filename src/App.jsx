@@ -367,7 +367,10 @@ function App() {
 
   // Supabase Auth Session State
   // MOCK SESSION PARA DESARROLLO LOCAL (Bypass de Login v16.47)
-  const [session, setSession] = useState(null); // null = No Logueado
+  const [session, setSession] = useState(() => {
+    const saved = localStorage.getItem('drummond_session');
+    return saved ? JSON.parse(saved) : null;
+  }); // null = No Logueado
   const [pendingPasswordChangeUser, setPendingPasswordChangeUser] = useState(null);
   const [newPassword, setNewPassword] = useState('');
   const [confirmPassword, setConfirmPassword] = useState('');
@@ -1595,8 +1598,9 @@ function App() {
     const usuarioActivo = { ...pendingPasswordChangeUser, password: newPassword, firstTime: false };
     const nuevaSesion = {
       user: { username: usuarioActivo.username },
-      role: usuarioActivo.rol,
+      role: usuarioActivo.role,
       mina: usuarioActivo.mina === 'Ambas' || usuarioActivo.mina === 'Global' ? 'Global' : usuarioActivo.mina,
+      grupo: usuarioActivo.grupo || '1',
       nombre: usuarioActivo.nombre,
       id: usuarioActivo.id
     };
