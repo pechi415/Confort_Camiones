@@ -900,7 +900,8 @@ function App() {
 
     if (motivosArray.length === 0) return addToast("Por favor, selecciona al menos una falla que persista.", "error");
 
-    const motivosStr = motivosArray.join(', ');
+    // v8.5: Usamos el separador técnico '|' para permitir el split correcto en la visualización
+    const motivosStr = motivosArray.join(' | ');
 
     // Actualizamos localmente
     setCamionesRegistrados(prev =>
@@ -3581,7 +3582,7 @@ function App() {
                   </div>
                   <div style={{ background: 'rgba(239, 68, 68, 0.1)', padding: '1.2rem', borderRadius: '18px', border: '1px solid rgba(239, 68, 68, 0.2)', backdropFilter: 'blur(5px)' }}>
                     <div style={{ fontSize: '1rem', color: '#991b1b', lineHeight: '1.6', fontWeight: '400' }}>
-                      {selectedReport.motivo_garantia.split(' | ').map((p, idx) => (
+                      {selectedReport.motivo_garantia.split(/\s*[|,]\s*/).filter(Boolean).map((p, idx) => (
                         <div key={idx} style={{ display: 'flex', gap: '0.7rem', marginBottom: '0.5rem' }}>
                           <span style={{ color: '#ef4444', fontSize: '1.2rem' }}>•</span>
                           <span>{p}</span>
@@ -3922,8 +3923,8 @@ function App() {
                 maxHeight: '300px',
                 overflowY: 'auto'
               }}>
-                {(selectedGarantiaDetails.motivo_garantia || '').split(' | ').map((item, idx) => (
-                  <div key={idx} style={{ marginBottom: idx === (selectedGarantiaDetails.motivo_garantia || '').split(' | ').length - 1 ? 0 : '0.8rem', display: 'flex', gap: '0.6rem' }}>
+                {(selectedGarantiaDetails.motivo_garantia || '').split(/\s*[|,]\s*/).filter(Boolean).map((item, idx) => (
+                  <div key={idx} style={{ marginBottom: idx === (selectedGarantiaDetails.motivo_garantia || '').split(/\s*[|,]\s*/).filter(Boolean).length - 1 ? 0 : '0.8rem', display: 'flex', gap: '0.6rem' }}>
                     <span style={{ color: '#ef4444', fontWeight: 'bold' }}>•</span>
                     <span>{item}</span>
                   </div>
