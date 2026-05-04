@@ -848,8 +848,11 @@ function App() {
           let originalComment = match ? match[1] : '';
           // Motor de IA v4.0: Unificación semántica inteligente de comentarios
           originalComment = unificarComentariosIA(originalComment);
+          
+          // v8.4: Limpieza de prefijos técnicos (G1:, G2:, General:) para una visualización más limpia en el modal
+          const commentLimpio = originalComment.replace(/^(?:G\w+|General)\s*[:\-]\s*/gi, '').trim();
 
-          iniciales[f.id] = { selected: false, comment: originalComment };
+          iniciales[f.id] = { selected: false, comment: commentLimpio };
         }
       });
       setPendientesGarantia(iniciales);
@@ -3339,7 +3342,7 @@ function App() {
                 <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem', marginTop: '0.5rem' }}>Camión {camionInGarantia.flota}: Selecciona las fallas originales que persisten.</p>
               </div>
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '2rem', maxHeight: '350px', overflowY: 'auto', padding: '0.5rem' }}>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem', marginBottom: '2rem', maxHeight: '500px', overflowY: 'auto', padding: '0.5rem' }}>
                 {fallas.filter(f => (camionInGarantia?.fallas || '').includes(f.nombre)).map(f => {
                   const isSelected = !!pendientesGarantia[f.id]?.selected;
                   return (
