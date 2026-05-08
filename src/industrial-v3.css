@@ -725,9 +725,9 @@ h1, h2, h3, h4, h5, h6 {
 @media (max-width: 768px) {
   /* CACHE BREAKER v1.4.7 - FINAL STYLES */
   .kanban-column {
-    max-width: 50vw !important;
-    width: 50vw !important;
-    min-width: 50vw !important;
+    max-width: 60vw !important;
+    width: 60vw !important;
+    min-width: 60vw !important;
     height: auto !important;
     min-height: 150px !important;
     border: 2px solid rgba(37, 99, 235, 0.4) !important;
