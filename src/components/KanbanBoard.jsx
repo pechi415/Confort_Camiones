@@ -114,7 +114,14 @@ const KanbanBoard = ({
               {columnasKanban.map(col => {
                 const camionesColumna = camionesAccessibles
                   .filter(c => c.estado === col.id)
-                  .sort((a, b) => (Number(b.puntos) || 0) - (Number(a.puntos) || 0));
+                  .sort((a, b) => {
+                    if (col.id === 'evaluar') {
+                      const timeA = new Date(a.ingreso_evaluar_at || a.time || a.creado_at).getTime() || 0;
+                      const timeB = new Date(b.ingreso_evaluar_at || b.time || b.creado_at).getTime() || 0;
+                      return timeA - timeB; // El más antiguo primero
+                    }
+                    return (Number(b.puntos) || 0) - (Number(a.puntos) || 0);
+                  });
 
                 return (
                   <div
