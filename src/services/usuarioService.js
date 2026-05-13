@@ -23,15 +23,6 @@ export const usuarioService = {
    * Crea un nuevo usuario en Auth y en la tabla pública.
    */
   async registrarUsuario(usuarioData) {
-    // 0. Sincronizar los "superpoderes" de Administrador en el JWT actual
-    // Si la cuenta de Alexander se creó sin el metadato 'role: admin' en Auth, el RLS la bloquea.
-    // Esto asegura que el token que enviamos tenga el permiso correcto.
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user && user.user_metadata?.role !== 'admin') {
-      await supabase.auth.updateUser({ data: { role: 'admin', mina: 'Global' } });
-      await supabase.auth.refreshSession();
-    }
-
     // 1. Crear en el sistema de Autenticación usando la API REST cruda (para no tocar la sesión de React)
     const authResponse = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/auth/v1/signup`, {
       method: 'POST',
