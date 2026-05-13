@@ -129,7 +129,19 @@ const UserManagement = ({
                   creado: new Date().toLocaleDateString()
                 });
 
-                setDbUsuarios([...dbUsuarios, data[0]]);
+                const newUser = data || {
+                  id: Math.random().toString(),
+                  nombre: normalizarNombre(nuevoUsuarioParams.nombre),
+                  username: nuevoUsuarioParams.username,
+                  role: nuevoUsuarioParams.role,
+                  mina: nuevoUsuarioParams.mina,
+                  grupo: nuevoUsuarioParams.grupo,
+                  estado: nuevoUsuarioParams.estado,
+                  firstTime: true,
+                  creado: new Date().toLocaleDateString()
+                };
+
+                setDbUsuarios([...dbUsuarios, newUser]);
                 setIsCreandoUsuario(false);
                 setNuevoUsuarioParams({ nombre: '', username: '', password: 'con123', mina: 'PB', grupo: '1', role: 'supervisor', estado: 'Activo' });
                 addToast('✅ Operador ' + nuevoUsuarioParams.nombre + ' admitido exitosamente.');
@@ -234,7 +246,9 @@ const UserManagement = ({
             </tr>
           </thead>
           <tbody>
-            {dbUsuarios.map(u => (
+            {dbUsuarios.map(u => {
+              if (!u) return null;
+              return (
               <tr key={u.id}>
                 <td data-label="Nombre Completo">
                   <strong style={{ color: 'var(--primary-black)', fontSize: '1rem' }}>{u.nombre}</strong><br />
@@ -314,7 +328,7 @@ const UserManagement = ({
                   </div>
                 </td>
               </tr>
-            ))}
+            )})}
           </tbody>
         </table>
       </div>
