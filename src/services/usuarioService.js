@@ -36,8 +36,12 @@ export const usuarioService = {
       }
     });
 
-    if (authError) throw authError;
-
+    if (authError) {
+      if (authError.message && authError.message.toLowerCase().includes('rate limit')) {
+        throw new Error('Límite de seguridad alcanzado (Supabase Rate Limit). Por favor ve a tu panel de Supabase -> Authentication -> Rate Limits, e incrementa el límite de "Email signups".');
+      }
+      throw authError;
+    }
     // 2. Guardar en nuestra tabla de perfiles (usuarios) con el ID de Auth
     const { data, error } = await supabase
       .from('usuarios')
