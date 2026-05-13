@@ -23,8 +23,16 @@ export const usuarioService = {
    * Crea un nuevo usuario en Auth y en la tabla pública.
    */
   async registrarUsuario(usuarioData) {
-    // 1. Crear en el sistema de Autenticación (para tener un JWT/Token)
-    const { data: authData, error: authError } = await supabase.auth.signUp({
+    // Crear un cliente temporal que NO modifique la sesión local del administrador
+    const { createClient } = await import('@supabase/supabase-js');
+    const tempSupabase = createClient(
+      import.meta.env.VITE_SUPABASE_URL,
+      import.meta.env.VITE_SUPABASE_ANON_KEY,
+      { auth: { persistSession: false, autoRefreshToken: false } }
+    );
+
+    // 1. Crear en el sistema de Autenticación usando el cliente temporal
+    const { data: authData, error: authError } = await tempSupabase.auth.signUp({
       email: `${usuarioData.username.toLowerCase()}@drummond.com`,
       password: usuarioData.password,
       options: {
@@ -42,7 +50,8 @@ export const usuarioService = {
       }
       throw authError;
     }
-    // 2. Guardar en nuestra tabla de perfiles (usuarios) con el ID de Auth
+
+    // 2. Guardar en nuestra tabla de perfiles (usuarios) con el cliente principal (Administrador)
     const { data, error } = await supabase
       .from('usuarios')
       .insert([{
