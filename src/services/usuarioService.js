@@ -23,39 +23,44 @@ export const usuarioService = {
    * Crea un nuevo usuario en Auth y en la tabla pública.
    */
   async registrarUsuario(usuarioData) {
-    // Crear un cliente temporal que NO modifique la sesión local del administrador
-    const { createClient } = await import('@supabase/supabase-js');
-    const tempSupabase = createClient(
-      import.meta.env.VITE_SUPABASE_URL,
-      import.meta.env.VITE_SUPABASE_ANON_KEY,
-      { auth: { persistSession: false, autoRefreshToken: false } }
-    );
-
-    // 1. Crear en el sistema de Autenticación usando el cliente temporal
-    const { data: authData, error: authError } = await tempSupabase.auth.signUp({
-      email: `${usuarioData.username.toLowerCase()}@drummond.com`,
-      password: usuarioData.password,
-      options: {
+    // 1. Crear en el sistema de Autenticación usando la API REST cruda (para no tocar la sesión de React)
+    const authResponse = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/auth/v1/signup`, {
+      method: 'POST',
+      headers: {
+        'apikey': import.meta.env.VITE_SUPABASE_ANON_KEY,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        email: `${usuarioData.username.toLowerCase()}@drummond.com`,
+        password: usuarioData.password,
         data: {
           nombre: usuarioData.nombre,
           role: usuarioData.role,
           mina: usuarioData.mina
         }
-      }
+      })
     });
 
-    if (authError) {
-      if (authError.message && authError.message.toLowerCase().includes('rate limit')) {
-        throw new Error('Límite de seguridad alcanzado (Supabase Rate Limit). Por favor ve a tu panel de Supabase -> Authentication -> Rate Limits, e incrementa el límite de "Email signups".');
+    const authResult = await authResponse.json();
+
+    if (!authResponse.ok) {
+      if (authResult.msg && authResult.msg.toLowerCase().includes('rate limit')) {
+        throw new Error('Límite de seguridad alcanzado (Supabase Rate Limit). Ve a tu panel de Supabase -> Authentication -> Rate Limits, e incrementa el límite de "Email signups".');
       }
-      throw authError;
+      if (authResult.msg && authResult.msg.toLowerCase().includes('already registered')) {
+        throw new Error('El usuario base ya existe en seguridad. Intenta agregando un número al final del "Usuario Login" (ej. amorales2).');
+      }
+      throw new Error(authResult.msg || 'Error desconocido al registrar usuario en Auth');
     }
 
-    // 2. Guardar en nuestra tabla de perfiles (usuarios) con el cliente principal (Administrador)
+    // Supabase devuelve el user anidado o directo según la configuración de confirmación
+    const userId = authResult.user ? authResult.user.id : authResult.id;
+
+    // 2. Guardar en nuestra tabla de perfiles (usuarios) con el cliente principal (Seguimos siendo Administradores)
     const { data, error } = await supabase
       .from('usuarios')
       .insert([{
-        id: authData.user.id,
+        id: userId,
         ...usuarioData
       }])
       .select();
