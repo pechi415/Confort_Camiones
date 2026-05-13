@@ -1,6 +1,6 @@
 import React from 'react';
 import { Users, PlusCircle, Edit3, RefreshCcw, Trash2 } from 'lucide-react';
-import { generarAliasBase, normalizarNombre } from '../utils/iaEngine';
+import { generarAliasBase, normalizarNombre, corregirNombresIA, corregirOrtografiaIA } from '../utils/iaEngine';
 import { usuarioService } from '../services/usuarioService';
 import { minaOptions, grupoOptions } from '../constants/fallas';
 
@@ -56,9 +56,20 @@ const UserManagement = ({
             <div style={{ flex: '1 1 200px' }}>
               <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 'bold', marginBottom: '0.3rem' }}>Nombre del Profesional</label>
               <input type="text" className="input-field" placeholder="ej: Pedro González" value={nuevoUsuarioParams.nombre} onChange={e => {
-                const nuevoNombre = e.target.value;
-                setNuevoUsuarioParams({ ...nuevoUsuarioParams, nombre: nuevoNombre, username: generarAliasBase(nuevoNombre, dbUsuarios) });
-              }} onBlur={e => setNuevoUsuarioParams({ ...nuevoUsuarioParams, nombre: normalizarNombre(e.target.value) })} />
+                const val = e.target.value;
+                let formatted = val.replace(/(^\w|\s\w)/g, m => m.toUpperCase());
+                if (val.endsWith(' ')) {
+                  formatted = corregirNombresIA(formatted);
+                }
+                setNuevoUsuarioParams({ ...nuevoUsuarioParams, nombre: formatted, username: generarAliasBase(formatted, dbUsuarios) });
+              }} onBlur={e => {
+                let final = normalizarNombre(e.target.value);
+                if (final.trim().length > 3) {
+                  final = corregirNombresIA(final);
+                  final = corregirOrtografiaIA(final);
+                }
+                setNuevoUsuarioParams({ ...nuevoUsuarioParams, nombre: final, username: generarAliasBase(final, dbUsuarios) });
+              }} />
             </div>
             <div style={{ flex: '1 1 200px' }}>
               <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 'bold', marginBottom: '0.3rem' }}>Usuario Login (Generado)</label>
@@ -140,7 +151,19 @@ const UserManagement = ({
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: '1rem' }}>
             <div style={{ flex: '1 1 200px' }}>
               <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 'bold', marginBottom: '0.3rem', color: '#701a75' }}>Corregir Nombre</label>
-              <input type="text" className="input-field" value={usuarioEditando.nombre} onChange={e => setUsuarioEditando({ ...usuarioEditando, nombre: e.target.value })} onBlur={e => setUsuarioEditando({ ...usuarioEditando, nombre: normalizarNombre(e.target.value) })} style={{ borderColor: '#fbcfe8' }} />
+              <input type="text" className="input-field" value={usuarioEditando.nombre} onChange={e => {
+                const val = e.target.value;
+                let formatted = val.replace(/(^\w|\s\w)/g, m => m.toUpperCase());
+                if (val.endsWith(' ')) formatted = corregirNombresIA(formatted);
+                setUsuarioEditando({ ...usuarioEditando, nombre: formatted });
+              }} onBlur={e => {
+                let final = normalizarNombre(e.target.value);
+                if (final.trim().length > 3) {
+                  final = corregirNombresIA(final);
+                  final = corregirOrtografiaIA(final);
+                }
+                setUsuarioEditando({ ...usuarioEditando, nombre: final });
+              }} style={{ borderColor: '#fbcfe8' }} />
             </div>
             <div style={{ flex: '1 1 200px' }}>
               <label style={{ display: 'block', fontSize: '0.8rem', fontWeight: 'bold', marginBottom: '0.3rem', color: '#701a75' }}>Nuevo Usuario Login</label>
