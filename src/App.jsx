@@ -1488,6 +1488,8 @@ function App() {
 
         {/* Navegación Inferior de Próxima Generación - Gota Líquida + Color Reveal (v15) */}
         {(() => {
+          if (selectedReport || camionEditando || camionInGarantia || selectedGarantiaDetails) return null;
+
           const mobileTabs = ['dashboard', 'cola', 'nuevo', 'historial'];
           const userRole = (session?.role || session?.rol || '').toLowerCase();
           if (userRole === 'admin') mobileTabs.push('usuarios');
