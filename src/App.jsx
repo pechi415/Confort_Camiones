@@ -1352,6 +1352,7 @@ function App() {
               camionesAccessibles={camionesAccessibles}
               expandedCardId={expandedCardId}
               setExpandedCardId={setExpandedCardId}
+              currentKanbanCol={currentKanbanCol}
               setCurrentKanbanCol={setCurrentKanbanCol}
               handleDragStart={handleDragStart}
               handleDrop={handleDrop}
