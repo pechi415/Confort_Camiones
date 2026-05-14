@@ -28,21 +28,23 @@ export function calcularSimilitudIA(s1, s2) {
   const normalizar = (str) => {
     return str.toLowerCase()
       .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+      .replace(/[^a-z0-9\s]/gi, '')
       .replace(/\s+/g, ' ')
       .trim()
       .split(' ')
-      .filter(w => !['muy', 'demasiado', 'bastante', 'mucho', 'un', 'poco', 'del', 'de', 'la', 'el', 'en', 'con', 'que', 'se'].includes(w))
+      .filter(w => !['muy', 'demasiado', 'bastante', 'mucho', 'un', 'poco', 'del', 'de', 'la', 'el', 'en', 'con', 'que', 'se', 'y', 'o', 'a', 'las', 'los', 'para', 'por'].includes(w))
       .map(w => {
         if (['golpea', 'golpeando', 'golpeteo', 'choca', 'impacto'].includes(w)) return 'golpe';
         if (['suena', 'sonido', 'ruido', 'chirrido', 'cruje'].includes(w)) return 'ruido';
         if (['cabina', 'izquierdo', 'izq'].includes(w)) return 'izq';
         if (['derecho', 'der', 'derecha'].includes(w)) return 'der';
-        if (['rigidaz', 'rigida', 'rigidas', 'dura', 'duras', 'tiesa', 'brinca'].includes(w)) return 'rigidez';
+        if (['rigidaz', 'rigida', 'rigidas', 'dura', 'duras', 'tiesa', 'brinca', 'saltarina'].includes(w)) return 'rigidez';
         if (['falla', 'dano', 'averia', 'descompuesto', 'roto', 'partido'].includes(w)) return 'dano';
         if (['tolva', 'volquete', 'platon', 'caja', 'tolba'].includes(w)) return 'tolva';
         if (['suspension', 'amortiguacion', 'cilindro', 'puntal'].includes(w)) return 'suspension';
         if (['llanta', 'neumatico', 'rueda', 'goma'].includes(w)) return 'llanta';
         if (['freno', 'frenando', 'frenado', 'balata', 'pastilla'].includes(w)) return 'freno';
+        if (['alta', 'altas'].includes(w)) return 'alta';
         return w;
       })
       .join(' ');
