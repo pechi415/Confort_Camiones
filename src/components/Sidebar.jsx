@@ -41,7 +41,7 @@ const Sidebar = ({
         </div>
         <div
           className={`${styles.navItem} ${activeTab === 'nuevo' ? styles.active : ''}`}
-          onClick={() => handleNavClick('nuevo', '/dashboard')}
+          onClick={() => handleNavClick('nuevo', '/nuevo')}
         >
           <PlusCircle size={18} style={{ marginRight: '0.6rem', marginBottom: '-0.15rem' }} /> Nuevo Reporte
         </div>

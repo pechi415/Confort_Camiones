@@ -59,7 +59,7 @@ const HistoryView = ({
           if (fecha.getFullYear() !== parseInt(anioF) || (fecha.getMonth() + 1) !== parseInt(mesF)) return false;
         }
         return true;
-      } catch (e) { return false; }
+      } catch { return false; }
     });
   }, [camionesAccessibles, session, filtroFlota, filtroMina, filtroMes]);
 
@@ -165,7 +165,7 @@ const HistoryView = ({
           const logoData = LOGO_DRUMMOND.startsWith('data:') ? LOGO_DRUMMOND : `data:image/png;base64,${LOGO_DRUMMOND}`;
           doc.addImage(logoData, 'PNG', 15, 8, 28, 20);
         }
-      } catch (e) {
+      } catch {
         console.error("Error al cargar logo:", e);
       }
 

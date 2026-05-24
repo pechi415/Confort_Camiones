@@ -31,7 +31,7 @@ export const formatFechaCorta = (dateStr) => {
       return `${dia}/${mes}/${anio}`;
     }
     return dateStr.substring(0, 10).replace(/[,.\s]+$/, '');
-  } catch (e) {
+  } catch {
     return dateStr.substring(0, 10).replace(/[,.\s]+$/, '') || '---';
   }
 };
@@ -86,5 +86,5 @@ export const formatearCiclo = (inicio, fin, ingresoEvaluar) => {
       return `${days}d ${remHours}h`;
     }
     return hours > 0 ? `${hours}h ${minutes}m` : `${minutes}m`;
-  } catch (e) { return '---'; }
+  } catch { return '---'; }
 };

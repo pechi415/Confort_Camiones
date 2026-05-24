@@ -1,5 +1,5 @@
 // VERSION_TAG: 2.0.0_STABLE_GOLD_READY
-import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
+import React, { useState, useEffect, useRef, useMemo, useCallback, lazy, Suspense } from 'react';
 
 import { 
   LayoutDashboard, RefreshCcw, LogOut, ChevronUp, Clock, Plus, Users, Truck,
@@ -23,15 +23,15 @@ import { useTruck } from './context/TruckContext';
 import { useUI } from './context/UIContext';
 
 // Componentes Modularizados
-import ReportForm from './components/ReportForm';
+const ReportForm = lazy(() => import('./components/ReportForm'));
 import ToastContainer from './components/ui/ToastContainer';
 import GlobalModal from './components/ui/GlobalModal';
-import UserManagement from './components/UserManagement';
+const UserManagement = lazy(() => import('./components/UserManagement'));
 import LoginView from './components/LoginView';
 import Sidebar from './components/Sidebar';
-import DashboardView from './components/DashboardView';
-import KanbanBoard from './components/KanbanBoard';
-import HistoryView from './components/HistoryView';
+const DashboardView = lazy(() => import('./components/DashboardView'));
+const KanbanBoard = lazy(() => import('./components/KanbanBoard'));
+const HistoryView = lazy(() => import('./components/HistoryView'));
 import MobileNavigation from './components/MobileNavigation';
 import Header from './components/Header';
 import WarrantySelectionModal from './components/modals/WarrantySelectionModal';
@@ -39,6 +39,15 @@ import WarrantyDetailsModal from './components/modals/WarrantyDetailsModal';
 import HistoryModal from './components/modals/HistoryModal';
 import EditModal from './components/modals/EditModal';
 // v6.2: Motor de Unificación Semántica para Comentarios (Conserva Prefijos y Prioriza Trazabilidad)
+
+const LoadingSpinner = () => (
+  <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '100%', minHeight: '300px', flexDirection: 'column', gap: '1rem' }}>
+    <div className="spin-animation" style={{ color: '#ef4444' }}>
+      <RefreshCcw size={40} />
+    </div>
+    <span style={{ color: 'var(--text-muted)', fontWeight: 'bold' }}>Cargando módulo...</span>
+  </div>
+);
 
 function App() {
   // VERSIÓN DE EMERGENCIA: 1.4.7_RENAME_CSS_FIX
@@ -675,9 +684,10 @@ function App() {
             handleLogoutApp={handleLogoutApp}
           />
 
-          <Routes>
-            <Route path="/" element={<Navigate to="/dashboard" replace />} />
-            <Route path="/dashboard" element={
+          <Suspense fallback={<LoadingSpinner />}>
+            <Routes>
+              <Route path="/" element={<Navigate to="/dashboard" replace />} />
+              <Route path="/dashboard" element={
               <DashboardView
               setSelectedReport={setSelectedReport}
               prepararEdicion={prepararEdicion}
@@ -732,9 +742,10 @@ function App() {
               />
             ) : <Navigate to="/dashboard" replace />} />
 
-            <Route path="/nuevo" element={<ReportForm />} />
-            <Route path="*" element={<Navigate to="/dashboard" replace />} />
-          </Routes>
+              <Route path="/nuevo" element={<ReportForm />} />
+              <Route path="*" element={<Navigate to="/dashboard" replace />} />
+            </Routes>
+          </Suspense>
 
           {/* Modales de Garantía Modularizados (v17.0) */}
           <WarrantySelectionModal

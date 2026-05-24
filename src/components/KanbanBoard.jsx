@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { 
   Truck, 
   Users, 
@@ -70,6 +70,23 @@ const KanbanBoard = ({
     return () => window.removeEventListener('resize', checkScroll);
   }, [camionesAccessibles]);
 
+  const camionesPorColumna = useMemo(() => {
+    const mapa = {};
+    columnasKanban.forEach(col => {
+      mapa[col.id] = camionesAccessibles
+        .filter(c => c.estado === col.id)
+        .sort((a, b) => {
+          if (col.id === 'evaluar') {
+            const timeA = new Date(a.ingreso_evaluar_at || a.time || a.creado_at).getTime() || 0;
+            const timeB = new Date(b.ingreso_evaluar_at || b.time || b.creado_at).getTime() || 0;
+            return timeA - timeB;
+          }
+          return (Number(b.puntos) || 0) - (Number(a.puntos) || 0);
+        });
+    });
+    return mapa;
+  }, [camionesAccessibles]);
+
   let maskStyle = 'none';
   if (canScrollLeft && canScrollRight) {
     maskStyle = 'linear-gradient(to right, transparent 0%, black 5%, black 95%, transparent 100%)';
@@ -128,16 +145,7 @@ const KanbanBoard = ({
               }}
             >
               {columnasKanban.map(col => {
-                const camionesColumna = camionesAccessibles
-                  .filter(c => c.estado === col.id)
-                  .sort((a, b) => {
-                    if (col.id === 'evaluar') {
-                      const timeA = new Date(a.ingreso_evaluar_at || a.time || a.creado_at).getTime() || 0;
-                      const timeB = new Date(b.ingreso_evaluar_at || b.time || b.creado_at).getTime() || 0;
-                      return timeA - timeB; // El más antiguo primero
-                    }
-                    return (Number(b.puntos) || 0) - (Number(a.puntos) || 0);
-                  });
+                const camionesColumna = camionesPorColumna[col.id] || [];
 
                 return (
                   <div

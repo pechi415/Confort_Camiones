@@ -15,9 +15,15 @@ const ReportForm = () => {
   const navigate = useNavigate();
 
   const [reportForm, setReportFormState] = useState(() => {
+    const defaultState = { flota: '', operador: '', mina: 'PB', grupo: '1', selectedDanos: {}, observaciones: {}, atencion: 'No' };
     const saved = localStorage.getItem('drummond_report_form');
-    if (!saved) return { flota: '', operador: '', mina: 'PB', grupo: '1', selectedDanos: {}, observaciones: {}, atencion: 'No' };
-    try { return JSON.parse(saved); } catch (e) { return { flota: '', operador: '', mina: 'PB', grupo: '1', selectedDanos: {}, observaciones: {}, atencion: 'No' }; }
+    if (!saved) return defaultState;
+    try { 
+      const parsed = JSON.parse(saved);
+      return { ...defaultState, ...parsed, selectedDanos: parsed.selectedDanos || {}, observaciones: parsed.observaciones || {} };
+    } catch (err) { 
+      return defaultState; 
+    }
   });
 
   const [reportStep, setReportStep] = useState(1);

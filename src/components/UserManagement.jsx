@@ -44,7 +44,7 @@ const UserManagement = ({
             gap: '0.4rem'
           }}
         >
-          {isCreandoUsuario ? 'Cancelar Formulario' : <><PlusCircle size={16} /> Registrar Operador</>}
+          {isCreandoUsuario ? 'Cancelar Formulario' : <><PlusCircle size={16} /> Registrar Usuario</>}
         </button>
       </div>
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { RefreshCcw, LogOut, Download } from 'lucide-react';
+import { RefreshCcw, LogOut } from 'lucide-react';
 
 const Header = ({
   activeTab,
@@ -8,46 +8,7 @@ const Header = ({
   loadingData,
   handleLogoutApp
 }) => {
-  const [installPrompt, setInstallPrompt] = useState(null);
 
-  useEffect(() => {
-    const handleInstallAvailable = () => {
-      if (window.deferredPrompt) {
-        setInstallPrompt(window.deferredPrompt);
-      }
-    };
-
-    if (window.deferredPrompt) {
-      setInstallPrompt(window.deferredPrompt);
-    }
-
-    window.addEventListener('pwa-install-available', handleInstallAvailable);
-
-    // Si ya fue instalada
-    window.addEventListener('appinstalled', () => {
-      setInstallPrompt(null);
-      window.deferredPrompt = null;
-    });
-
-    return () => window.removeEventListener('pwa-install-available', handleInstallAvailable);
-  }, []);
-
-  const handleInstallClick = async () => {
-    if (!installPrompt) return;
-    
-    // Show the install prompt
-    installPrompt.prompt();
-    
-    // Wait for the user to respond to the prompt
-    const { outcome } = await installPrompt.userChoice;
-    
-    if (outcome === 'accepted') {
-      console.log('User accepted the install prompt');
-      setInstallPrompt(null);
-    } else {
-      console.log('User dismissed the install prompt');
-    }
-  };
   const getTitle = () => {
     switch (activeTab) {
       case 'dashboard': return 'Panel de Control - Confort';
@@ -64,30 +25,7 @@ const Header = ({
       <h1 className="page-title">{getTitle()}</h1>
       <div className="user-profile" style={{ display: 'flex', alignItems: 'center' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem' }}>
-          {/* Botón Instalar PWA */}
-          {installPrompt && (
-            <button
-              onClick={handleInstallClick}
-              title="Instalar App"
-              style={{
-                background: '#ef4444',
-                border: 'none',
-                color: 'white',
-                borderRadius: '8px',
-                padding: '0.4rem 0.8rem',
-                display: 'flex',
-                alignItems: 'center',
-                gap: '0.4rem',
-                cursor: 'pointer',
-                fontWeight: 'bold',
-                fontSize: '0.85rem',
-                boxShadow: '0 2px 4px rgba(239, 68, 68, 0.3)'
-              }}
-            >
-              <Download size={16} />
-              <span className="desktop-only">Instalar App</span>
-            </button>
-          )}
+
 
           {/* v11.1: Botón de Actualización Rápida (Solo Móvil) */}
           <button

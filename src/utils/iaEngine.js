@@ -117,7 +117,7 @@ export const corregirOrtografiaIA = (texto) => {
     'muñoz': 'Muñoz', 'mendez': 'Méndez', 'nuñez': 'Núñez', 'quintero': 'Quintero',
     'castaño': 'Castaño', 'peña': 'Peña', 'velasquez': 'Velásquez', 'chavez': 'Chávez',
     'bermudez': 'Bermúdez', 'caicedo': 'Caicedo', 'avila': 'Ávila', 'marin': 'Marín',
-    'guzman': 'Guzmán', 'beltran': 'Beltrán', 'peña': 'Peña', 'cortez': 'Cortéz'
+    'guzman': 'Guzmán', 'beltran': 'Beltrán', 'cortez': 'Cortéz'
   };
 
   Object.keys(diccionario).forEach(bad => {
@@ -143,7 +143,7 @@ export const unificarComentariosIA = (originalComment) => {
   const uniqueGroups = [];
 
   groups.forEach(group => {
-    const cleanGroup = group.replace(/^(?:G\w+|General)\s*[:\-]\s*/gi, '').trim();
+    const cleanGroup = group.replace(/^(?:G\w+|General)\s*[:-]\s*/gi, '').trim();
     if (!cleanGroup) return;
 
     let found = false;
@@ -193,11 +193,11 @@ export const limpiarFallasIA = (fallasStr, fallasData) => {
               const matches = [...resto.matchAll(/\(([^)]+)\)/g)];
               if (matches.length > 0) {
                   matches.forEach(m => {
-                      const content = m[1].replace(/(?:G\d+|General)\s*[:\-]\s*/gi, '').trim();
+                      const content = m[1].replace(/(?:G\d+|General)\s*[:-]\s*/gi, '').trim();
                       if (content && content !== '-') obsParts.push(content);
                   });
               } else {
-                  const limpio = resto.replace(/(?:G\d+|General)\s*[:\-]\s*/gi, '').trim();
+                  const limpio = resto.replace(/(?:G\d+|General)\s*[:-]\s*/gi, '').trim();
                   if (limpio && limpio !== '-') obsParts.push(limpio);
               }
           }
@@ -208,8 +208,8 @@ export const limpiarFallasIA = (fallasStr, fallasData) => {
           if (matches.length > 0) {
               matches.forEach(m => {
                   const content = m[1];
-                  if (content.match(/(?:G\d+|General)\s*[:\-]/i)) {
-                      const pPuro = content.replace(/(?:G\d+|General)\s*[:\-]\s*/gi, '').trim();
+                  if (content.match(/(?:G\d+|General)\s*[:-]/i)) {
+                    const pPuro = content.replace(/(?:G\d+|General)\s*[:-]\s*/gi, '').trim();
                       if (pPuro && pPuro !== '-') obsParts.push(pPuro);
                       nameCandidate = nameCandidate.replace(m[0], '').trim();
                   }

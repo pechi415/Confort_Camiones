@@ -24,7 +24,7 @@ export const useMaintenanceData = (session, addToast) => {
       } else if (!retry && (!flotaInfo || flotaInfo.length === 0)) {
         setTimeout(() => fetchDatabase(true), 800);
       }
-    } catch (err) {
+    } catch {
       addToast("Error de conexión", "error");
     } finally {
       setLoadingData(false);
@@ -54,7 +54,7 @@ export const useMaintenanceData = (session, addToast) => {
 
     const channelUsuarios = supabase
       .channel('realtime_usuarios')
-      .on('postgres_changes', { event: '*', schema: 'public', table: 'usuarios' }, (payload) => {
+      .on('postgres_changes', { event: '*', schema: 'public', table: 'usuarios' }, () => {
         fetchDatabase();
       })
       .subscribe();
@@ -82,7 +82,7 @@ export const useMaintenanceData = (session, addToast) => {
       if (typeof clearFormCallback === 'function') {
         clearFormCallback();
       }
-    } catch (err) {
+    } catch {
       addToast('❌ Error de conexión', 'error');
     } finally {
       setLoadingData(false);
