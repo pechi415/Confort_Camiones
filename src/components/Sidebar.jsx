@@ -6,65 +6,61 @@ import {
   ClipboardList, 
   Settings 
 } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
+import styles from './Sidebar.module.css';
 
 const Sidebar = ({ 
   activeTab, 
   setActiveTab, 
   session, 
-  handleLogoutApp, 
-  setMina, 
-  setGrupo,
-  mina 
+  handleLogoutApp
 }) => {
   const isAdmin = session?.role?.toLowerCase() === 'admin' || session?.rol?.toLowerCase() === 'admin';
+  const navigate = useNavigate();
 
-  const handleNewReportClick = () => {
-    setActiveTab('nuevo');
-    // Automatización de Datos por Usuario (v1.6.0)
-    if (!isAdmin) {
-      setMina(session?.mina === 'Global' ? mina : session?.mina);
-      setGrupo(session?.grupo);
-    }
+  const handleNavClick = (tab, path) => {
+    setActiveTab(tab);
+    navigate(path);
   };
 
   return (
-    <aside className="sidebar">
-      <div className="brand">
-        <div className="brand-logo-container">
-          <div className="brand-logo-text">CAMIONES</div>
-          <div className="brand-subtitle">PRODUCCIÓN</div>
+    <aside className={styles.sidebar}>
+      <div className={styles.brand}>
+        <div className={styles.brandLogoContainer}>
+          <div className={styles.brandLogoText}>CAMIONES</div>
+          <div className={styles.brandSubtitle}>PRODUCCIÓN</div>
         </div>
       </div>
 
-      <nav className="nav-menu">
+      <nav className={styles.navMenu}>
         <div
-          className={`nav-item ${activeTab === 'dashboard' ? 'active' : ''}`}
-          onClick={() => setActiveTab('dashboard')}
+          className={`${styles.navItem} ${activeTab === 'dashboard' ? styles.active : ''}`}
+          onClick={() => handleNavClick('dashboard', '/dashboard')}
         >
           <LayoutDashboard size={18} style={{ marginRight: '0.6rem', marginBottom: '-0.15rem' }} /> Dashboard Principal
         </div>
         <div
-          className={`nav-item ${activeTab === 'nuevo' ? 'active' : ''}`}
-          onClick={handleNewReportClick}
+          className={`${styles.navItem} ${activeTab === 'nuevo' ? styles.active : ''}`}
+          onClick={() => handleNavClick('nuevo', '/dashboard')}
         >
           <PlusCircle size={18} style={{ marginRight: '0.6rem', marginBottom: '-0.15rem' }} /> Nuevo Reporte
         </div>
         <div
-          className={`nav-item ${activeTab === 'cola' ? 'active' : ''}`}
-          onClick={() => setActiveTab('cola')}
+          className={`${styles.navItem} ${activeTab === 'cola' ? styles.active : ''}`}
+          onClick={() => handleNavClick('cola', '/cola')}
         >
           <Blocks size={18} style={{ marginRight: '0.6rem', marginBottom: '-0.15rem' }} /> Pila de Mantenimiento
         </div>
         <div 
-          className={`nav-item ${activeTab === 'historial' ? 'active' : ''}`} 
-          onClick={() => setActiveTab('historial')}
+          className={`${styles.navItem} ${activeTab === 'historial' ? styles.active : ''}`} 
+          onClick={() => handleNavClick('historial', '/historial')}
         >
           <ClipboardList size={18} style={{ marginRight: '0.6rem', marginBottom: '-0.15rem' }} /> Historial Analítico
         </div>
         {isAdmin && (
           <div 
-            className={`nav-item ${activeTab === 'usuarios' ? 'active' : ''}`} 
-            onClick={() => setActiveTab('usuarios')}
+            className={`${styles.navItem} ${activeTab === 'usuarios' ? styles.active : ''}`} 
+            onClick={() => handleNavClick('usuarios', '/usuarios')}
           >
             <Settings size={18} style={{ marginRight: '0.6rem', marginBottom: '-0.15rem' }} /> Gestor de Cuentas
           </div>

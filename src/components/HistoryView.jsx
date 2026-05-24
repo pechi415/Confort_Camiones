@@ -1,4 +1,4 @@
-import React from 'react';
+import { useState, useMemo } from 'react';
 import { 
   ClipboardList, 
   Award, 
@@ -10,47 +10,301 @@ import {
   Trash2, 
   RefreshCcw 
 } from 'lucide-react';
-import { limpiarFallasIA } from '../utils/iaEngine';
-import { formatFechaCorta, formatearCiclo } from '../utils/formatters';
-import { minaOptions } from '../constants/fallas';
+import { limpiarFallasIA, normalizarNombre } from '../utils/iaEngine';
+import { formatFechaCorta, formatearCiclo, parseFecha } from '../utils/formatters';
+import { minaOptions, LOGO_DRUMMOND } from '../constants/fallas';
+import * as XLSX from 'xlsx';
+import { jsPDF } from 'jspdf';
+import autoTable from 'jspdf-autotable';
+import { useUI } from '../context/UIContext';
+import { useAuth } from '../context/AuthContext';
+import { useTruck } from '../context/TruckContext';
+import styles from './HistoryView.module.css';
 
 const HistoryView = ({
-  registrosFiltrados,
-  registrosLimit,
-  setRegistrosLimit,
-  expandedHistoryId,
-  setExpandedHistoryId,
-  conteoLiberados,
-  exportarAExcel,
-  filtroFlota,
-  setFiltroFlota,
-  filtroMina,
-  setFiltroMina,
-  filtroMes,
-  setFiltroMes,
-  generarPDF,
-  session,
   handleSafeDelete,
-  eliminarCamion,
   confirmDeleteId
 }) => {
+  const { session } = useAuth();
+  const { camionesAccessibles, eliminarCamion, conteoLiberados } = useTruck();
   const isAdmin = session?.role?.toLowerCase() === 'admin' || session?.rol?.toLowerCase() === 'admin';
+  const { addToast, showConfirm } = useUI();
+  
+  const [filtroFlota, setFiltroFlota] = useState('');
+  const [filtroMina, setFiltroMina] = useState('');
+  const [filtroMes, setFiltroMes] = useState('');
+  const [registrosLimit, setRegistrosLimit] = useState(20);
+  const [expandedHistoryId, setExpandedHistoryId] = useState(null);
+
+
+
+  const registrosFiltrados = useMemo(() => {
+    if (!session || !Array.isArray(camionesAccessibles)) return [];
+    return camionesAccessibles.filter(r => {
+      if (r.estado !== 'liberado') return false;
+      try {
+        const fFlota = String(r.flota || '').toLowerCase();
+        const fMina = String(r.mina || '').toLowerCase();
+        const fBusquedaFlota = String(filtroFlota || '').toLowerCase();
+        const fBusquedaMina = String(filtroMina || '').toLowerCase();
+
+        const matchFlota = fFlota.includes(fBusquedaFlota);
+        const matchMina = !fBusquedaMina || fMina === fBusquedaMina;
+        if (!matchFlota || !matchMina) return false;
+
+        if (filtroMes) {
+          const fecha = parseFecha(r.finalizado_at || r.time || r.creado_at);
+          if (!fecha) return false;
+          const [anioF, mesF] = filtroMes.split('-');
+          if (fecha.getFullYear() !== parseInt(anioF) || (fecha.getMonth() + 1) !== parseInt(mesF)) return false;
+        }
+        return true;
+      } catch (e) { return false; }
+    });
+  }, [camionesAccessibles, session, filtroFlota, filtroMina, filtroMes]);
+
+  const exportarAExcel = () => {
+    if (registrosFiltrados.length === 0) {
+      return addToast("No hay datos filtrados para exportar.", "error");
+    }
+
+    try {
+      addToast("⏳ Preparando archivo Excel...", "info");
+
+      const datosExcel = registrosFiltrados.map(r => {
+        const dG = r.detalles_grupos || {};
+
+        const getOp = (g) => dG[`G${g}`]?.operador || (r.operador || '').split(', ').find(n => n.includes(`G${g}:`))?.replace(`G${g}:`, '').trim() || '-';
+        const getSup = (g) => dG[`G${g}`]?.supervisor || (r.supervisor || '').split(', ').find(n => n.includes(`G${g}:`))?.replace(`G${g}:`, '').trim() || '-';
+
+        let cicloTxt = '-';
+        if (r.finalizado_at && (r.ingreso_evaluar_at || r.creado_at)) {
+          const inicio = new Date(r.ingreso_evaluar_at || r.creado_at);
+          const fin = new Date(r.finalizado_at);
+          const diffMs = fin - inicio;
+          const diffMin = Math.max(0, Math.floor(diffMs / 60000));
+          const horas = Math.floor(diffMin / 60);
+          const mins = diffMin % 60;
+          cicloTxt = horas > 0 ? `${horas}h ${mins}m` : `${mins} min`;
+        }
+
+        return {
+          "Fecha Reporte": r.time,
+          "Flota": r.flota,
+          "Mina/Ubicación": r.mina,
+          "Atención/Prioridad": r.atencion || 'NORMAL',
+          "Op. Grupo 1": getOp(1),
+          "Sup. Grupo 1": getSup(1),
+          "Op. Grupo 2": getOp(2),
+          "Sup. Grupo 2": getSup(2),
+          "Op. Grupo 3": getOp(3),
+          "Sup. Grupo 3": getSup(3),
+          "Fallas Unificadas": r.fallas,
+          "Ciclo de Tiempo": cicloTxt,
+          "Fecha Liberación": r.finalizado_at ? new Date(r.finalizado_at).toLocaleString() : '-',
+          "Estado G1": r.aprobado_g1 ? 'Aprobado' : '-',
+          "Estado G2": r.aprobado_g2 ? 'Aprobado' : '-',
+          "Estado G3": r.aprobado_g3 ? 'Aprobado' : '-'
+        };
+      });
+
+      const worksheet = XLSX.utils.json_to_sheet(datosExcel);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Historial Mantenimiento");
+      XLSX.writeFile(workbook, `Historial_Drummond_Confort_${new Date().toLocaleDateString()}.xlsx`);
+      addToast("✅ Excel descargado con éxito.");
+    } catch (error) {
+      addToast("❌ Error al generar Excel: " + error.message, "error");
+    }
+  };
+
+  const generarPDF = async (registro) => {
+    try {
+      const grupoActual = session.grupo || '1';
+      const grupoPrefix = `G${grupoActual}:`;
+      const opNames = (registro.operador || '').split(/\s*\|\s*/);
+      const yaTieneOperador = opNames.some(n => n.includes(grupoPrefix));
+
+      if (!yaTieneOperador) {
+        showConfirm({
+          type: 'prompt',
+          title: `Firma de Recepción (Grupo ${grupoActual})`,
+          message: `Vas a generar el PDF desde un grupo distinto al del reporte original.\n\nPor favor, ingresa el nombre del Operador que FIRMARÁ la recepción del equipo:`,
+          placeholder: 'Escribe el nombre aquí (o deja en blanco)...',
+          confirmText: 'Generar PDF',
+          onConfirm: async (nombreIngresado) => {
+            const nombreNormalizado = nombreIngresado ? normalizarNombre(nombreIngresado) : ' ';
+            const registroTemporal = {
+              ...registro,
+              operador_temporal_pdf: nombreNormalizado,
+              supervisor_temporal_pdf: session.nombre || 'Supervisor'
+            };
+            renderizarPDF(registroTemporal);
+          }
+        });
+      } else {
+        renderizarPDF(registro);
+      }
+    } catch (err) {
+      addToast("❌ Error al iniciar PDF: " + err.message, "error");
+    }
+  };
+
+  const renderizarPDF = (registro) => {
+    try {
+      addToast("⏳ Generando acta de trazabilidad...", "info");
+      const doc = new jsPDF();
+
+      doc.setFillColor(248, 250, 252);
+      doc.roundedRect(160, 10, 35, 16, 3, 3, 'F');
+      doc.setDrawColor(226, 232, 240);
+      doc.roundedRect(160, 10, 35, 16, 3, 3, 'D');
+
+      try {
+        if (typeof LOGO_DRUMMOND !== 'undefined' && LOGO_DRUMMOND) {
+          const logoData = LOGO_DRUMMOND.startsWith('data:') ? LOGO_DRUMMOND : `data:image/png;base64,${LOGO_DRUMMOND}`;
+          doc.addImage(logoData, 'PNG', 15, 8, 28, 20);
+        }
+      } catch (e) {
+        console.error("Error al cargar logo:", e);
+      }
+
+      doc.setTextColor(31, 41, 55);
+      doc.setFontSize(14);
+      doc.setFont("helvetica", "bold");
+      doc.text("ACTA DE TRAZABILIDAD", 65, 20);
+      doc.setFontSize(8);
+      doc.setFont("helvetica", "normal");
+      doc.text("CONFORT CAMIONES", 65, 26);
+
+      doc.setFontSize(7);
+      doc.setFont("helvetica", "bold");
+      doc.text("MINA:", 163, 16);
+      doc.setFont("helvetica", "normal");
+      doc.text(`${registro.mina === 'PB' ? 'PB' : 'ED'}`, 174, 16);
+
+      doc.setFont("helvetica", "bold");
+      doc.text("CAMIÓN:", 163, 22);
+      doc.setFont("helvetica", "normal");
+      doc.text(`${registro.flota}`, 177, 22);
+
+      doc.setTextColor(0, 0, 0);
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "normal");
+      doc.text(`Fecha de Emisión: ${new Date().toLocaleDateString()}`, 145, 32);
+
+      doc.setFont("helvetica", "bold");
+      doc.text(`Personal que reporta el estado (Operadores Permanentes):`, 20, 45);
+      doc.setFont("helvetica", "normal");
+
+      const dG_orig = registro.detalles_grupos || {};
+      const origG = registro.grupo || '1';
+      const reporteroData = dG_orig[`G${origG}`] || {};
+
+      const rawOper = reporteroData.operador || registro.operador || 'N/A';
+      const listaOper = rawOper.split(/\s*[|,]\s*/).filter(n => n.trim() !== "");
+      const operFormateado = listaOper.map(n => `• ${n.trim()}`).join('\n');
+
+      const operSplit = doc.splitTextToSize(operFormateado, 170);
+      doc.text(operSplit, 20, 52);
+
+      const supLabelY = 52 + (operSplit.length * 5) + 4;
+      doc.setFont("helvetica", "bold");
+      doc.text(`Gestor del reporte (Supervisor de Camiones):`, 20, supLabelY);
+
+      doc.setFont("helvetica", "normal");
+      const rawSup = reporteroData.supervisor || registro.supervisor || 'N/A';
+      const listaSup = rawSup.split(/\s*[|,]\s*/).filter(n => n.trim() !== "");
+      const supFormateado = listaSup.map(n => `• ${n.trim()}`).join('\n');
+
+      const supSplit = doc.splitTextToSize(supFormateado, 170);
+      const supDataY = supLabelY + 7;
+      doc.text(supSplit, 20, supDataY);
+
+      const tableY = Math.max(85, supDataY + (supSplit.length * 5) + 5);
+
+      const tableFunc = typeof autoTable === 'function' ? autoTable : autoTable.default;
+      const itemsFallas = limpiarFallasIA(registro.fallas);
+      const bodyFallas = itemsFallas.map(item => [item.falla, item.obs]);
+
+      tableFunc(doc, {
+        startY: tableY,
+        head: [['Detalle de Fallas Intervenidas', 'Comentarios Técnica / Observación']],
+        body: bodyFallas,
+        theme: 'striped',
+        headStyles: { fillColor: [31, 41, 55], textColor: [255, 255, 255], fontStyle: 'bold' },
+        columnStyles: { 0: { cellWidth: 70 }, 1: { cellWidth: 'auto' } }
+      });
+
+      const finalY = doc.lastAutoTable.finalY + 15;
+      doc.setFontSize(12);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(0, 0, 0);
+      doc.text("HISTORIAL DE VALIDACIÓN POR GRUPOS", 20, finalY);
+
+      tableFunc(doc, {
+        startY: finalY + 5,
+        head: [['Grupo de Turno', 'Visto Bueno (VB)', 'Estado']],
+        body: [
+          ['Grupo 1', registro.aprobado_g1 ? 'CONFIRMADO' : 'N/A', registro.aprobado_g1 ? 'Aceptada a Satisfacción' : 'Sin intervención'],
+          ['Grupo 2', registro.aprobado_g2 ? 'CONFIRMADO' : 'N/A', registro.aprobado_g2 ? 'Aceptada a Satisfacción' : 'Sin intervención'],
+          ['Grupo 3', registro.aprobado_g3 ? 'CONFIRMADO' : 'N/A', registro.aprobado_g3 ? 'Aceptada a Satisfacción' : 'Sin intervención'],
+        ],
+        theme: 'grid',
+        headStyles: { fillColor: [31, 41, 55], textColor: [255, 255, 255] }
+      });
+
+      const grupoActual = session.grupo || '1';
+      const opNameFiltered = typeof registro.operador_temporal_pdf !== 'undefined'
+        ? registro.operador_temporal_pdf
+        : ((registro.detalles_grupos || {})[`G${grupoActual}`]?.operador || (registro.operador || '').split(/\s*\|\s*/).find(n => n.includes(`G${grupoActual}:`))?.replace(`G${grupoActual}:`, '').trim() || '');
+
+      const supNameFiltered = registro.supervisor_temporal_pdf || session.nombre || 'Supervisor';
+
+      const signY = doc.lastAutoTable.finalY + 35;
+      doc.setDrawColor(0);
+      doc.line(20, signY, 85, signY);
+      doc.setFontSize(10);
+      doc.setFont("helvetica", "bold");
+      doc.text(`${opNameFiltered}`, 20, signY + 5);
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(9);
+      doc.text("Operador de Camion", 20, signY + 10);
+      doc.text(`Grupo ${grupoActual}`, 20, signY + 15);
+
+      doc.line(120, signY, 185, signY);
+      doc.setFont("helvetica", "bold");
+      doc.text(`${supNameFiltered}`, 120, signY + 5);
+      doc.setFont("helvetica", "normal");
+      doc.text(`Supervisor de Camiones`, 120, signY + 10);
+      doc.text(`Drummond Ltd.`, 120, signY + 15);
+
+      doc.setFontSize(8);
+      doc.setTextColor(150);
+      doc.text(`Documento generado digitalmente por Drummond Confort System`, 105, 285, { align: 'center' });
+
+      doc.save(`Acta_Trazabilidad_${registro.flota}_${new Date().toISOString().split('T')[0]}.pdf`);
+      addToast(`✅ PDF del camión ${registro.flota} generado.`);
+    } catch (err) {
+      addToast("❌ Error al producir PDF: " + err.message, "error");
+    }
+  };
 
   return (
     <div className="card fade-in">
-      <div className="history-header-container">
-        <div className="history-title-area">
-          <h2 style={{ marginBottom: '0.2rem', color: 'var(--primary-black)', display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+      <div className={styles.historyHeaderContainer}>
+        <div className={styles.historyTitleArea}>
+          <h2>
             <ClipboardList size={22} strokeWidth={2} style={{ color: 'var(--secondary-blue)' }} /> Historial de Mantenimientos
           </h2>
-          <p style={{ color: 'var(--text-muted)', margin: 0, fontSize: '0.9rem' }}>Registro histórico de camiones de confort completamente solucionados.</p>
+          <p>Registro histórico de camiones de confort completamente solucionados.</p>
         </div>
-        <div className="history-header-actions">
-          <span className="badge badge-liberado history-badge" style={{ fontSize: '0.85rem', padding: '0.5rem 1rem', display: 'flex', alignItems: 'center', gap: '0.4rem', border: '1px solid #10b981', background: 'rgba(16, 185, 129, 0.15)', color: '#059669', boxShadow: '0 2px 4px rgba(16, 185, 129, 0.1)' }}>
+        <div className={styles.historyHeaderActions}>
+          <span className={`badge badge-liberado ${styles.historyBadge}`} style={{ fontSize: '0.85rem', padding: '0.5rem 1rem', display: 'flex', alignItems: 'center', gap: '0.4rem', border: '1px solid #10b981', background: 'rgba(16, 185, 129, 0.15)', color: '#059669', boxShadow: '0 2px 4px rgba(16, 185, 129, 0.1)' }}>
             <Award size={16} strokeWidth={2} /> <span>Camiones Entregados: <strong>{conteoLiberados}</strong></span>
           </span>
           <button
-            className="btn btn-primary history-export-btn"
+            className={`btn btn-primary ${styles.historyExportBtn}`}
             style={{ backgroundColor: 'rgba(16, 185, 129, 0.8)', borderColor: 'rgba(255,255,255,0.4)', backdropFilter: 'blur(10px)', boxShadow: '0 4px 15px rgba(16, 185, 129, 0.2)', display: 'flex', alignItems: 'center', gap: '0.5rem', justifyContent: 'center' }}
             onClick={exportarAExcel}
           >
@@ -88,13 +342,20 @@ const HistoryView = ({
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
           <span style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--primary-black)', display: 'flex', alignItems: 'center', gap: '0.3rem' }}><Calendar size={16} strokeWidth={1.5} /> Mes Salida:</span>
           <input
-            type="text"
+            type="month"
             className="input-field"
             style={{ padding: '0.4rem 0.6rem', fontSize: '0.85rem', minWidth: '130px', background: 'white' }}
-            placeholder="Ej: Feb, Mar"
             value={filtroMes}
             onChange={(e) => setFiltroMes(e.target.value)}
           />
+          {filtroMes && (
+            <button 
+              onClick={() => setFiltroMes('')}
+              style={{ background: 'none', border: 'none', color: 'var(--primary-red)', cursor: 'pointer', fontSize: '0.8rem', fontWeight: 'bold' }}
+            >
+              X
+            </button>
+          )}
         </div>
       </div>
 
@@ -120,7 +381,7 @@ const HistoryView = ({
               return (
                 <tr
                   key={registro.id}
-                  className={`history-row ${isExpanded ? 'expanded' : ''}`}
+                  className={`${styles.historyRow} ${isExpanded ? styles.expanded : ''}`}
                   onClick={() => {
                     if (window.innerWidth <= 768) {
                       setExpandedHistoryId(isExpanded ? null : registro.id);
@@ -133,17 +394,17 @@ const HistoryView = ({
                       <strong style={{ fontSize: '1.1rem', color: 'var(--primary-black)', marginLeft: 'auto' }}>{registro.flota}</strong>
                     </div>
                   </td>
-                  <td data-label="Fallas" className="collapsible-col" style={{ fontSize: '0.88rem', color: 'var(--text-main)', lineHeight: '1.3', minWidth: '220px' }}>
+                  <td data-label="Fallas" className={styles.collapsibleCol} style={{ fontSize: '0.88rem', color: 'var(--text-main)', lineHeight: '1.3', minWidth: '220px' }}>
                     <div style={{ width: '100%', whiteSpace: 'normal', wordBreak: 'break-word' }}>
                       {limpiarFallasIA(registro.fallas).map(f => `${f.falla}${f.obs !== '-' ? ` (${f.obs})` : ''}`).join(' | ')}
                     </div>
                   </td>
                   <td data-label="Ingreso" style={{ fontSize: '0.85rem' }}>{formatFechaCorta(registro.time || registro.creado_at)}</td>
                   <td data-label="Liberación" style={{ fontSize: '0.85rem' }}>{formatFechaCorta(registro.finalizado_at)}</td>
-                  <td data-label="Ciclo" className="collapsible-col" style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--primary-red)' }}>
+                  <td data-label="Ciclo" className={styles.collapsibleCol} style={{ fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--primary-red)' }}>
                     {formatearCiclo(registro.time || registro.creado_at, registro.finalizado_at, registro.ingreso_evaluar_at)}
                   </td>
-                  <td data-label="Operador" className="collapsible-col" style={{ fontSize: '0.85rem', whiteSpace: 'nowrap' }}>
+                  <td data-label="Operador" className={styles.collapsibleCol} style={{ fontSize: '0.85rem', whiteSpace: 'nowrap' }}>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: '0.35rem' }}>
                       {(registro.operador || 'N/A').split(/\s*[,|]\s*/).map((op, idx) => {
                         const parts = op.split(': ');
@@ -195,7 +456,7 @@ const HistoryView = ({
                       </div>
                     </div>
                   </td>
-                  <td data-label="Reporte" className="collapsible-col">
+                  <td data-label="Reporte" className={styles.collapsibleCol}>
                     <div style={{ display: 'flex', alignItems: 'center', gap: '0.8rem', justifyContent: 'center' }}>
                       <button
                         className="btn btn-secondary"

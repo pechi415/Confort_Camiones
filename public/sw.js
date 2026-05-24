@@ -3,6 +3,8 @@ const assets = [
   '/',
   '/index.html',
   '/manifest.json',
+  '/logo192.png',
+  '/logo512.png',
   '/favicon.jpg'
 ];
 

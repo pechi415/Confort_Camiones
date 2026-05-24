@@ -1,30 +1,246 @@
-import React from 'react';
+import { useState, useEffect, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Truck, ClipboardList, CheckCircle, ChevronLeft, ChevronRight, AlertTriangle, ShieldAlert, ShieldCheck } from 'lucide-react';
 import { fallas } from '../constants/fallas';
-import { corregirNombresIA, corregirOrtografiaIA } from '../utils/iaEngine';
+import { normalizarNombre, corregirNombresIA, corregirOrtografiaIA, unificarComentariosIA } from '../utils/iaEngine';
+import { useAuth } from '../context/AuthContext';
+import { useUI } from '../context/UIContext';
+import { useTruck } from '../context/TruckContext';
+import { camionService } from '../services/camionService';
 
-const ReportForm = ({
-  reportStep,
-  setReportStep,
-  flota,
-  setFlota,
-  operador,
-  setOperador,
-  mina,
-  setMina,
-  grupo,
-  setGrupo,
-  selectedDanos,
-  handleDanoToggle,
-  observaciones,
-  handleObsChange,
-  atencion,
-  totalImpacto,
-  isFlotaValid,
-  onSubmit,
-  addToast,
-  session
-}) => {
+const ReportForm = () => {
+  const { session } = useAuth();
+  const { addToast } = useUI();
+  const { camionesRegistrados, setCamionesRegistrados } = useTruck();
+  const navigate = useNavigate();
+
+  const [reportForm, setReportFormState] = useState(() => {
+    const saved = localStorage.getItem('drummond_report_form');
+    if (!saved) return { flota: '', operador: '', mina: 'PB', grupo: '1', selectedDanos: {}, observaciones: {}, atencion: 'No' };
+    try { return JSON.parse(saved); } catch (e) { return { flota: '', operador: '', mina: 'PB', grupo: '1', selectedDanos: {}, observaciones: {}, atencion: 'No' }; }
+  });
+
+  const [reportStep, setReportStep] = useState(1);
+  const [flota, setFlota] = useState(reportForm.flota);
+  const [operador, setOperador] = useState(reportForm.operador);
+  const [mina, setMina] = useState(reportForm.mina);
+  const [grupo, setGrupo] = useState(reportForm.grupo);
+  const [selectedDanos, setSelectedDanos] = useState(reportForm.selectedDanos);
+  const [observaciones, setObservaciones] = useState(reportForm.observaciones);
+  const [atencion, setAtencion] = useState(reportForm.atencion || 'No');
+
+  useEffect(() => {
+    if (session && !flota && !operador) {
+      if (session.mina && session.mina !== 'Global') setMina(session.mina);
+      if (session.grupo) setGrupo(session.grupo);
+    }
+  }, [session, flota, operador]);
+
+  useEffect(() => {
+    const state = { flota, operador, mina, grupo, selectedDanos, observaciones, atencion };
+    localStorage.setItem('drummond_report_form', JSON.stringify(state));
+  }, [flota, operador, mina, grupo, selectedDanos, observaciones, atencion]);
+
+  const totalImpacto = useMemo(() => {
+    return Object.keys(selectedDanos).reduce((acc, id) => {
+      if (!selectedDanos[id]) return acc;
+      const falla = fallas.find(f => f.id === id);
+      return acc + (falla ? (falla.impacto || 0) : 0);
+    }, 0);
+  }, [selectedDanos]);
+
+  useEffect(() => {
+    if (totalImpacto >= 70) setAtencion('CRÍTICA');
+    else if (totalImpacto >= 50) setAtencion('ALTA');
+    else if (totalImpacto >= 26) setAtencion('MEDIA');
+    else setAtencion('BAJA');
+  }, [totalImpacto]);
+
+  const isFlotaValid = /^2\d{3}$/.test(flota);
+
+  const handleDanoToggle = (id) => {
+    setSelectedDanos(prev => ({ ...prev, [id]: !prev[id] }));
+    if (selectedDanos[id]) {
+      setObservaciones(prev => {
+        const copy = { ...prev };
+        delete copy[id];
+        return copy;
+      });
+    }
+  };
+
+  const handleObsChange = (id, text) => {
+    let final = text;
+    if (text.endsWith(' ') || text.endsWith('.')) {
+      final = corregirOrtografiaIA(text);
+    } else if (text.length === 1) {
+      final = text.toUpperCase();
+    }
+    setObservaciones(prev => ({ ...prev, [id]: final }));
+  };
+
+  const onSubmit = async () => {
+    try {
+      const camionExistente = camionesRegistrados.find(c => c.flota === flota && c.estado !== 'liberado');
+
+      if (camionExistente) {
+        const opLimpio = normalizarNombre(operador);
+        const supLimpio = normalizarNombre(session.nombre);
+
+        const listaGrupos = Array.from(new Set([...camionExistente.grupo.split(/\s*[,|]\s*/), grupo])).sort();
+
+        const nuevoRegSup = `G${grupo}: ${supLimpio}`;
+        const supsActuales = (camionExistente.supervisor || '').split(/\s*[,|]\s*/).filter(Boolean);
+        const listaSupervisores = Array.from(new Set([...supsActuales, nuevoRegSup]));
+
+        const nuevoRegOp = `G${grupo}: ${opLimpio}`;
+        const opsActuales = (camionExistente.operador || '').split(/\s*[,|]\s*/).filter(Boolean);
+        const listaOperadores = Array.from(new Set([...opsActuales, nuevoRegOp]));
+
+        const numGrupos = listaGrupos.length;
+
+        const fallasActualesIds = new Set();
+        fallas.forEach(f => {
+          if (camionExistente.fallas.includes(f.nombre)) fallasActualesIds.add(f.id);
+        });
+
+        const todasFallasIds = new Set([...Array.from(fallasActualesIds), ...Object.keys(selectedDanos)]);
+
+        const puntosBase = Array.from(todasFallasIds).reduce((acc, id) => {
+          const f = fallas.find(x => x.id === id);
+          return acc + (f ? f.impacto : 0);
+        }, 0);
+
+        const bonoConsenso = (numGrupos - 1) * 30;
+        const puntosFinales = puntosBase + bonoConsenso;
+
+        let atencionLabel = 'NORMAL';
+        if (puntosFinales >= 70) atencionLabel = 'CRÍTICA';
+        else if (puntosFinales >= 26) atencionLabel = 'ALTA';
+
+        const obsAnteriores = {};
+        if (camionExistente.fallas) {
+          const rawFallas = camionExistente.fallas;
+          const parts = [];
+          let depth = 0;
+          let lastSplit = 0;
+
+          for (let i = 0; i < rawFallas.length; i++) {
+            const char = rawFallas[i];
+            if (char === '(') depth++;
+            if (char === ')') depth--;
+            if (depth === 0 && char === '|') {
+              parts.push(rawFallas.substring(lastSplit, i).trim());
+              lastSplit = i + 1;
+            }
+          }
+          parts.push(rawFallas.substring(lastSplit).trim());
+
+          parts.forEach(p => {
+            if (!p || p === '-' || p.includes('Ficha Técnica')) return;
+            const match = p.match(/^(.*?)(?:\s*\((.*?)\))?$/);
+            if (match && match[2]) {
+              const nombreLimpio = match[1].split('|')[0].trim();
+              const fObj = fallas.find(f => f.nombre === nombreLimpio || nombreLimpio.includes(f.nombre));
+              if (fObj) obsAnteriores[fObj.id] = match[2];
+            }
+          });
+        }
+
+        const fallasConsolidadas = Array.from(todasFallasIds).map(id => {
+          const f = fallas.find(x => x.id === id);
+          const obsViejas = obsAnteriores[id] || '';
+          const obsNuevaLimpia = corregirOrtografiaIA(observaciones[id] || '');
+          const obsNuevas = obsNuevaLimpia ? `G${grupo}: ${obsNuevaLimpia}` : '';
+
+          const textoAUnificar = [obsViejas, obsNuevas].filter(Boolean).join(' | ');
+          const finalObs = unificarComentariosIA(textoAUnificar);
+
+          return f.nombre + (finalObs ? ` (${finalObs})` : '');
+        }).join(' | ');
+
+        const fallasStruct = {};
+        Object.keys(selectedDanos).forEach(id => {
+          fallasStruct[id] = corregirOrtografiaIA(observaciones[id] || '');
+        });
+        const detallesAnteriores = camionExistente.detalles_grupos || {};
+        const detallesNuevos = {
+          ...detallesAnteriores,
+          [`G${grupo}`]: {
+            supervisor: normalizarNombre(session.nombre),
+            operador: normalizarNombre(operador),
+            mina: (session.mina === 'Global' || session.mina === 'Ambas') ? mina : (session.mina || mina),
+            time: new Date().toISOString(),
+            fallas: fallasStruct
+          }
+        };
+
+        const camionActualizado = {
+          ...camionExistente,
+          grupo: listaGrupos.join(' | '),
+          supervisor: listaSupervisores.join(' | '),
+          operador: listaOperadores.join(' | '),
+          fallas: fallasConsolidadas,
+          puntos: puntosFinales,
+          atencion: atencionLabel,
+          detalles_grupos: detallesNuevos
+        };
+        await camionService.updateCamion(camionExistente.id, camionActualizado);
+
+        setCamionesRegistrados(prev => prev.map(c => c.id === camionExistente.id ? camionActualizado : c));
+        addToast(`✅ Reporte integrado con éxito para el camión ${flota}.`);
+
+      } else {
+        let atencionLabel = 'NORMAL';
+        if (totalImpacto >= 70) atencionLabel = 'CRÍTICA';
+        else if (totalImpacto >= 26) atencionLabel = 'ALTA';
+        const fallasDetalladas = Object.keys(selectedDanos).map(id => {
+          const nombreFalla = fallas.find(f => f.id === id)?.nombre;
+          const comentarioLimpio = corregirOrtografiaIA(observaciones[id] || '');
+          const comentario = comentarioLimpio ? ` (G${grupo}: ${comentarioLimpio})` : '';
+          return `${nombreFalla}${comentario}`;
+        }).join(' | ');
+
+        const fallasStruct = {};
+        Object.keys(selectedDanos).forEach(id => {
+          fallasStruct[id] = corregirOrtografiaIA(observaciones[id] || '');
+        });
+
+        const nuevoCamion = {
+          flota: flota,
+          operador: `G${grupo}: ${normalizarNombre(operador)}`,
+          mina: (session.mina === 'Global' || session.mina === 'Ambas') ? mina : (session.mina || mina),
+          grupo: session.grupo || grupo,
+          supervisor: `G${grupo}: ${normalizarNombre(session.nombre)}`,
+          estado: 'espera',
+          atencion: atencionLabel,
+          fallas: fallasDetalladas,
+          time: new Date().toISOString(),
+          puntos: totalImpacto,
+          detalles_grupos: {
+            [`G${grupo}`]: {
+              supervisor: normalizarNombre(session.nombre),
+              operador: normalizarNombre(operador),
+              mina: (session.mina === 'Global' || session.mina === 'Ambas') ? mina : (session.mina || mina),
+              time: new Date().toISOString(),
+              fallas: fallasStruct
+            }
+          }
+        };
+
+        const camionCreado = await camionService.registrarCamion(nuevoCamion);
+        setCamionesRegistrados([camionCreado, ...camionesRegistrados]);
+        addToast('✅ Camión ' + flota + ' enviado a taller con éxito.');
+      }
+
+      navigate('/dashboard');
+      setFlota(''); setOperador(''); setSelectedDanos({}); setObservaciones({});
+      setReportStep(1);
+    } catch (err) {
+      addToast('Error crítico: ' + err.message, "error");
+    }
+  };
+
   // Candado de Seguridad: Si el usuario NO es admin y NO pertenece a "Global", bloqueamos sus listas
   const isRestricted = session && session.role !== 'admin' && session.mina !== 'Global';
 

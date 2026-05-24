@@ -1,17 +1,13 @@
 // VERSION_TAG: 2.0.0_STABLE_GOLD_READY
 import React, { useState, useEffect, useRef, useMemo, useCallback } from 'react';
-import './industrial-v3.css';
+
 import { 
   LayoutDashboard, RefreshCcw, LogOut, ChevronUp, Clock, Plus, Users, Truck,
   Hourglass, Search, SearchCheck, Wrench, CheckCircle2, ShieldAlert
 } from 'lucide-react';
 
 import { supabase } from './supabaseClient';
-import { jsPDF } from 'jspdf';
-import autoTable from 'jspdf-autotable';
-import * as XLSX from 'xlsx';
-
-import { LOGO_DRUMMOND, fallas } from './constants/fallas';
+import { fallas } from './constants/fallas';
 
 // Motor de IA y Utilidades
 import { normalizarNombre, corregirOrtografiaIA, unificarComentariosIA, reaccionarAcentos, limpiarFallasIA } from './utils/iaEngine';
@@ -21,8 +17,10 @@ import { parseFecha, formatFechaCorta, formatGrupo, formatearCiclo } from './uti
 import { camionService } from './services/camionService';
 
 // Hooks Personalizados
-import { useAuth } from './hooks/useAuth';
-import { useMaintenanceData } from './hooks/useMaintenanceData';
+import { Routes, Route, Navigate, useLocation, useNavigate } from 'react-router-dom';
+import { useAuth } from './context/AuthContext';
+import { useTruck } from './context/TruckContext';
+import { useUI } from './context/UIContext';
 
 // Componentes Modularizados
 import ReportForm from './components/ReportForm';
@@ -44,51 +42,25 @@ import EditModal from './components/modals/EditModal';
 
 function App() {
   // VERSIÓN DE EMERGENCIA: 1.4.7_RENAME_CSS_FIX
-  const [activeTab, setActiveTab] = useState('dashboard');
+  const location = useLocation();
+  const navigate = useNavigate();
+  const activeTab = location.pathname === '/' ? 'dashboard' : location.pathname.substring(1);
+  const setActiveTab = (tab) => navigate('/' + tab);
 
-  // ---------- SISTEMA DE MENSAJERÍA PERSONALIZADA (ZERO BROWSER DIALOGS) ----------
-  const [toasts, setToasts] = useState([]);
-  const [modalConfig, setModalConfig] = useState({
-    isOpen: false,
-    type: 'info', title: '', message: '', confirmText: 'Aceptar', cancelText: 'Cancelar',
-    onConfirm: null, onCancel: null, showInput: false, inputPlaceholder: '', inputValue: '', expectedValue: ''
-  });
+  // Hooks de Lógica Modularizada Global
+  const { toasts, modalConfig, addToast, showConfirm, handleModalConfirm, setModalConfig } = useUI();
 
-  const addToast = useCallback((message, type = 'success') => {
-    const id = Date.now() + Math.random();
-    setToasts(prev => [{ id, message, type }, ...prev]);
-    setTimeout(() => setToasts(prev => prev.filter(t => t.id !== id)), 4000);
-  }, []);
-
-  const showConfirm = (opts) => {
-    setModalConfig({
-      isOpen: true,
-      type: opts.type || 'info',
-      title: opts.title || 'Atención',
-      message: opts.message || '',
-      confirmText: opts.confirmText || 'Aceptar',
-      cancelText: opts.cancelText || 'Cancelar',
-      onConfirm: opts.onConfirm || null,
-      onCancel: opts.onCancel || null,
-      showInput: opts.type === 'prompt',
-      inputPlaceholder: opts.placeholder || '',
-      inputValue: '',
-      expectedValue: opts.expectedValue || ''
-    });
-  };
-
-  // Hooks de Lógica Modularizada
   const { 
     session, pendingPasswordChangeUser, newPassword, setNewPassword, 
     confirmPassword, setConfirmPassword, usuarioLogin, setUsuarioLogin, 
     passwordLogin, setPasswordLogin, loadingAuth, handleLogin, 
     handlePasswordUpdate, logout 
-  } = useAuth(addToast, setActiveTab);
+  } = useAuth();
 
   const { 
     camionesRegistrados, setCamionesRegistrados, dbUsuarios, setDbUsuarios, 
     loadingData, handleRefresh, updateCamionLocalAndRemote 
-  } = useMaintenanceData(session, addToast);
+  } = useTruck();
 
 
   const [isDraggingNav, setIsDraggingNav] = useState(false);
@@ -106,49 +78,20 @@ function App() {
     return () => clearInterval(timer);
   }, []);
 
-  // Report Form State (Persistente)
-  const [reportForm, setReportForm] = useState(() => {
-    const saved = localStorage.getItem('drummond_report_form');
-    if (!saved) return { flota: '', operador: '', mina: 'PB', grupo: '1', selectedDanos: {}, observaciones: {}, atencion: 'No' };
-    try { return JSON.parse(saved); } catch (e) { return { flota: '', operador: '', mina: 'PB', grupo: '1', selectedDanos: {}, observaciones: {}, atencion: 'No' }; }
-  });
-
-  const [flota, setFlota] = useState(reportForm.flota);
-  const [operador, setOperador] = useState(reportForm.operador);
-  const [mina, setMina] = useState(reportForm.mina);
-  const [grupo, setGrupo] = useState(reportForm.grupo);
-  const [selectedDanos, setSelectedDanos] = useState(reportForm.selectedDanos);
-  const [observaciones, setObservaciones] = useState(reportForm.observaciones);
-  const [atencion, setAtencion] = useState(reportForm.atencion || 'No');
+  // El estado de ReportForm fue migrado a src/components/ReportForm.jsx
   const [editingGroupContext, setEditingGroupContext] = useState(null);
   const [selectedDanosEdit, setSelectedDanosEdit] = useState({});
   const [observacionesEdit, setObservacionesEdit] = useState({});
   const [operadorEdit, setOperadorEdit] = useState('');
   const [dictamenEdit, setDictamenEdit] = useState('');
   const [camionEditando, setCamionEditando] = useState(null);
-  const [reportStep, setReportStep] = useState(1);
 
   useEffect(() => {
     if (camionEditando && editingGroupContext) sincronizarModal(camionEditando, editingGroupContext);
   }, [editingGroupContext, camionEditando?.id]);
 
-  useEffect(() => {
-    if (session && !flota && !operador) {
-      if (session.mina && session.mina !== 'Global') setMina(session.mina);
-      if (session.grupo) setGrupo(session.grupo);
-    }
-  }, [session]);
 
-  useEffect(() => {
-    sessionStorage.setItem('drummond_activeTab', activeTab);
-    const state = { flota, operador, mina, grupo, selectedDanos, observaciones };
-    localStorage.setItem('drummond_report_form', JSON.stringify(state));
-  }, [activeTab, flota, operador, mina, grupo, selectedDanos, observaciones]);
 
-  // Historial Filters State (Hooks deben ir arriba de los return tempranos)
-  const [filtroFlota, setFiltroFlota] = useState('');
-  const [filtroMina, setFiltroMina] = useState('');
-  const [filtroMes, setFiltroMes] = useState('');
 
   // ---------- MÓDULO CRUD DE USUARIOS ----------
   const [isCreandoUsuario, setIsCreandoUsuario] = useState(false);
@@ -159,8 +102,7 @@ function App() {
   const [camionInGarantia, setCamionInGarantia] = useState(null); // Para el Modal de Motivo de Garantía
   const [selectedGarantiaDetails, setSelectedGarantiaDetails] = useState(null); // Para ver pendientes en modal
   const [pendientesGarantia, setPendientesGarantia] = useState({});
-  const [registrosLimit, setRegistrosLimit] = useState(20);
-  const [expandedHistoryId, setExpandedHistoryId] = useState(null);
+
   const [confirmDeleteId, setConfirmDeleteId] = useState(null);
   const [showBackToTop, setShowBackToTop] = useState(false);
 
@@ -189,44 +131,12 @@ function App() {
 
 
 
-  const handleModalConfirm = () => {
-    if (modalConfig.type === 'prompt' && modalConfig.expectedValue) {
-      if (modalConfig.inputValue !== modalConfig.expectedValue) {
-        addToast("❌ El número ingresado no coincide.", "error");
-        return;
-      }
-    }
-    if (modalConfig.onConfirm) modalConfig.onConfirm(modalConfig.inputValue);
-    setModalConfig(prev => ({ ...prev, isOpen: false }));
-  };
 
 
 
 
-  const handleDanoToggle = (id) => {
-    setSelectedDanos(prev => ({ ...prev, [id]: !prev[id] }));
-    if (selectedDanos[id]) {
-      setObservaciones(prev => {
-        const copy = { ...prev };
-        delete copy[id];
-        return copy;
-      });
-    }
-  };
-
-  const handleObsChange = (id, text) => {
-    // v8.3: Corrección instantánea fluida
-    let final = text;
-    if (text.endsWith(' ') || text.endsWith('.')) {
-      final = corregirOrtografiaIA(text);
-    } else if (text.length === 1) {
-      final = text.toUpperCase();
-    }
-    setObservaciones(prev => ({ ...prev, [id]: final }));
-  };
 
 
-  const isFlotaValid = /^2\d{3}$/.test(flota);
 
   // REEMPLAZADO POR HOOKS MODULARES
 
@@ -238,105 +148,6 @@ function App() {
     });
   };
 
-  // v13.0: Cálculo automático de Impacto y Prioridad (Atención Sugerida)
-  const totalImpacto = useMemo(() => {
-    return Object.keys(selectedDanos).reduce((acc, id) => {
-      if (!selectedDanos[id]) return acc;
-      const falla = fallas.find(f => f.id === id);
-      return acc + (falla ? (falla.impacto || 0) : 0);
-    }, 0);
-  }, [selectedDanos]);
-
-  // v13.2: Sincronizar 'atencion' con los nuevos rangos definidos por el usuario
-  useEffect(() => {
-    if (totalImpacto >= 70) setAtencion('CRÍTICA');
-    else if (totalImpacto >= 50) setAtencion('ALTA');
-    else if (totalImpacto >= 26) setAtencion('MEDIA');
-    else setAtencion('BAJA');
-  }, [totalImpacto]);
-
-  // v13.3: Ranking Inteligente (Tiers de Grupos + Impacto Acumulado) y Aislamiento de Seguridad (Tenant Isolation)
-  const camionesAccessibles = useMemo(() => {
-    if (!camionesRegistrados) return [];
-
-    // 0. Aislamiento de Seguridad: Restringir por Mina (Excepto Global/Admin)
-    const filtradosSeguros = camionesRegistrados.filter(c => {
-      if (!session) return true;
-      if (session.mina === 'Global' || session.role === 'admin') return true;
-      return c.mina === session.mina;
-    });
-
-    // 1. Calculamos metadatos de prioridad para cada camión
-    const ranked = filtradosSeguros.map(c => {
-      // Contamos cuántos grupos han reportado (G1, G2, G3)
-      const gruposReportando = [c.g1_danos, c.g2_danos, c.g3_danos].filter(d => d && Object.keys(d).length > 0).length;
-
-      // Calculamos impacto acumulado de todos los grupos (G1+G2+G3 + Mantenimiento)
-      const totalPeso = [c.g1_danos, c.g2_danos, c.g3_danos, c.danos_mantenimiento].reduce((acc, danos) => {
-        if (!danos) return acc;
-        return acc + Object.keys(danos).reduce((sum, id) => {
-          if (!danos[id]) return sum;
-          const f = fallas.find(falla => falla.id === id);
-          return sum + (f ? (f.impacto || 0) : 0);
-        }, 0);
-      }, 0);
-
-      return { ...c, _numGrupos: gruposReportando, _totalPeso: totalPeso };
-    });
-
-    // 2. Ordenamos por Tiers (3 grupos > 2 grupos > 1 grupo) y luego por Peso Acumulado
-    return [...ranked].sort((a, b) => {
-      // Prioridad 1: Número de grupos (Tier)
-      if (b._numGrupos !== a._numGrupos) return b._numGrupos - a._numGrupos;
-      // Prioridad 2: Impacto total (Peso)
-      return b._totalPeso - a._totalPeso;
-    });
-  }, [camionesRegistrados]);
-  const conteoLiberados = useMemo(() => camionesAccessibles.filter(c => c.estado === 'liberado').length, [camionesAccessibles]);
-
-  const promedioCiclo = useMemo(() => {
-    const liberadosValidos = camionesAccessibles.filter(c => c.estado === 'liberado' && c.finalizado_at && (c.ingreso_evaluar_at || c.time || c.creado_at));
-    if (liberadosValidos.length === 0) return "---";
-
-    let validCount = 0;
-    const sumaMs = liberadosValidos.reduce((acc, c) => {
-      const startRaw = c.ingreso_evaluar_at || c.time || c.creado_at;
-      const inicio = parseFecha(startRaw);
-      const fin = parseFecha(c.finalizado_at);
-      if (!inicio || !fin) return acc;
-
-      const diffMs = fin - inicio;
-      if (isNaN(diffMs) || diffMs < 0) return acc;
-
-      validCount++;
-      return acc + diffMs;
-    }, 0);
-
-    if (validCount === 0) return "---";
-
-    const promMs = sumaMs / validCount;
-    const hours = Math.floor(promMs / 3600000);
-    const mins = Math.floor((promMs % 3600000) / 60000);
-    return hours >= 24 ? `${Math.floor(hours / 24)}d ${hours % 24}h` : (hours > 0 ? `${hours}h ${mins}m` : `${mins}m`);
-  }, [camionesAccessibles]);
-
-  const kpis = useMemo(() => [
-    { id: 'espera', titulo: 'Lista de Espera', icon: <Hourglass strokeWidth={1.5} size={20} />, valor: camionesAccessibles.filter(c => c.estado === 'espera').length.toString(), color: '#9ca3af', subtitulo: 'Pre-Programa' },
-    { id: 'evaluar', titulo: 'Por Evaluar', icon: <Search strokeWidth={1.5} size={20} />, valor: camionesAccessibles.filter(c => c.estado === 'evaluar').length.toString(), color: 'var(--secondary-blue)', subtitulo: 'En Programa' },
-    { id: 'evaluados', titulo: 'Evaluados', icon: <SearchCheck strokeWidth={1.5} size={20} />, valor: camionesAccessibles.filter(c => c.estado === 'evaluados').length.toString(), color: '#8b5cf6', subtitulo: 'En Programa' },
-    { id: 'taller', titulo: 'En Taller', icon: <Wrench strokeWidth={1.5} size={20} />, valor: camionesAccessibles.filter(c => c.estado === 'taller').length.toString(), color: 'var(--secondary-yellow)', subtitulo: 'Ejecución' },
-    { id: 'feedback', titulo: 'Feedback', icon: <CheckCircle2 strokeWidth={1.5} size={20} />, valor: camionesAccessibles.filter(c => c.estado === 'feedback').length.toString(), color: '#10b981', subtitulo: 'Validación' },
-    { id: 'garantia', titulo: 'Garantía', icon: <ShieldAlert strokeWidth={1.5} size={20} />, valor: camionesAccessibles.filter(c => c.estado === 'garantia').length.toString(), color: 'var(--primary-red)', subtitulo: 'Retorno VIP' },
-  ], [camionesAccessibles]);
-
-  const columnasKanban = [
-    { id: 'espera', titulo: 'Lista de Espera', icon: <Hourglass strokeWidth={1.5} size={18} />, color: '#9ca3af' },
-    { id: 'evaluar', titulo: 'Por Evaluar', icon: <Search strokeWidth={1.5} size={18} />, color: 'var(--secondary-blue)' },
-    { id: 'evaluados', titulo: 'Evaluados', icon: <SearchCheck strokeWidth={1.5} size={18} />, color: '#8b5cf6' },
-    { id: 'taller', titulo: 'En Taller', icon: <Wrench strokeWidth={1.5} size={18} />, color: 'var(--secondary-yellow)' },
-    { id: 'feedback', titulo: 'Feedback', icon: <CheckCircle2 strokeWidth={1.5} size={18} />, color: '#10b981' },
-    { id: 'garantia', titulo: 'Garantía', icon: <ShieldAlert strokeWidth={1.5} size={18} />, color: '#ef4444' }
-  ];
 
   const handleDragStart = (e, id) => {
     e.dataTransfer.setData('camion_id', id);
@@ -489,25 +300,7 @@ function App() {
     }
   };
 
-  const eliminarCamion = async (camionId, flota) => {
-    showConfirm({
-      type: 'prompt',
-      title: '⚠ ADVERTENCIA DE SEGURIDAD',
-      message: `Esta acción eliminará permanentemente el reporte del Camión ${flota}.\n\nPara confirmar, escribe el número del camión a continuación:`,
-      expectedValue: String(flota),
-      placeholder: `Escribe ${flota} aquí...`,
-      confirmText: 'ELIMINAR PERMANENTEMENTE',
-      onConfirm: async () => {
-        try {
-          await camionService.eliminarCamion(camionId);
-          setCamionesRegistrados(prev => prev.filter(c => c.id !== camionId));
-          addToast(`🗑️ Camión ${flota} eliminado exitosamente del sistema.`, "success");
-        } catch (err) {
-          addToast("Error al eliminar: " + err.message, "error");
-        }
-      }
-    });
-  };
+
 
   const guardarEdicionCamion = async () => {
     if (!camionEditando) return;
@@ -822,421 +615,9 @@ function App() {
     }
   };
 
-  // ---------- FUNCIONES DE EXPORTACIÓN (REPORTES) ----------
-
-  const exportarAExcel = () => {
-    if (registrosFiltrados.length === 0) {
-      return addToast("No hay datos filtrados para exportar.", "error");
-    }
-
-    try {
-      addToast("⏳ Preparando archivo Excel...", "info");
-
-      const datosExcel = registrosFiltrados.map(r => {
-        // Extracción de datos desde JSONB (v2.1.0)
-        const dG = r.detalles_grupos || {};
-
-        const getOp = (g) => dG[`G${g}`]?.operador || (r.operador || '').split(', ').find(n => n.includes(`G${g}:`))?.replace(`G${g}:`, '').trim() || '-';
-        const getSup = (g) => dG[`G${g}`]?.supervisor || (r.supervisor || '').split(', ').find(n => n.includes(`G${g}:`))?.replace(`G${g}:`, '').trim() || '-';
-
-        // Cálculo de Tiempo de Ciclo
-        let cicloTxt = '-';
-        if (r.finalizado_at && (r.ingreso_evaluar_at || r.creado_at)) {
-          const inicio = new Date(r.ingreso_evaluar_at || r.creado_at);
-          const fin = new Date(r.finalizado_at);
-          const diffMs = fin - inicio;
-          const diffMin = Math.max(0, Math.floor(diffMs / 60000));
-          const horas = Math.floor(diffMin / 60);
-          const mins = diffMin % 60;
-          cicloTxt = horas > 0 ? `${horas}h ${mins}m` : `${mins} min`;
-        }
-
-        return {
-          "Fecha Reporte": r.time,
-          "Flota": r.flota,
-          "Mina/Ubicación": r.mina,
-          "Atención/Prioridad": r.atencion || 'NORMAL',
-          "Op. Grupo 1": getOp(1),
-          "Sup. Grupo 1": getSup(1),
-          "Op. Grupo 2": getOp(2),
-          "Sup. Grupo 2": getSup(2),
-          "Op. Grupo 3": getOp(3),
-          "Sup. Grupo 3": getSup(3),
-          "Fallas Unificadas": r.fallas,
-          "Ciclo de Tiempo": cicloTxt,
-          "Fecha Liberación": r.finalizado_at ? new Date(r.finalizado_at).toLocaleString() : '-',
-          "Estado G1": r.aprobado_g1 ? 'Aprobado' : '-',
-          "Estado G2": r.aprobado_g2 ? 'Aprobado' : '-',
-          "Estado G3": r.aprobado_g3 ? 'Aprobado' : '-'
-        };
-      });
-
-      const worksheet = XLSX.utils.json_to_sheet(datosExcel);
-      const workbook = XLSX.utils.book_new();
-      XLSX.utils.book_append_sheet(workbook, worksheet, "Historial Mantenimiento");
-      XLSX.writeFile(workbook, `Historial_Drummond_Confort_${new Date().toLocaleDateString()}.xlsx`);
-      addToast("✅ Excel descargado con éxito.");
-    } catch (error) {
-      addToast("❌ Error al generar Excel: " + error.message, "error");
-    }
-  };
-
-  const generarPDF = async (registro) => {
-    try {
-      const grupoActual = session.grupo || '1';
-      const grupoPrefix = `G${grupoActual}:`;
-      // v6.9: Separador oficial es |
-      const opNames = (registro.operador || '').split(/\s*\|\s*/);
-
-      // Verificamos si el grupo actual ya participó
-      const yaTieneOperador = opNames.some(n => n.includes(grupoPrefix));
-
-      if (!yaTieneOperador) {
-        // ACTIVACIÓN DE FIRMA TEMPORAL (Solo para el PDF, no se guarda en BD)
-        showConfirm({
-          type: 'prompt',
-          title: `Firma de Recepción (Grupo ${grupoActual})`,
-          message: `Vas a generar el PDF desde un grupo distinto al del reporte original.\n\nPor favor, ingresa el nombre del Operador que FIRMARÁ la recepción del equipo:`,
-          placeholder: 'Escribe el nombre aquí (o deja en blanco)...',
-          confirmText: 'Generar PDF',
-          onConfirm: async (nombreIngresado) => {
-            // v6.9.3: Aplicamos IA de corrección ortográfica (Capitalización)
-            const nombreNormalizado = nombreIngresado ? normalizarNombre(nombreIngresado) : ' ';
-
-            const registroTemporal = {
-              ...registro,
-              operador_temporal_pdf: nombreNormalizado,
-              supervisor_temporal_pdf: session.nombre || 'Supervisor'
-            };
-
-            renderizarPDF(registroTemporal);
-          }
-        });
-      } else {
-        renderizarPDF(registro);
-      }
-    } catch (err) {
-      addToast("❌ Error al iniciar PDF: " + err.message, "error");
-    }
-  };
-
-  const renderizarPDF = (registro) => {
-    try {
-      addToast("⏳ Generando acta de trazabilidad...", "info");
-      const doc = new jsPDF();
-
-      // === CABECERA PREMIUM MINIMALISTA ===
-      doc.setFillColor(248, 250, 252);
-      doc.roundedRect(160, 10, 35, 16, 3, 3, 'F');
-      doc.setDrawColor(226, 232, 240);
-      doc.roundedRect(160, 10, 35, 16, 3, 3, 'D');
-
-      try {
-        if (typeof LOGO_DRUMMOND !== 'undefined' && LOGO_DRUMMOND) {
-          const logoData = LOGO_DRUMMOND.startsWith('data:') ? LOGO_DRUMMOND : `data:image/png;base64,${LOGO_DRUMMOND}`;
-          doc.addImage(logoData, 'PNG', 15, 8, 28, 20);
-        }
-      } catch (e) {
-        console.error("Error al cargar logo:", e);
-      }
-
-      doc.setTextColor(31, 41, 55);
-      doc.setFontSize(14);
-      doc.setFont("helvetica", "bold");
-      doc.text("ACTA DE TRAZABILIDAD", 65, 20);
-      doc.setFontSize(8);
-      doc.setFont("helvetica", "normal");
-      doc.text("CONFORT CAMIONES", 65, 26);
-
-      // Info Badge
-      doc.setFontSize(7);
-      doc.setFont("helvetica", "bold");
-      doc.text("MINA:", 163, 16);
-      doc.setFont("helvetica", "normal");
-      doc.text(`${registro.mina === 'PB' ? 'PB' : 'ED'}`, 174, 16);
-
-      doc.setFont("helvetica", "bold");
-      doc.text("CAMIÓN:", 163, 22);
-      doc.setFont("helvetica", "normal");
-      doc.text(`${registro.flota}`, 177, 22);
-
-      // Cuerpo
-      doc.setTextColor(0, 0, 0);
-      doc.setFontSize(10);
-      doc.setFont("helvetica", "normal");
-      doc.text(`Fecha de Emisión: ${new Date().toLocaleDateString()}`, 145, 32);
-
-      doc.setFont("helvetica", "bold");
-      doc.text(`Personal que reporta el estado (Operadores Permanentes):`, 20, 45);
-      doc.setFont("helvetica", "normal");
-
-      const dG_orig = registro.detalles_grupos || {};
-      const origG = registro.grupo || '1';
-      const reporteroData = dG_orig[`G${origG}`] || {};
-
-      // Formatear Operadores
-      const rawOper = reporteroData.operador || registro.operador || 'N/A';
-      const listaOper = rawOper.split(/\s*[|,]\s*/).filter(n => n.trim() !== "");
-      const operFormateado = listaOper.map(n => `• ${n.trim()}`).join('\n');
-
-      const operSplit = doc.splitTextToSize(operFormateado, 170);
-      doc.text(operSplit, 20, 52);
-
-      const supLabelY = 52 + (operSplit.length * 5) + 4;
-      doc.setFont("helvetica", "bold");
-      doc.text(`Gestor del reporte (Supervisor de Camiones):`, 20, supLabelY);
-
-      doc.setFont("helvetica", "normal");
-      // Formatear Supervisores
-      const rawSup = reporteroData.supervisor || registro.supervisor || 'N/A';
-      const listaSup = rawSup.split(/\s*[|,]\s*/).filter(n => n.trim() !== "");
-      const supFormateado = listaSup.map(n => `• ${n.trim()}`).join('\n');
-
-      const supSplit = doc.splitTextToSize(supFormateado, 170);
-      const supDataY = supLabelY + 7;
-      doc.text(supSplit, 20, supDataY);
-
-      const tableY = Math.max(85, supDataY + (supSplit.length * 5) + 5);
-
-      const tableFunc = typeof autoTable === 'function' ? autoTable : autoTable.default;
-      const itemsFallas = limpiarFallasIA(registro.fallas);
-      const bodyFallas = itemsFallas.map(item => [item.falla, item.obs]);
-
-      tableFunc(doc, {
-        startY: tableY,
-        head: [['Detalle de Fallas Intervenidas', 'Comentarios Técnica / Observación']],
-        body: bodyFallas,
-        theme: 'striped',
-        headStyles: { fillColor: [31, 41, 55], textColor: [255, 255, 255], fontStyle: 'bold' },
-        columnStyles: { 0: { cellWidth: 70 }, 1: { cellWidth: 'auto' } }
-      });
-
-      const finalY = doc.lastAutoTable.finalY + 15;
-      doc.setFontSize(12);
-      doc.setFont("helvetica", "bold");
-      doc.setTextColor(0, 0, 0);
-      doc.text("HISTORIAL DE VALIDACIÓN POR GRUPOS", 20, finalY);
-
-      tableFunc(doc, {
-        startY: finalY + 5,
-        head: [['Grupo de Turno', 'Visto Bueno (VB)', 'Estado']],
-        body: [
-          ['Grupo 1', registro.aprobado_g1 ? 'CONFIRMADO' : 'N/A', registro.aprobado_g1 ? 'Aceptada a Satisfacción' : 'Sin intervención'],
-          ['Grupo 2', registro.aprobado_g2 ? 'CONFIRMADO' : 'N/A', registro.aprobado_g2 ? 'Aceptada a Satisfacción' : 'Sin intervención'],
-          ['Grupo 3', registro.aprobado_g3 ? 'CONFIRMADO' : 'N/A', registro.aprobado_g3 ? 'Aceptada a Satisfacción' : 'Sin intervención'],
-        ],
-        theme: 'grid',
-        headStyles: { fillColor: [31, 41, 55], textColor: [255, 255, 255] }
-      });
-
-      const grupoActual = session.grupo || '1';
-      // Usamos el nombre temporal si existe, sino el original filtrado
-      const opNameFiltered = typeof registro.operador_temporal_pdf !== 'undefined'
-        ? registro.operador_temporal_pdf
-        : ((registro.detalles_grupos || {})[`G${grupoActual}`]?.operador || (registro.operador || '').split(/\s*\|\s*/).find(n => n.includes(`G${grupoActual}:`))?.replace(`G${grupoActual}:`, '').trim() || '');
-
-      // El supervisor OBLIGATORIAMENTE es el que está logeado (si es quien genera el PDF de entrega)
-      const supNameFiltered = registro.supervisor_temporal_pdf || session.nombre || 'Supervisor';
-
-      const signY = doc.lastAutoTable.finalY + 35;
-      doc.setDrawColor(0);
-      doc.line(20, signY, 85, signY);
-      doc.setFontSize(10);
-      doc.setFont("helvetica", "bold");
-      doc.text(`${opNameFiltered}`, 20, signY + 5);
-      doc.setFont("helvetica", "normal");
-      doc.setFontSize(9);
-      doc.text("Operador de Camion", 20, signY + 10);
-      doc.text(`Grupo ${grupoActual}`, 20, signY + 15);
-
-      doc.line(120, signY, 185, signY);
-      doc.setFont("helvetica", "bold");
-      doc.text(`${supNameFiltered}`, 120, signY + 5);
-      doc.setFont("helvetica", "normal");
-      doc.text(`Supervisor de Camiones`, 120, signY + 10);
-      doc.text(`Drummond Ltd.`, 120, signY + 15);
-
-      doc.setFontSize(8);
-      doc.setTextColor(150);
-      doc.text(`Documento generado digitalmente por Drummond Confort System`, 105, 285, { align: 'center' });
-
-      doc.save(`Acta_Trazabilidad_${registro.flota}_${new Date().toISOString().split('T')[0]}.pdf`);
-      addToast(`✅ PDF del camión ${registro.flota} generado.`);
-    } catch (err) {
-      addToast("❌ Error al producir PDF: " + err.message, "error");
-    }
-  };
-
-  const handleReportSubmit = async () => {
-    try {
-      const camionExistente = camionesRegistrados.find(c => c.flota === flota && c.estado !== 'liberado');
-
-      if (camionExistente) {
-        const opLimpio = normalizarNombre(operador);
-        const supLimpio = normalizarNombre(session.nombre);
-
-        const listaGrupos = Array.from(new Set([...camionExistente.grupo.split(/\s*[,|]\s*/), grupo])).sort();
-
-        const nuevoRegSup = `G${grupo}: ${supLimpio}`;
-        const supsActuales = (camionExistente.supervisor || '').split(/\s*[,|]\s*/).filter(Boolean);
-        const listaSupervisores = Array.from(new Set([...supsActuales, nuevoRegSup]));
-
-        const nuevoRegOp = `G${grupo}: ${opLimpio}`;
-        const opsActuales = (camionExistente.operador || '').split(/\s*[,|]\s*/).filter(Boolean);
-        const listaOperadores = Array.from(new Set([...opsActuales, nuevoRegOp]));
-
-        const numGrupos = listaGrupos.length;
-
-        const fallasActualesIds = new Set();
-        fallas.forEach(f => {
-          if (camionExistente.fallas.includes(f.nombre)) fallasActualesIds.add(f.id);
-        });
-
-        const todasFallasIds = new Set([...Array.from(fallasActualesIds), ...Object.keys(selectedDanos)]);
-
-        const puntosBase = Array.from(todasFallasIds).reduce((acc, id) => {
-          const f = fallas.find(x => x.id === id);
-          return acc + (f ? f.impacto : 0);
-        }, 0);
-
-        const bonoConsenso = (numGrupos - 1) * 30;
-        const puntosFinales = puntosBase + bonoConsenso;
-
-        let atencionLabel = 'NORMAL';
-        if (puntosFinales >= 70) atencionLabel = 'CRÍTICA';
-        else if (puntosFinales >= 26) atencionLabel = 'ALTA';
-
-        const obsAnteriores = {};
-        if (camionExistente.fallas) {
-          const rawFallas = camionExistente.fallas;
-          const parts = [];
-          let depth = 0;
-          let lastSplit = 0;
-
-          for (let i = 0; i < rawFallas.length; i++) {
-            const char = rawFallas[i];
-            if (char === '(') depth++;
-            if (char === ')') depth--;
-            if (depth === 0 && char === '|') {
-              parts.push(rawFallas.substring(lastSplit, i).trim());
-              lastSplit = i + 1;
-            }
-          }
-          parts.push(rawFallas.substring(lastSplit).trim());
-
-          parts.forEach(p => {
-            if (!p || p === '-' || p.includes('Ficha Técnica')) return;
-            const match = p.match(/^(.*?)(?:\s*\((.*?)\))?$/);
-            if (match && match[2]) {
-              const nombreLimpio = match[1].split('|')[0].trim();
-              const fObj = fallas.find(f => f.nombre === nombreLimpio || nombreLimpio.includes(f.nombre));
-              if (fObj) obsAnteriores[fObj.id] = match[2];
-            }
-          });
-        }
-
-        const fallasConsolidadas = Array.from(todasFallasIds).map(id => {
-          const f = fallas.find(x => x.id === id);
-          const obsViejas = obsAnteriores[id] || '';
-          const obsNuevaLimpia = corregirOrtografiaIA(observaciones[id] || '');
-          const obsNuevas = obsNuevaLimpia ? `G${grupo}: ${obsNuevaLimpia}` : '';
-
-          const textoAUnificar = [obsViejas, obsNuevas].filter(Boolean).join(' | ');
-          const finalObs = unificarComentariosIA(textoAUnificar);
-
-          return f.nombre + (finalObs ? ` (${finalObs})` : '');
-        }).join(' | ');
-
-        const fallasStruct = {};
-        Object.keys(selectedDanos).forEach(id => {
-          fallasStruct[id] = corregirOrtografiaIA(observaciones[id] || '');
-        });
-        const detallesAnteriores = camionExistente.detalles_grupos || {};
-        const detallesNuevos = {
-          ...detallesAnteriores,
-          [`G${grupo}`]: {
-            supervisor: normalizarNombre(session.nombre),
-            operador: normalizarNombre(operador),
-            mina: (session.mina === 'Global' || session.mina === 'Ambas') ? mina : (session.mina || mina),
-            time: new Date().toISOString(),
-            fallas: fallasStruct
-          }
-        };
-
-        const camionActualizado = {
-          ...camionExistente,
-          grupo: listaGrupos.join(' | '),
-          supervisor: listaSupervisores.join(' | '),
-          operador: listaOperadores.join(' | '),
-          fallas: fallasConsolidadas,
-          puntos: puntosFinales,
-          atencion: atencionLabel,
-          detalles_grupos: detallesNuevos
-        };
-        await camionService.updateCamion(camionExistente.id, camionActualizado);
-
-        setCamionesRegistrados(prev => prev.map(c => c.id === camionExistente.id ? camionActualizado : c));
-        addToast(`✅ Reporte integrado con éxito para el camión ${flota}.`);
-
-      } else {
-        let atencionLabel = 'NORMAL';
-        if (totalImpacto >= 70) atencionLabel = 'CRÍTICA';
-        else if (totalImpacto >= 26) atencionLabel = 'ALTA';
-        const fallasDetalladas = Object.keys(selectedDanos).map(id => {
-          const nombreFalla = fallas.find(f => f.id === id)?.nombre;
-          const comentarioLimpio = corregirOrtografiaIA(observaciones[id] || '');
-          const comentario = comentarioLimpio ? ` (G${grupo}: ${comentarioLimpio})` : '';
-          return `${nombreFalla}${comentario}`;
-        }).join(' | ');
-
-        const fallasStruct = {};
-        Object.keys(selectedDanos).forEach(id => {
-          fallasStruct[id] = corregirOrtografiaIA(observaciones[id] || '');
-        });
-
-        const nuevoCamion = {
-          flota: flota,
-          operador: `G${grupo}: ${normalizarNombre(operador)}`,
-          mina: (session.mina === 'Global' || session.mina === 'Ambas') ? mina : (session.mina || mina),
-          grupo: session.grupo || grupo,
-          supervisor: `G${grupo}: ${normalizarNombre(session.nombre)}`,
-          estado: 'espera',
-          atencion: atencionLabel,
-          fallas: fallasDetalladas,
-          time: new Date().toISOString(),
-          puntos: totalImpacto,
-          detalles_grupos: {
-            [`G${grupo}`]: {
-              supervisor: normalizarNombre(session.nombre),
-              operador: normalizarNombre(operador),
-              mina: (session.mina === 'Global' || session.mina === 'Ambas') ? mina : (session.mina || mina),
-              time: new Date().toISOString(),
-              fallas: fallasStruct
-            }
-          }
-        };
-
-        const camionCreado = await camionService.registrarCamion(nuevoCamion);
-        setCamionesRegistrados([camionCreado, ...camionesRegistrados]);
-        addToast('✅ Camión ' + flota + ' enviado a taller con éxito.');
-      }
-
-      setActiveTab('dashboard');
-      setFlota(''); setOperador(''); setSelectedDanos({}); setObservaciones({});
-      setReportStep(1);
-    } catch (err) {
-      addToast('Error crítico: ' + err.message, "error");
-    }
-  };
-
   const handleLogoutApp = () => {
-    logout([
-      () => setFlota(''),
-      () => setOperador(''),
-      () => setSelectedDanos({}),
-      () => setObservaciones({}),
-      () => setReportStep(1)
-    ]);
+    localStorage.removeItem('drummond_report_form');
+    logout();
   };
 
   // Si no hay sesión activa, bloqueamos el acceso y mostramos el Login
@@ -1263,35 +644,6 @@ function App() {
     );
   }
 
-  // Blindaje de Seguridad: Solo calcular si hay sesión activa
-  // Lógica de Filtrado Inteligente v1.9.34 (Soporte Meses y Multi-búsqueda)
-  const registrosFiltrados = (session && Array.isArray(camionesAccessibles)) ? camionesAccessibles.filter(r => {
-    // Solo mostramos los que ya están en el historial (liberados)
-    if (r.estado !== 'liberado') return false;
-
-    try {
-      // Blindaje de Datos (v1.9.51): Conversión segura a String
-      const fFlota = String(r.flota || '').toLowerCase();
-      const fMina = String(r.mina || '').toLowerCase();
-      const fBusquedaFlota = String(filtroFlota || '').toLowerCase();
-      const fBusquedaMina = String(filtroMina || '').toLowerCase();
-
-      // Filtro por Flota y Mina
-      const matchFlota = fFlota.includes(fBusquedaFlota);
-      const matchMina = !fBusquedaMina || fMina === fBusquedaMina;
-      if (!matchFlota || !matchMina) return false;
-
-      // Filtro por Fecha (Mes/Año)
-      if (filtroMes) {
-        const fecha = parseFecha(r.finalizado_at || r.time || r.creado_at);
-        if (!fecha) return false;
-        const [anioF, mesF] = filtroMes.split('-');
-        if (fecha.getFullYear() !== parseInt(anioF) || (fecha.getMonth() + 1) !== parseInt(mesF)) return false;
-      }
-
-      return true;
-    } catch (e) { return false; }
-  }) : [];
 
   // --- RENDERIZADO PRINCIPAL (DASHBOARD) ---
 
@@ -1311,9 +663,6 @@ function App() {
           setActiveTab={setActiveTab}
           session={session}
           handleLogoutApp={handleLogoutApp}
-          setMina={setMina}
-          setGrupo={setGrupo}
-          mina={mina}
         />
 
         {/* Main Content */}
@@ -1326,30 +675,21 @@ function App() {
             handleLogoutApp={handleLogoutApp}
           />
 
-          {/* Dashboard View */}
-          {activeTab === 'dashboard' && (
-            <DashboardView
-              promedioCiclo={promedioCiclo}
-              conteoLiberados={conteoLiberados}
-              kpis={kpis}
-              camionesAccessibles={camionesAccessibles}
-              setActiveTab={setActiveTab}
+          <Routes>
+            <Route path="/" element={<Navigate to="/dashboard" replace />} />
+            <Route path="/dashboard" element={
+              <DashboardView
               setSelectedReport={setSelectedReport}
-              session={session}
               prepararEdicion={prepararEdicion}
               handleSafeDelete={handleSafeDelete}
-              eliminarCamion={eliminarCamion}
               confirmDeleteId={confirmDeleteId}
               formatGrupo={formatGrupo}
               formatFechaCorta={formatFechaCorta}
-            />
-          )}
+              />
+            } />
 
-          {/* Kanban Board View */}
-          {activeTab === 'cola' && (
-            <KanbanBoard
-              columnasKanban={columnasKanban}
-              camionesAccessibles={camionesAccessibles}
+            <Route path="/cola" element={
+              <KanbanBoard
               expandedCardId={expandedCardId}
               setExpandedCardId={setExpandedCardId}
               currentKanbanCol={currentKanbanCol}
@@ -1364,42 +704,21 @@ function App() {
               setSelectedGarantiaDetails={setSelectedGarantiaDetails}
               prepararDictamen={prepararDictamen}
               toggleAprobacion={toggleAprobacion}
-              showConfirm={showConfirm}
               liberarCamion={liberarCamion}
-              session={session}
               prepararEdicion={prepararEdicion}
-              loadingData={loadingData}
               currentTime={currentTime}
-            />
-          )}
+              />
+            } />
 
-          {/* Historial View */}
-          {activeTab === 'historial' && (
-            <HistoryView
-              registrosFiltrados={registrosFiltrados}
-              registrosLimit={registrosLimit}
-              setRegistrosLimit={setRegistrosLimit}
-              expandedHistoryId={expandedHistoryId}
-              setExpandedHistoryId={setExpandedHistoryId}
-              conteoLiberados={conteoLiberados}
-              exportarAExcel={exportarAExcel}
-              filtroFlota={filtroFlota}
-              setFiltroFlota={setFiltroFlota}
-              filtroMina={filtroMina}
-              setFiltroMina={setFiltroMina}
-              filtroMes={filtroMes}
-              setFiltroMes={setFiltroMes}
-              generarPDF={generarPDF}
-              session={session}
+            <Route path="/historial" element={
+              <HistoryView
               handleSafeDelete={handleSafeDelete}
-              eliminarCamion={eliminarCamion}
               confirmDeleteId={confirmDeleteId}
-            />
-          )}
+              />
+            } />
 
-          {/* Vista de Gestión de Usuarios Modularizada (v17.0) */}
-          {activeTab === 'usuarios' && session.role === 'admin' && (
-            <UserManagement
+            <Route path="/usuarios" element={session.role === 'admin' ? (
+              <UserManagement
               dbUsuarios={dbUsuarios}
               setDbUsuarios={setDbUsuarios}
               isCreandoUsuario={isCreandoUsuario}
@@ -1410,35 +729,12 @@ function App() {
               setUsuarioEditando={setUsuarioEditando}
               addToast={addToast}
               showConfirm={showConfirm}
-            />
-          )}
+              />
+            ) : <Navigate to="/dashboard" replace />} />
 
-          {/* Vista de Nuevo Reporte Modularizada (v17.0) */}
-          {activeTab === 'nuevo' && (
-            <ReportForm
-              reportStep={reportStep}
-              setReportStep={setReportStep}
-              flota={flota}
-              setFlota={setFlota}
-              operador={operador}
-              setOperador={setOperador}
-              mina={mina}
-              setMina={setMina}
-              grupo={grupo}
-              setGrupo={setGrupo}
-              selectedDanos={selectedDanos}
-              handleDanoToggle={handleDanoToggle}
-              observaciones={observaciones}
-              handleObsChange={handleObsChange}
-              atencion={atencion}
-              totalImpacto={totalImpacto}
-              isFlotaValid={isFlotaValid}
-              addToast={addToast}
-              onSubmit={handleReportSubmit}
-              session={session}
-            />
-          )}
-
+            <Route path="/nuevo" element={<ReportForm />} />
+            <Route path="*" element={<Navigate to="/dashboard" replace />} />
+          </Routes>
 
           {/* Modales de Garantía Modularizados (v17.0) */}
           <WarrantySelectionModal

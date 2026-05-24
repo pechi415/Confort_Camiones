@@ -8,12 +8,28 @@ import {
   Clock,
   MonitorCheck,
   ShieldAlert,
-  Unlock
+  Unlock,
+  Hourglass,
+  Search,
+  SearchCheck,
+  Wrench
 } from 'lucide-react';
 
+import { useAuth } from '../context/AuthContext';
+import { useTruck } from '../context/TruckContext';
+import { useUI } from '../context/UIContext';
+import styles from './KanbanBoard.module.css';
+
+const columnasKanban = [
+  { id: 'espera', titulo: 'Lista de Espera', icon: <Hourglass strokeWidth={1.5} size={18} />, color: '#9ca3af' },
+  { id: 'evaluar', titulo: 'Por Evaluar', icon: <Search strokeWidth={1.5} size={18} />, color: 'var(--secondary-blue)' },
+  { id: 'evaluados', titulo: 'Evaluados', icon: <SearchCheck strokeWidth={1.5} size={18} />, color: '#8b5cf6' },
+  { id: 'taller', titulo: 'En Taller', icon: <Wrench strokeWidth={1.5} size={18} />, color: 'var(--secondary-yellow)' },
+  { id: 'feedback', titulo: 'Feedback', icon: <CheckCircle2 strokeWidth={1.5} size={18} />, color: '#10b981' },
+  { id: 'garantia', titulo: 'Garantía', icon: <ShieldAlert strokeWidth={1.5} size={18} />, color: '#ef4444' }
+];
+
 const KanbanBoard = ({
-  columnasKanban,
-  camionesAccessibles,
   expandedCardId,
   setExpandedCardId,
   setCurrentKanbanCol,
@@ -28,13 +44,13 @@ const KanbanBoard = ({
   setSelectedGarantiaDetails,
   prepararDictamen,
   toggleAprobacion,
-  showConfirm,
   liberarCamion,
-  session,
   prepararEdicion,
-  loadingData,
   currentTime
 }) => {
+  const { session } = useAuth();
+  const { camionesAccessibles, loadingData } = useTruck();
+  const { showConfirm } = useUI();
   const boardRef = useRef(null);
   const [canScrollLeft, setCanScrollLeft] = useState(false);
   const [canScrollRight, setCanScrollRight] = useState(true);
@@ -65,12 +81,12 @@ const KanbanBoard = ({
 
   return (
           <div className="fade-in" style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
-            <div className="kanban-title-stack" style={{ marginBottom: '1.5rem' }}>
+            <div className={styles.kanbanTitleStack} style={{ marginBottom: '1.5rem' }}>
               <h2 style={{ color: 'var(--primary-black)', margin: '0 0 0.4rem 0', lineHeight: '1.2' }}>🔧 Pila de Mantenimiento</h2>
               <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', display: 'block' }}>Arrastra los camiones para avanzar su estado</span>
             </div>
 
-            <div className="kanban-headers fade-in" style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
+            <div className={`${styles.kanbanHeaders} fade-in`} style={{ display: 'flex', gap: '1rem', marginBottom: '1rem' }}>
               {columnasKanban.map(col => (
                 <div key={col.id} className="kanban-header" style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', fontSize: '0.85rem', fontWeight: 'bold', color: 'var(--text-muted)' }}>
                   <span style={{ display: 'inline-block', width: '8px', height: '8px', background: col.color, borderRadius: '50%' }}></span>
@@ -82,7 +98,7 @@ const KanbanBoard = ({
             </div>
 
             <div 
-              className="kanban-board"
+              className={styles.kanbanBoard}
               ref={boardRef}
               onScroll={(e) => {
                  checkScroll();
@@ -128,7 +144,7 @@ const KanbanBoard = ({
                     key={col.id}
                     onDragOver={handleDragOver}
                     onDrop={(e) => handleDrop(e, col.id)}
-                    className="kanban-column"
+                    className={`${styles.kanbanColumn} ${currentKanbanCol === col.id ? 'drag-over' : ''}`}
                     style={{
                       borderTop: `4px solid ${col.color}`
                     }}
@@ -147,7 +163,7 @@ const KanbanBoard = ({
                       return (
                       <div 
                         key={camion.id}
-                        className="kanban-card"
+                        className={`${styles.kanbanCard} fade-in ${camion.estado === 'garantia' ? 'shake-animation' : ''}`}
                         draggable
                         onDragStart={(e) => handleDragStart(e, camion.id)}
                         style={{
@@ -165,7 +181,7 @@ const KanbanBoard = ({
                         }}
                       >
                         <div 
-                          className="kanban-card-header"
+                          className={`${styles.kanbanCardHeader} ${isExpanded ? styles.expanded : ''}`}
                           onClick={() => setExpandedCardId(expandedCardId === camion.id ? null : camion.id)}
                           style={{ 
                             padding: '0.6rem 0.5rem', 
@@ -395,9 +411,9 @@ const KanbanBoard = ({
                 }
               `}
             </style>
-            <div className="kanban-indicators mobile-only">
+            <div className={`${styles.kanbanIndicators} mobile-only`}>
               {columnasKanban.map((_, i) => (
-                <div key={i} className={`indicator-dot ${currentKanbanCol === i ? 'active' : ''}`} />
+                <div key={i} className={`${styles.indicatorDot} ${currentKanbanCol === i ? styles.active : ''}`} />
               ))}
             </div>
 

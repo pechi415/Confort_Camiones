@@ -1,7 +1,11 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
-import './industrial-v3.css'
+import { BrowserRouter } from 'react-router-dom'
+import './global.css';
 import App from './App.jsx'
+import { UIProvider } from './context/UIContext'
+import { AuthProvider } from './context/AuthContext'
+import { TruckProvider } from './context/TruckContext'
 
 // Forzar la desinstalación de CUALQUIER Service Worker viejo que Chrome se niegue a soltar
 if ('serviceWorker' in navigator) {
@@ -17,6 +21,14 @@ if ('serviceWorker' in navigator) {
 
 createRoot(document.getElementById('root')).render(
   <StrictMode>
-    <App />
+    <BrowserRouter>
+      <UIProvider>
+        <AuthProvider>
+          <TruckProvider>
+            <App />
+          </TruckProvider>
+        </AuthProvider>
+      </UIProvider>
+    </BrowserRouter>
   </StrictMode>,
 )

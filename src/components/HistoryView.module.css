@@ -1,0 +1,91 @@
+.historyHeaderContainer {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 2rem;
+  gap: 1.5rem;
+  width: 100%;
+}
+
+.historyHeaderActions {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  flex-shrink: 0;
+}
+
+.historyBadge {
+  width: auto !important;
+  white-space: nowrap;
+}
+
+.historyExportBtn {
+  width: auto !important;
+}
+
+.historyTitleArea h2 {
+  margin-bottom: 0.2rem;
+  color: var(--primary-black);
+  display: flex;
+  align-items: center;
+  gap: 0.6rem;
+}
+
+.historyTitleArea p {
+  color: var(--text-muted);
+  margin: 0;
+  font-size: 0.9rem;
+}
+
+.historyRow {
+  cursor: pointer;
+  transition: background-color 0.2s ease, border-color 0.2s ease;
+}
+
+.historyRow.expanded {
+  background-color: rgba(239, 68, 68, 0.02);
+}
+
+
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(-5px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+@media (max-width: 900px) {
+  .historyHeaderContainer {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 1rem;
+  }
+  
+  .historyHeaderActions {
+    width: 100%;
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.8rem;
+  }
+
+  .historyBadge, .historyExportBtn {
+    width: 100% !important;
+    justify-content: center;
+  }
+}
+
+@media (max-width: 768px) {
+  .historyRow.expanded {
+    border-color: var(--primary-red);
+  }
+
+  .collapsibleCol {
+    display: none !important; 
+    opacity: 0;
+  }
+
+  .historyRow.expanded .collapsibleCol {
+    display: flex !important; 
+    opacity: 1;
+    animation: fadeIn 0.3s ease-in;
+  }
+}
