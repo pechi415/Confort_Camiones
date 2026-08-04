@@ -48,7 +48,7 @@ const GlobalModal = ({ modalConfig, onConfirm, onCancel, setModalConfig }) => {
               placeholder={modalConfig.inputPlaceholder}
               value={modalConfig.inputValue}
               onChange={(e) => setModalConfig(prev => ({ ...prev, inputValue: e.target.value }))}
-              onKeyDown={(e) => e.key === 'Enter' && onConfirm()}
+              onKeyDown={(e) => e.key === 'Enter' && onConfirm(modalConfig.inputValue)}
               style={{
                 fontSize: '1.2rem',
                 textAlign: 'center',
@@ -78,7 +78,7 @@ const GlobalModal = ({ modalConfig, onConfirm, onCancel, setModalConfig }) => {
             style={{
               backgroundColor: modalConfig.type === 'prompt' ? '#ef4444' : 'var(--primary-red)'
             }}
-            onClick={onConfirm}
+            onClick={() => onConfirm(modalConfig.inputValue)}
           >
             {modalConfig.confirmText}
           </button>

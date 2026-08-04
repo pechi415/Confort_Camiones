@@ -39,7 +39,9 @@ export const UIProvider = ({ children }) => {
 
   const handleModalConfirm = (inputValue) => {
     if (modalConfig.type === 'prompt' && modalConfig.expectedValue) {
-      if (inputValue !== modalConfig.expectedValue) {
+      const typedVal = typeof inputValue === 'string' ? inputValue.trim() : (modalConfig.inputValue || '').trim();
+      const expectedVal = String(modalConfig.expectedValue).trim();
+      if (typedVal !== expectedVal) {
         addToast("❌ El número ingresado no coincide.", "error");
         return;
       }
