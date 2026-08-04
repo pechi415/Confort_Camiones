@@ -1,6 +1,6 @@
 import { useState, useEffect, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Truck, ClipboardList, CheckCircle, ChevronLeft, ChevronRight, AlertTriangle, ShieldAlert, ShieldCheck } from 'lucide-react';
+import { Truck, ClipboardList, CheckCircle, ChevronLeft, ChevronRight, AlertTriangle, ShieldAlert, ShieldCheck, RotateCcw } from 'lucide-react';
 import { fallas } from '../constants/fallas';
 import { normalizarNombre, corregirNombresIA, corregirOrtografiaIA, unificarComentariosIA } from '../utils/iaEngine';
 import { useAuth } from '../context/AuthContext';
@@ -279,10 +279,30 @@ const ReportForm = () => {
 
       navigate('/dashboard');
       setFlota(''); setOperador(''); setSelectedDanos({}); setObservaciones({});
+      localStorage.removeItem('drummond_report_form');
       setReportStep(1);
     } catch (err) {
       addToast('Error crítico: ' + err.message, "error");
     }
+  };
+
+  const handleClearForm = () => {
+    showConfirm({
+      type: 'confirm',
+      title: '🧹 Limpiar Formulario',
+      message: '¿Estás seguro de que deseas vaciar todos los datos de este borrador?',
+      confirmText: 'Sí, Limpiar',
+      cancelText: 'Cancelar',
+      onConfirm: () => {
+        setFlota('');
+        setOperador('');
+        setSelectedDanos({});
+        setObservaciones({});
+        setReportStep(1);
+        localStorage.removeItem('drummond_report_form');
+        addToast('✨ Formulario vaciado con éxito.', 'info');
+      }
+    });
   };
 
   // Candado de Seguridad: Si el usuario NO es admin y NO pertenece a "Global", bloqueamos sus listas
@@ -312,17 +332,44 @@ const ReportForm = () => {
         ))}
       </div>
 
-      <div style={{ textAlign: 'center', marginBottom: '2rem' }}>
-        <h2 style={{ fontSize: '1.6rem', color: 'var(--primary-black)', marginBottom: '0.5rem' }}>
-          {reportStep === 1 && "📍 Identificación"}
-          {reportStep === 2 && "🛠️ Diagnóstico"}
-          {reportStep === 3 && "🚀 Finalización"}
-        </h2>
-        <p style={{ color: 'var(--text-muted)', fontSize: '0.9rem' }}>
-          {reportStep === 1 && "Datos básicos del equipo y operador."}
-          {reportStep === 2 && "Selecciona los componentes con falla."}
-          {reportStep === 3 && "Revisa y envía el reporte a taller."}
-        </p>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '2rem' }}>
+        <div>
+          <h2 style={{ fontSize: '1.5rem', color: 'var(--primary-black)', margin: '0 0 0.3rem 0' }}>
+            {reportStep === 1 && "📍 Identificación"}
+            {reportStep === 2 && "🛠️ Diagnóstico"}
+            {reportStep === 3 && "🚀 Finalización"}
+          </h2>
+          <p style={{ color: 'var(--text-muted)', fontSize: '0.85rem', margin: 0 }}>
+            {reportStep === 1 && "Datos básicos del equipo y operador."}
+            {reportStep === 2 && "Selecciona los componentes con falla."}
+            {reportStep === 3 && "Revisa y envía el reporte a taller."}
+          </p>
+        </div>
+
+        {(flota || operador || Object.keys(selectedDanos).length > 0) && (
+          <button
+            type="button"
+            onClick={handleClearForm}
+            className="btn btn-secondary"
+            title="Vaciar borrador del formulario"
+            style={{
+              display: 'flex',
+              alignItems: 'center',
+              gap: '0.4rem',
+              padding: '0.4rem 0.8rem',
+              fontSize: '0.78rem',
+              borderRadius: '10px',
+              color: '#ef4444',
+              borderColor: 'rgba(239, 68, 68, 0.25)',
+              background: 'rgba(239, 68, 68, 0.06)',
+              cursor: 'pointer',
+              whiteSpace: 'nowrap',
+              fontWeight: '600'
+            }}
+          >
+            <RotateCcw size={15} /> Limpiar Borrador
+          </button>
+        )}
       </div>
 
       {/* CONTENIDO SEGÚN EL PASO */}
