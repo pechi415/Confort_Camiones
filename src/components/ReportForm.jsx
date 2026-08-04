@@ -10,7 +10,7 @@ import { camionService } from '../services/camionService';
 
 const ReportForm = () => {
   const { session } = useAuth();
-  const { addToast } = useUI();
+  const { addToast, showConfirm } = useUI();
   const { camionesRegistrados, setCamionesRegistrados } = useTruck();
   const navigate = useNavigate();
 
@@ -85,11 +85,49 @@ const ReportForm = () => {
     setObservaciones(prev => ({ ...prev, [id]: final }));
   };
 
+  const esMismoGrupoOSupervisor = (camion, grupoActual, supervisorNombre) => {
+    if (!camion) return false;
+
+    // 1. Verificar si este grupo ya tiene detalles guardados
+    const claveGrupo = `G${grupoActual}`;
+    if (camion.detalles_grupos && camion.detalles_grupos[claveGrupo]) {
+      return true;
+    }
+
+    // 2. Verificar si el número de grupo coincide en el string de grupos
+    const gruposRegistrados = (camion.grupo || '').split(/\s*[,|]\s*/).map(g => g.replace(/\D/g, ''));
+    const miGrupoLimpio = grupoActual ? grupoActual.toString().replace(/\D/g, '') : '';
+    if (miGrupoLimpio && gruposRegistrados.includes(miGrupoLimpio)) {
+      return true;
+    }
+
+    // 3. Verificar si el nombre del supervisor coincide
+    if (supervisorNombre) {
+      const supLimpio = normalizarNombre(supervisorNombre);
+      const supString = normalizarNombre(camion.supervisor || '');
+      if (supLimpio && supString.includes(supLimpio)) {
+        return true;
+      }
+    }
+
+    return false;
+  };
+
   const onSubmit = async () => {
     try {
       const camionExistente = camionesRegistrados.find(c => c.flota === flota && c.estado !== 'liberado');
 
       if (camionExistente) {
+        if (esMismoGrupoOSupervisor(camionExistente, grupo, session?.nombre)) {
+          showConfirm({
+            type: 'warning',
+            title: '⚠️ Registro Duplicado Bloqueado',
+            message: `El camión ${flota} ya se encuentra activo en el programa y cuenta con un reporte previo registrado por tu grupo (G${grupo}) / supervisor.\n\nNo es posible crear un reporte duplicado. Por favor dirígete al tablero o a la pila de mantenimiento y selecciona "Editar" en la tarjeta del equipo.`,
+            confirmText: 'Entendido'
+          });
+          return;
+        }
+
         const opLimpio = normalizarNombre(operador);
         const supLimpio = normalizarNombre(session.nombre);
 
@@ -480,6 +518,16 @@ const ReportForm = () => {
                 if (!flota || !operador) return addToast("Completa los datos del equipo", "error");
                 if (flota.length !== 4 || !flota.startsWith('2')) {
                   return addToast("El número de flota debe tener 4 dígitos y comenzar con 2", "error");
+                }
+                const camionExistente = camionesRegistrados.find(c => c.flota === flota && c.estado !== 'liberado');
+                if (camionExistente && esMismoGrupoOSupervisor(camionExistente, grupo, session?.nombre)) {
+                  showConfirm({
+                    type: 'warning',
+                    title: '⚠️ Equipo en Programa Activo',
+                    message: `El camión ${flota} ya se encuentra registrado en el sistema por tu grupo (G${grupo}) / supervisor.\n\nNo es posible crear un reporte duplicado. Por favor dirígete a la Pila de Mantenimiento o al Tablero para editar el reporte existente.`,
+                    confirmText: 'Entendido'
+                  });
+                  return;
                 }
               }
               setReportStep(reportStep + 1);
